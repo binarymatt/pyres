@@ -1,0 +1,2 @@
+class NoQueueError(Exception):
+    pass
