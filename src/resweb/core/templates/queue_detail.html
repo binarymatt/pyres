@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{%block main%}
+<h1>{{queue.count}} Pending Jobs in '{{queue.name}}'</h1>
+<h2>Showing 0 to 20</h2>
+<table>
+  <tr>
+    <th>Class</th>
+    <th>Args</th>
+  </tr>
+  {% for job in waiting %}
+  <tr>
+    <td>{{job.klass }}</td>
+    <td>{{ job.args }}</td>
+  </tr>
+  {% endfor %}
+ 
+</table>
+{%endblock%}

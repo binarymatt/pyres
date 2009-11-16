@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{%block main%}
+<h1>Queues</h1>
+<table>
+  <tr>
+    <th>Name</th>
+    <th>Pending</th>
+  </tr>
+  {% for queue in queue_list %}
+  <tr>
+    <td><a class="queue" href="/queues/{{queue.name}}/">{{queue.name}}</a></td>
+    <td>{{queue.count}}</td>
+  </tr>
+  {% endfor %}
+  <tr>
+    <td><a class="queue" href="{%url failed%}">failed</a></td>
+    <td>{{failure_count}}</td>
+  </tr>
+</table>
+
+
+{%endblock%}
