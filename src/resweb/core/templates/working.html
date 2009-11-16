@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+{%block main%}
+<% workers = resque.working %>
+<h1><%= workers.size %> of <%= resque.workers.size %> Workers Working</h1>
+<table>
+  <tr>
+    <th>&nbsp;</th>
+    <th>Where</th>
+    <th>Queue</th>
+    <th>Processing</th>
+  </tr>
+  <% if workers.empty? %>
+  <tr>
+    <td colspan="4">Not a one.</td>
+  </tr>
+  <% end %>
+
+  <% for worker in workers.sort_by { |w| w.job['run_at'] ? w.job['run_at'] : '' } %>
+    <% job = worker.job %>
+    <tr>
+      <td><img src="<%=u state = worker.state %>.png" alt="<%= state %>" title="<%= state %>"></td>
+      <% host, pid, queues = worker.to_s.split(':') %>
+      <td><a href="<%=u "/workers/#{worker}" %>"><%= host %>:<%= pid %></a></td>
+      <td>
+        <a class="queue" href="<%=u "/queues/#{job['queue']}" %>"><%= job['queue'] %></a>
+      </td>
+      <td>
+        <% if job['queue'] %>
+          <code><%= job['payload']['class'] %></code>
+          <small><a class="queue time" href="<%=u "/working/#{worker}" %>"><%= job['run_at'] %></a></small>
+        <% else %>
+          Waiting for more
+        <% end %>
+      </td>
+    </tr>
+  <% end %>
+</table>
+{%endblock%}
