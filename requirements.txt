@@ -1,1 +1,2 @@
 simplejson==2.0.9
+redis==0.6.0
