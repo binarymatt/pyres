@@ -6,14 +6,14 @@
     <th>Name</th>
     <th>Pending</th>
   </tr>
-  {% for queue in queue_list %}
+  {% for queue in queues %}
   <tr>
-    <td><a class="queue" href="/queues/{{queue.name}}/">{{queue.name}}</a></td>
-    <td>{{queue.count}}</td>
+    <td><a class="queue" href="/queues/{{queue}}/">{{queue}}</a></td>
+    <td>{{ resq.size(queue)}}</td>
   </tr>
   {% endfor %}
   <tr>
-    <td><a class="queue" href="{%url failed%}">failed</a></td>
+    <td><a class="queue" href="/failed/">failed</a></td>
     <td>{{failure_count}}</td>
   </tr>
 </table>
