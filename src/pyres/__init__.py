@@ -68,7 +68,7 @@ class ResQ(object):
         if queue:
             class_name = '%s.%s' % (klass.__module__, klass.__name__)
             #print class_name
-            resq.push(queue, {'klass':class_name,'args':args})
+            resq.push(queue, {'class':class_name,'args':args})
             #Job.create(queue, klass,*args)
     
     @classmethod
