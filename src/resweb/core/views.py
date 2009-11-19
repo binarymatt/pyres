@@ -4,6 +4,7 @@ from django.conf import settings
 from resweb.decorators import render_to
 from pyres import ResQ
 from pyres.failure import Failure
+from pyres.worker import Worker
 class Queue(object):
     def __init__(self, name, count):
         self.name = name
@@ -21,9 +22,15 @@ def index(request):
 
 @render_to('working.html')
 def working(request):
-    current = request.resq.working()
-    total_workers = len(request.resq.workers())
-    return {}
+    workers = []
+    for worker in Worker.working(request.resq._server):
+        host, pid, queues = str(worker).split(':')
+        worker._host
+        worker._pid
+        workers.append(worker)
+    current_count = len(workers)
+    total_workers = len(Worker.all(settings.RESQ_HOST))
+    return locals()
 
 def failed(request):
     return {}

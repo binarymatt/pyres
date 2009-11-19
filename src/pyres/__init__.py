@@ -19,6 +19,7 @@ def str_to_class(s):
 class ResQ(object):
     _res = None
     def __init__(self, server="localhost:6379"):
+        self._server = server
         host, port = server.split(':')
         self._redis = Redis(host=host, port=int(port))
         self._watched_queues = {}
@@ -57,8 +58,10 @@ class ResQ(object):
     
     @classmethod
     def decode(cls, item):
-        ret = simplejson.loads(item)
-        return ret
+        if item:
+            ret = simplejson.loads(item)
+            return ret
+        return None
     
     @classmethod
     def enqueue(cls, klass, *args):
@@ -76,6 +79,10 @@ class ResQ(object):
         resq = cls(server)
         return resq._redis.smembers("queues")
     
+    #@classmethod
+    #def working(cls, server="localhost:6379"):
+    #    resq = cls(server)
+    #    return Worker.working(resq)
 class Stat(object):
     def __init__(self, name, resq):
         self.name = name

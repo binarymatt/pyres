@@ -105,6 +105,9 @@ class Worker(object):
         data = simplejson.dumps(data)
         self.resq._redis.set("worker:%s" % str(self), data)
     
+    def job(self):
+        return ResQ.decode(self.resq._redis.get("worker:%s" % self)) or {}
+    
     def done_working(self):
         self.processed()
         self.resq._redis.delete("worker:%s" % str(self))
@@ -128,6 +131,8 @@ class Worker(object):
         return {}
     
     def __str__(self):
+        if getattr(self,'id', None):
+            return self.id
         import os; 
         hostname = os.uname()[1]
         pid = os.getpid()
@@ -137,7 +142,35 @@ class Worker(object):
     def run(cls, queues, host):
         worker = cls(queues=queues, host=host)
         worker.work()
-
+    @classmethod
+    def all(cls, host):
+        resq = ResQ(host)
+        return resq._redis.smembers('workers')
+    @classmethod
+    def working(cls, host):
+        resq = ResQ(host)
+        total = []
+        for key in Worker.all(host):
+            if Worker.exists(key,resq):
+                total.append(key)
+        #total = [id if Worker.exists(id,resq) for id in resq.redis.smembers('workers')]
+        names = [Worker.find(key[7:],resq) for key in resq._redis.mget(*total)] if total else []
+        return names
+    
+    @classmethod
+    def find(cls, worker_id, resq):
+        if Worker.exists(worker_id, resq):
+            queues = worker_id.split(':')[-1].split(',')
+            worker = cls(queues,resq._server)
+            worker.id = worker_id
+            return worker
+        else:
+            return None
+    
+    @classmethod
+    def exists(cls, worker_id, resq):
+        return resq._redis.sismember('workers', worker_id)
+    
 class JuniorWorker(Worker):
     def work(self, interval=5):
         self.startup()
