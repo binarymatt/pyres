@@ -1,3 +1,4 @@
 simplejson==2.0.9
 Jinja2==2.2.1
 itty==0.6.1
+redis==0.6.0

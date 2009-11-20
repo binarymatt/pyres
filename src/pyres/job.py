@@ -7,7 +7,7 @@ class Job(object):
         self.resq = resq
     
     def perform(self):
-        payload_class_str = self._payload["klass"]
+        payload_class_str = self._payload["class"]
         payload_class = str_to_class(payload_class_str)
         args = self._payload.get("args", None)
         if args:
