@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 {%block main%}
-<h1>{{len(workers)}} of {{all_workers}} Workers Working</h1>
+<h1>{{ workers|length }} of {{all_workers|length}} Workers Working</h1>
 <table>
   <tr>
     <th>&nbsp;</th>

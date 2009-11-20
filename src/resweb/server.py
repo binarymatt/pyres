@@ -23,10 +23,10 @@ def index(request):
 
 @get("/working/")
 def working(request):
-    workers = Worker.working(request.resq._server)
+    workers = Worker.working(resq._server)
     template = env.get_template('working.html')
     dic = {
-        'all_workers':Worker.all(settings.RESQ_HOST),
+        'all_workers':Worker.all(HOST),
         'workers':workers,
         'resq': resq
     }
@@ -34,7 +34,15 @@ def working(request):
 
 @get("/queues/")
 def queues(request):
-    return ""
+    queues = ResQ.queues(HOST)
+    failure_count = Failure.count(ResQ(HOST))
+    template = env.get_template('queues.html')
+    dic = {
+        'queues':queues,
+        'failure_count':failure_count,
+        'resq': resq
+    }
+    return str(template.render(dic))
 
 @get('/queues/(?P<queue_id>\w+)/')
 def queue(request, queue_id):
@@ -44,16 +52,25 @@ def queue(request, queue_id):
     template = env.get_template('queue_detail.html')
     return str(template.render(context))
 
-@get(r'/failed/$')
+@get('/failed/')
 def failed(request):
-    return ""
+    context = {
+        'resq': resq
+    }
+    template = env.get_template('failed.html')
+    return str(template.render(context))
 
-@get(r'/workers/$')
+@get('/workers/')
 def workers(request):
-    return ""
+    context = {
+        'workers': Worker.all(HOST)
+    }
+    template = env.get_template('workers.html')
+    return str(template.render(context))
 
-@get(r'/stats/$')
+@get('/stats/')
 def stats(request):
-    return ""
+    template = env.get_template('stats.html')
+    return str(template.render({}))
 
 run_itty()
