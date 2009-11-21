@@ -15,11 +15,11 @@ class Failure(object):
             'queue'     : self._queue
         }
         data = ResQ.encode(data)
-        resq._redis.push('failed', data)
+        resq.redis.push('failed', data)
     
     @classmethod
     def count(cls, resq):
-        return int(resq._redis.llen('failed'))
+        return int(resq.redis.llen('failed'))
     
     @classmethod
     def create(cls, options={}):

@@ -7,26 +7,31 @@ import os, sys
 import time
 import simplejson
 class Worker(object):
-    def __init__(self, queues=[], host="localhost:6379"):
+    def __init__(self, queues=[], server="localhost:6379"):
         self.queues = queues
         self.validate_queues()
         self._shutdown = False
         self.child = None
-        self.resq = ResQ(host)
+        if isinstance(server,basestring):
+            self.resq = ResQ(server)
+        elif isinstance(server, ResQ):
+            self.resq = server
+        else:
+            raise Exception("Bad server argument")
+        
     
     def validate_queues(self):
         if not self.queues:
             raise NoQueueError("Please give each worker at least one queue.")
     
     def register_worker(self):
-        
-        self.resq._redis.sadd('workers',str(self))
+        self.resq.redis.sadd('workers',str(self))
         #self.resq._redis.add("worker:#{self}:started", Time.now.to_s)
         #Stat.clear("processed:#{self}")
         #Stat.clear("failed:#{self}")
     
     def unregister_worker(self):
-        self.resq._redis.srem('workers',str(self))
+        self.resq.redis.srem('workers',str(self))
     
     def startup(self):
         self.register_signal_handlers()
@@ -103,14 +108,14 @@ class Worker(object):
             'payload': job._payload
         }
         data = simplejson.dumps(data)
-        self.resq._redis.set("worker:%s" % str(self), data)
+        self.resq.redis["worker:%s" % str(self)] = data
     
     def job(self):
-        return ResQ.decode(self.resq._redis.get("worker:%s" % self)) or {}
+        return ResQ.decode(self.resq.redis.get("worker:%s" % self)) or {}
     
     def done_working(self):
         self.processed()
-        self.resq._redis.delete("worker:%s" % str(self))
+        self.resq.redis.delete("worker:%s" % str(self))
     
     def processed(self):
         total_processed = Stat("processed", self.resq)
@@ -125,7 +130,7 @@ class Worker(object):
         stat.incr()
     
     def job(self):
-        data = self.resq._redis.get("worker:%s" % self)
+        data = self.resq.redis.get("worker:%s" % self)
         if data:
             return ResQ.decode(data)
         return {}
@@ -139,13 +144,15 @@ class Worker(object):
         return '%s:%s:%s' % (hostname, pid, ','.join(self.queues))
     
     @classmethod
-    def run(cls, queues, host):
-        worker = cls(queues=queues, host=host)
+    def run(cls, queues, server):
+        worker = cls(queues=queues, host=server)
         worker.work()
+    
     @classmethod
     def all(cls, host):
         resq = ResQ(host)
-        return resq._redis.smembers('workers')
+        return resq.redis.smembers('workers')
+    
     @classmethod
     def working(cls, host):
         resq = ResQ(host)
@@ -169,7 +176,7 @@ class Worker(object):
     
     @classmethod
     def exists(cls, worker_id, resq):
-        return resq._redis.sismember('workers', worker_id)
+        return resq.redis.sismember('workers', worker_id)
     
 class JuniorWorker(Worker):
     def work(self, interval=5):

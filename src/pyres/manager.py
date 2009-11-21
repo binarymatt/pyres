@@ -26,10 +26,10 @@ class Manager(object):
         self.register_signals()
     
     def register_manager(self):
-        self.resq._redis.sadd('managers',str(self))
+        self.resq.redis.sadd('managers',str(self))
     
     def unregister_manager(self):
-        self.resq._redis.srem('managers',str(self))
+        self.resq.redis.srem('managers',str(self))
     
     def register_signals(self):
         signal.signal(signal.SIGTERM, self.shutdown_all)

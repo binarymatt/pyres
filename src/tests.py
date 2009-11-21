@@ -8,7 +8,9 @@ class Basic(object):
     
     @staticmethod
     def perform(name):
-        return "name:%s" % name
+        s = "name:%s" % name
+        print s
+        return s
     
 def test_str_to_class():
     ret = str_to_class('tests.Basic')
@@ -17,19 +19,21 @@ def test_str_to_class():
 class PyResTests(unittest.TestCase):
     def setUp(self):
         self.resq = ResQ()
-        self.redis = self.resq._redis
+        self.redis = self.resq.redis
         self.redis.flush(True)
     
     def tearDown(self):
+        self.redis.flush(True)
         del self.redis
         del self.resq
     
 
 class ResQTests(PyResTests):
     def test_enqueue(self):
-        ResQ.enqueue(Basic,"test1")
-        ResQ.enqueue(Basic,"test2")
-        assert self.redis.llen("queue:basic") == 2
+        self.resq.enqueue(Basic,"test1")
+        self.resq.enqueue(Basic,"test2")
+        ResQ.enqueue(Basic, "test3")
+        assert self.redis.llen("queue:basic") == 3
         assert self.redis.sismember('queues','basic')
     
     def test_push(self):
@@ -49,24 +53,24 @@ class ResQTests(PyResTests):
         assert self.redis.llen('queue:pushq') == 0
     
     def test_peek(self):
-        ResQ.enqueue(Basic,"test1")
-        ResQ.enqueue(Basic,"test2")
+        self.resq.enqueue(Basic,"test1")
+        self.resq.enqueue(Basic,"test2")
         assert len(self.resq.peek('basic',0,20)) == 2
 
 class JobTests(PyResTests):
     def test_reserve(self):
-        ResQ.enqueue(Basic,"test1")
+        self.resq.enqueue(Basic,"test1")
         job = Job.reserve('basic', self.resq)
         assert job._queue == 'basic'
         assert job._payload
     
     def test_perform(self):
-        ResQ.enqueue(Basic,"test1")
+        self.resq.enqueue(Basic,"test1")
         job = Job.reserve('basic',self.resq)
         assert job.perform() == "name:test1"
     
     def test_fail(self):
-        ResQ.enqueue(Basic,"test1")
+        self.resq.enqueue(Basic,"test1")
         job = Job.reserve('basic',self.resq)
         assert self.redis.llen('failed') == 0
         job.fail("problem")
@@ -96,7 +100,7 @@ class WorkerTests(PyResTests):
     
     def test_working_on(self):
         name = "%s:%s:%s" % (os.uname()[1],os.getpid(),'basic')
-        ResQ.enqueue(Basic,"test1")
+        self.resq.enqueue(Basic,"test1")
         job = Job.reserve('basic', self.resq)
         worker = Worker(['basic'])
         worker.working_on(job)
@@ -127,5 +131,12 @@ class WorkerTests(PyResTests):
         assert self.redis.get("stat:failed:%s" % name) == 2
     
     def test_process(self):
-        assert False
+        name = "%s:%s:%s" % (os.uname()[1],os.getpid(),'basic')
+        self.resq.enqueue(Basic,"test1")
+        job = Job.reserve('basic', self.resq)
+        worker = Worker(['basic'])
+        worker.process(job)
+        assert not self.redis.get('worker:%s' % worker)
+        assert not self.redis.get("stat:failed")
+        assert not self.redis.get("stat:failed:%s" % name)
 

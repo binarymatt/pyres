@@ -23,6 +23,5 @@ class Job(object):
     @classmethod
     def reserve(cls, queue, res):
         payload = res.pop(queue)
-        print "payload: %s" % payload
         if payload:
             return cls(queue, payload, res)

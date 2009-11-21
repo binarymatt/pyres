@@ -17,45 +17,102 @@ def str_to_class(s):
         return None
 
 class ResQ(object):
-    _res = None
-    def __init__(self, server="localhost:6379"):
-        self._server = server
-        host, port = server.split(':')
-        self._redis = Redis(host=host, port=int(port))
-        self._watched_queues = {}
     
+    def __init__(self, server="localhost:6379"):
+        self.redis = server
+        self._watched_queues = {}
+
     def push(self, queue, item):
         self.watch_queue(queue)
-        self._redis.push("queue:%s" % queue, ResQ.encode(item))
-    
+        self.redis.push("queue:%s" % queue, ResQ.encode(item))
+
     def pop(self, queue):
-        ret = self._redis.pop("queue:%s" % queue)
+        ret = self.redis.pop("queue:%s" % queue)
         if ret:
             return ResQ.decode(ret)
         return ret
-    
+
     def size(self, queue):
-        return int(self._redis.llen("queue:%s" % queue))
-    
+        return int(self.redis.llen("queue:%s" % queue))
+
     def watch_queue(self, queue):
         if self._watched_queues.has_key(queue):
             return
         else:
-            if self._redis.sadd('queues',str(queue)):
+            if self.redis.sadd('queues',str(queue)):
                 self._watched_queues[queue] = queue
+
     def peek(self, queue, start=0, count=1):
         return self.list_range('queue:%s' % queue, start, count)
-    
+
     def list_range(self, key, start, count):
-        items = self._redis.lrange(key,start,start+count-1)
+        items = self.redis.lrange(key,start,start+count-1)
         ret_list = []
         for i in items:
             ret_list.append(ResQ.decode(i))
         return ret_list
+
+    def _get_redis(self):
+        return self._redis
+
+    def _set_redis(self, server):
+        if isinstance(server, basestring):
+            self.dsn = server
+            host, port = server.split(':')
+            self._redis = Redis(host=host, port=int(port))
+        elif isinstance(server, Redis):
+            self.dsn = '%s:%s' % (server.host,server.port)
+            self._redis = server
+        else:
+            raise Exception("I don't know what to do with %s" % str(server))
+    redis = property(_get_redis, _set_redis)
+
+    def enqueue(self, klass, *args):
+        queue = getattr(klass,'queue', None)
+        #print cls._res
+        if queue:
+            class_name = '%s.%s' % (klass.__module__, klass.__name__)
+            #print class_name
+            self.push(queue, {'class':class_name,'args':args})
+            #Job.create(queue, klass,*args)
+
+    def queues(self):
+        return self.redis.smembers("queues")
+    
+    def info(self):
+        pending = 0
+        for q in self.queues():
+             pending += self.size(q)
+        return {
+            'pending'   : pending,
+            'processed' : Stat['processed'],
+            'queues'    : queues.size,
+            'workers'   : len(self.workers),
+            'working'   : len(self.working),
+            'failed'    : Stat['failed'],
+            'servers'   : [redis.server]
+        }
+    
+    def keys(self):
+        raise NotImplementedError
+    
+    def reserve(self, queue):
+        from pyres.job import Job
+        return Job.reserve(queue, self)
+    
+    def __str__(self):
+        return "PyRes Client connected to %s" % self.redis.server
+    
+    def workers(self):
+        raise NotImplementedError
+    
+    def working(self):
+        raise NotImplementedError
+    
     @classmethod
     def encode(cls, item):
         return simplejson.dumps(item)
-    
+
     @classmethod
     def decode(cls, item):
         if item:
@@ -63,42 +120,39 @@ class ResQ(object):
             return ret
         return None
     
-    @classmethod
-    def enqueue(cls, klass, *args):
+    @staticmethod
+    def enqueue(klass, *args):
         queue = getattr(klass,'queue', None)
         #print cls._res
-        resq = cls()
+        _self = ResQ()
         if queue:
             class_name = '%s.%s' % (klass.__module__, klass.__name__)
             #print class_name
-            resq.push(queue, {'class':class_name,'args':args})
+            _self.push(queue, {'class':class_name,'args':args})
             #Job.create(queue, klass,*args)
-    
-    @classmethod
-    def queues(cls, server="localhost:6379"):
-        resq = cls(server)
-        return resq._redis.smembers("queues")
-    
-    #@classmethod
-    #def working(cls, server="localhost:6379"):
-    #    resq = cls(server)
-    #    return Worker.working(resq)
+
 class Stat(object):
     def __init__(self, name, resq):
         self.name = name
         self.key = "stat:%s" % self.name
         self.resq = resq
     
+    def __getitem__(self, name):
+        val = self.get(name)
+        if val is None:
+            raise KeyError
+        return val
+    
     def get(self):
-        val = self.resq._redis.get(self.key)
+        val = self.resq.redis.get(self.key)
         return int(val)
     
     def incr(self, ammount=1):
-        self.resq._redis.incr(self.key, ammount)
+        self.resq.redis.incr(self.key, ammount)
     
     def decr(self, ammount=1):
-        self.resq._redis.decr(self.key, ammount)
+        self.resq.redis.decr(self.key, ammount)
     
     def clear(self):
-        self.resq._redis.delete(self.key)
+        self.resq.redis.delete(self.key)
     
