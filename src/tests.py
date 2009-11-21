@@ -2,7 +2,7 @@ import unittest
 import os
 from pyres import ResQ, str_to_class
 from pyres.job import Job
-from pyres.worker import Worker, JuniorWorker
+from pyres.worker import Worker
 class Basic(object):
     queue = 'basic'
     
@@ -11,7 +11,24 @@ class Basic(object):
         s = "name:%s" % name
         print s
         return s
+
+class TestProcess(object):
+    queue = 'high'
     
+    @staticmethod
+    def perform():
+        import time
+        time.sleep(.5)
+        return 'Done Sleeping'
+        
+    
+class ErrorObjcet(object):
+    queue = 'basic'
+    
+    @staticmethod
+    def perform():
+        raise Exception("Could not finish job")
+
 def test_str_to_class():
     ret = str_to_class('tests.Basic')
     assert ret
@@ -32,7 +49,7 @@ class ResQTests(PyResTests):
     def test_enqueue(self):
         self.resq.enqueue(Basic,"test1")
         self.resq.enqueue(Basic,"test2")
-        ResQ.enqueue(Basic, "test3")
+        ResQ._enqueue(Basic, "test3")
         assert self.redis.llen("queue:basic") == 3
         assert self.redis.sismember('queues','basic')
     
@@ -56,6 +73,39 @@ class ResQTests(PyResTests):
         self.resq.enqueue(Basic,"test1")
         self.resq.enqueue(Basic,"test2")
         assert len(self.resq.peek('basic',0,20)) == 2
+    
+    def test_size(self):
+        self.resq.enqueue(Basic,"test1")
+        self.resq.enqueue(Basic,"test2")
+        assert self.resq.size('basic') == 2
+        assert self.resq.size('noq') == 0
+    
+    def test_redis_property(self):
+        from redis import Redis
+        rq = ResQ(server="localhost:6379")
+        red = Redis()
+        rq2 = ResQ(server=red)
+        self.assertRaises(Exception, rq.redis,[Basic])
+    
+    def test_info(self):
+        self.resq.enqueue(Basic,"test1")
+        self.resq.enqueue(TestProcess)
+        info = self.resq.info()
+        assert info['queues'] == 2
+        assert info['servers'] == ['localhost:6379']
+        assert info['workers'] == 0
+        worker = Worker(['basic'])
+        worker.register_worker()
+        info = self.resq.info()
+        assert info['workers'] == 1
+    
+    def test_workers(self):
+        worker = Worker(['basic'])
+        worker.register_worker()
+        name = "%s:%s:%s" % (os.uname()[1],os.getpid(),'basic')
+        assert len(self.resq.workers()) == 1
+        assert name in self.resq.workers()
+    
 
 class JobTests(PyResTests):
     def test_reserve(self):
@@ -67,7 +117,10 @@ class JobTests(PyResTests):
     def test_perform(self):
         self.resq.enqueue(Basic,"test1")
         job = Job.reserve('basic',self.resq)
+        self.resq.enqueue(TestProcess)
+        job2 = Job.reserve('high', self.resq)
         assert job.perform() == "name:test1"
+        assert job2.perform()
     
     def test_fail(self):
         self.resq.enqueue(Basic,"test1")
@@ -79,11 +132,21 @@ class JobTests(PyResTests):
 
 class WorkerTests(PyResTests):
     def test_worker_init(self):
-        try:
-            worker = Worker([])
-        except:
-            assert True
-        
+        from pyres.exceptions import NoQueueError
+        self.assertRaises(NoQueueError, Worker,[])
+        self.assertRaises(Exception, Worker,['test'],TestProcess())
+    
+    def test_startup(self):
+        worker = Worker(['basic'])
+        worker.startup()
+        name = "%s:%s:%s" % (os.uname()[1],os.getpid(),'basic')
+        assert self.redis.sismember('workers',name)
+        import signal
+        assert signal.getsignal(signal.SIGTERM) == worker.shutdown_all
+        assert signal.getsignal(signal.SIGINT) == worker.shutdown_all
+        assert signal.getsignal(signal.SIGQUIT) == worker.schedule_shutdown
+        assert signal.getsignal(signal.SIGUSR1) == worker.kill_child
+    
     def test_register(self):
         worker = Worker(['basic'])
         worker.register_worker()
@@ -139,4 +202,33 @@ class WorkerTests(PyResTests):
         assert not self.redis.get('worker:%s' % worker)
         assert not self.redis.get("stat:failed")
         assert not self.redis.get("stat:failed:%s" % name)
-
+        self.resq.enqueue(Basic,"test1")
+        worker.process()
+        assert not self.redis.get('worker:%s' % worker)
+        assert not self.redis.get("stat:failed")
+        assert not self.redis.get("stat:failed:%s" % name)
+        
+    
+    def test_signals(self):
+        worker = Worker(['basic'])
+        worker.startup()
+        import inspect, signal
+        frame = inspect.currentframe()
+        worker.schedule_shutdown(frame, signal.SIGQUIT)
+        assert worker._shutdown
+        del worker
+        worker = Worker(['high'])
+        #self.resq.enqueue(TestSleep)
+        #worker.work()
+        #assert worker.child
+        assert not worker.kill_child(frame, signal.SIGUSR1)
+    
+    def test_job_failure(self):
+        self.resq.enqueue(ErrorObjcet)
+        worker = Worker(['basic'])
+        #worker.process()
+        name = "%s:%s:%s" % (os.uname()[1],os.getpid(),'basic')
+        #assert not self.redis.get('worker:%s' % worker)
+        #assert self.redis.get("stat:failed")
+        #assert self.redis.get("stat:failed:%s" % name)
+        assert False

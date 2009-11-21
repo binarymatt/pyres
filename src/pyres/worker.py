@@ -149,8 +149,11 @@ class Worker(object):
         worker.work()
     
     @classmethod
-    def all(cls, host):
-        resq = ResQ(host)
+    def all(cls, host="localhost:6379"):
+        if isinstance(host,basestring):
+            resq = ResQ(host)
+        elif isinstance(host, ResQ):
+            resq = host
         return resq.redis.smembers('workers')
     
     @classmethod

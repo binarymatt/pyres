@@ -85,12 +85,12 @@ class ResQ(object):
              pending += self.size(q)
         return {
             'pending'   : pending,
-            'processed' : Stat['processed'],
-            'queues'    : queues.size,
-            'workers'   : len(self.workers),
-            'working'   : len(self.working),
-            'failed'    : Stat['failed'],
-            'servers'   : [redis.server]
+            'processed' : Stat('processed',self).get(),
+            'queues'    : len(self.queues()),
+            'workers'   : len(self.workers()),
+            #'working'   : len(self.working()),
+            'failed'    : Stat('failed',self).get(),
+            'servers'   : ['%s:%s' % (self.redis.host, self.redis.port)]
         }
     
     def keys(self):
@@ -104,7 +104,8 @@ class ResQ(object):
         return "PyRes Client connected to %s" % self.redis.server
     
     def workers(self):
-        raise NotImplementedError
+        from pyres.worker import Worker
+        return Worker.all(self)
     
     def working(self):
         raise NotImplementedError
@@ -120,11 +121,11 @@ class ResQ(object):
             return ret
         return None
     
-    @staticmethod
-    def enqueue(klass, *args):
+    @classmethod
+    def _enqueue(cls, klass, *args):
         queue = getattr(klass,'queue', None)
         #print cls._res
-        _self = ResQ()
+        _self = cls()
         if queue:
             class_name = '%s.%s' % (klass.__module__, klass.__name__)
             #print class_name
@@ -137,15 +138,11 @@ class Stat(object):
         self.key = "stat:%s" % self.name
         self.resq = resq
     
-    def __getitem__(self, name):
-        val = self.get(name)
-        if val is None:
-            raise KeyError
-        return val
-    
     def get(self):
         val = self.resq.redis.get(self.key)
-        return int(val)
+        if val:
+            return int(val)
+        return 0
     
     def incr(self, ammount=1):
         self.resq.redis.incr(self.key, ammount)
