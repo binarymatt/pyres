@@ -178,29 +178,6 @@ class Worker(object):
     def exists(cls, worker_id, resq):
         return resq.redis.sismember('workers', worker_id)
     
-class JuniorWorker(Worker):
-    def work(self, interval=5):
-        self.startup()
-        while True:
-            if self._shutdown:
-                break
-            job = self.reserve()
-            if job:
-                print "got: %s" % job
-                self.child = os.fork()
-                if self.child:
-                    print 'Forked %s at %s' % (self.child, datetime.datetime.now())
-                    os.waitpid(self.child, 0)
-                else:
-                    print 'Processing %s since %s' % (job._queue, datetime.datetime.now())
-                    self.process(job)
-                    os._exit(0)
-                self.child = None
-            else:
-                break
-                
-        self.unregister_worker()
-    
 
 if __name__ == "__main__":
     from optparse import OptionParser
