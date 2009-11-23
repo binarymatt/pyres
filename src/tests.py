@@ -1,6 +1,6 @@
 import unittest
 import os
-from pyres import ResQ, str_to_class
+from pyres import ResQ, str_to_class, Stat
 from pyres.job import Job
 from pyres.worker import Worker
 class Basic(object):
@@ -22,7 +22,7 @@ class TestProcess(object):
         return 'Done Sleeping'
         
     
-class ErrorObjcet(object):
+class ErrorObject(object):
     queue = 'basic'
     
     @staticmethod
@@ -224,11 +224,59 @@ class WorkerTests(PyResTests):
         assert not worker.kill_child(frame, signal.SIGUSR1)
     
     def test_job_failure(self):
-        self.resq.enqueue(ErrorObjcet)
+        self.resq.enqueue(ErrorObject)
         worker = Worker(['basic'])
-        #worker.process()
+        worker.process()
         name = "%s:%s:%s" % (os.uname()[1],os.getpid(),'basic')
-        #assert not self.redis.get('worker:%s' % worker)
-        #assert self.redis.get("stat:failed")
-        #assert self.redis.get("stat:failed:%s" % name)
-        assert False
+        assert not self.redis.get('worker:%s' % worker)
+        assert self.redis.get("stat:failed") == 1
+        assert self.redis.get("stat:failed:%s" % name) == 1
+    
+    def test_get_job(self):
+        worker = Worker(['basic'])
+        self.resq.enqueue(Basic,"test1")
+        job = Job.reserve('basic', self.resq)
+        worker.working_on(job)
+        name = "%s:%s:%s" % (os.uname()[1],os.getpid(),'basic')
+        assert worker.job() == ResQ.decode(self.redis.get('worker:%s' % name))
+        worker.done_working()
+        w2 = Worker(['basic'])
+        print w2.job()
+        assert w2.job() == {}
+    
+
+class StatTests(PyResTests):
+    def test_incr(self):
+        stat_obj = Stat('test_stat', self.resq)
+        stat_obj.incr()
+        assert self.redis.get('stat:test_stat') == 1
+        stat_obj.incr()
+        assert self.redis.get('stat:test_stat') == 2
+        stat_obj.incr(2)
+        assert self.redis.get('stat:test_stat') == 4
+    
+    def test_decr(self):
+        stat_obj = Stat('test_stat', self.resq)
+        stat_obj.incr()
+        stat_obj.incr()
+        assert self.redis.get('stat:test_stat') == 2
+        stat_obj.decr()
+        assert self.redis.get('stat:test_stat') == 1
+        stat_obj.incr()
+        stat_obj.decr(2)
+        assert self.redis.get('stat:test_stat') == 0
+    
+    def test_get(self):
+        stat_obj = Stat('test_stat', self.resq)
+        stat_obj.incr()
+        stat_obj.incr()
+        assert stat_obj.get() == 2
+    
+    def test_clear(self):
+        stat_obj = Stat('test_stat', self.resq)
+        stat_obj.incr()
+        stat_obj.incr()
+        assert self.redis.exists('stat:test_stat')
+        stat_obj.clear()
+        assert not self.redis.exists('stat:test_stat')
+    

@@ -110,9 +110,6 @@ class Worker(object):
         data = simplejson.dumps(data)
         self.resq.redis["worker:%s" % str(self)] = data
     
-    def job(self):
-        return ResQ.decode(self.resq.redis.get("worker:%s" % self)) or {}
-    
     def done_working(self):
         self.processed()
         self.resq.redis.delete("worker:%s" % str(self))
