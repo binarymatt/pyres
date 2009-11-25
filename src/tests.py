@@ -106,6 +106,16 @@ class ResQTests(PyResTests):
         assert len(self.resq.workers()) == 1
         assert name in self.resq.workers()
     
+    def test_enqueue_from_string(self):
+        self.resq.enqueue_from_string('tests.Basic','basic','test1')
+        name = "%s:%s:%s" % (os.uname()[1],os.getpid(),'basic')
+        assert self.redis.llen("queue:basic") == 1
+        job = Job.reserve('basic', self.resq)
+        worker = Worker(['basic'])
+        worker.process(job)
+        assert not self.redis.get('worker:%s' % worker)
+        assert not self.redis.get("stat:failed")
+        assert not self.redis.get("stat:failed:%s" % name)
 
 class JobTests(PyResTests):
     def test_reserve(self):

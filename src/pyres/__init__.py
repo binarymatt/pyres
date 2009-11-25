@@ -75,7 +75,9 @@ class ResQ(object):
             #print class_name
             self.push(queue, {'class':class_name,'args':args})
             #Job.create(queue, klass,*args)
-
+    def enqueue_from_string(self, klass_as_string, queue, *args):
+        self.push(queue, {'class':klass_as_string,'args':args})
+    
     def queues(self):
         return self.redis.smembers("queues")
     
