@@ -20,7 +20,7 @@ class ResQ(object):
     
     def __init__(self, server="localhost:6379"):
         self.redis = server
-        self._watched_queues = {}
+        self._watched_queues = set()
 
     def push(self, queue, item):
         self.watch_queue(queue)
@@ -36,11 +36,11 @@ class ResQ(object):
         return int(self.redis.llen("queue:%s" % queue))
 
     def watch_queue(self, queue):
-        if self._watched_queues.has_key(queue):
+        if queue in self._watched_queues:
             return
         else:
             if self.redis.sadd('queues',str(queue)):
-                self._watched_queues[queue] = queue
+                self._watched_queues.add(queue)
 
     def peek(self, queue, start=0, count=1):
         return self.list_range('queue:%s' % queue, start, count)
@@ -111,6 +111,12 @@ class ResQ(object):
     
     def working(self):
         raise NotImplementedError
+    
+    def remove_queue(self, queue):
+        if queue in self._watched_queues:
+            self._watched_queues.remove(queue)
+        self.redis.srem('queues',queue)
+        del self.redis['queue:%s' % queue]
     
     @classmethod
     def encode(cls, item):

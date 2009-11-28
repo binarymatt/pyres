@@ -116,6 +116,16 @@ class ResQTests(PyResTests):
         assert not self.redis.get('worker:%s' % worker)
         assert not self.redis.get("stat:failed")
         assert not self.redis.get("stat:failed:%s" % name)
+    
+    def test_remove_queue(self):
+        self.resq.enqueue_from_string('tests.Basic','basic','test1')
+        assert 'basic' in self.resq._watched_queues
+        assert self.redis.sismember('queues','basic')
+        assert self.redis.llen('queue:basic') == 1
+        self.resq.remove_queue('basic')
+        assert 'basic' not in self.resq._watched_queues
+        assert not self.redis.sismember('queues','basic')
+        assert not self.redis.exists('queue:basic')
 
 class JobTests(PyResTests):
     def test_reserve(self):
