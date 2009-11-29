@@ -126,6 +126,13 @@ class ResQTests(PyResTests):
         assert 'basic' not in self.resq._watched_queues
         assert not self.redis.sismember('queues','basic')
         assert not self.redis.exists('queue:basic')
+    
+    def test_keys(self):
+        self.resq.enqueue_from_string('tests.Basic','basic','test1')
+        print self.resq.keys()
+        assert 'queue:basic' in self.resq.keys()
+        assert 'queues' in self.resq.keys()
+    
 
 class JobTests(PyResTests):
     def test_reserve(self):

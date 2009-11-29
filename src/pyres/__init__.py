@@ -96,7 +96,7 @@ class ResQ(object):
         }
     
     def keys(self):
-        raise NotImplementedError
+        return [key.replace('resque:','') for key in self.redis.keys('*')]
     
     def reserve(self, queue):
         from pyres.job import Job
