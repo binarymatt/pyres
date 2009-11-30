@@ -110,7 +110,8 @@ class ResQ(object):
         return Worker.all(self)
     
     def working(self):
-        raise NotImplementedError
+        from pyres.worker import Worker
+        return Worker.working(self)
     
     def remove_queue(self, queue):
         if queue in self._watched_queues:

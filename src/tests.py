@@ -271,6 +271,17 @@ class WorkerTests(PyResTests):
         print w2.job()
         assert w2.job() == {}
     
+    def test_working(self):
+        worker = Worker(['basic'])
+        self.resq.enqueue_from_string('tests.Basic','basic','test1')
+        worker.register_worker()
+        job = Job.reserve('basic', self.resq)
+        worker.working_on(job)
+        name = "%s:%s:%s" % (os.uname()[1],os.getpid(),'basic')
+        workers = Worker.working(self.resq)
+        assert len(workers) == 1
+        assert str(worker) == str(workers[0])
+        assert worker != workers[0]
 
 class StatTests(PyResTests):
     def test_incr(self):

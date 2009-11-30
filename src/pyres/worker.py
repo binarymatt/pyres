@@ -155,20 +155,33 @@ class Worker(object):
     
     @classmethod
     def working(cls, host):
-        resq = ResQ(host)
+        if isinstance(host, basestring):
+            resq = ResQ(host)
+        elif isinstance(host, ResQ):
+            resq = host
         total = []
         for key in Worker.all(host):
-            if Worker.exists(key,resq):
-                total.append(key)
+            if Worker.exists(key, resq):
+                total.append('worker:%s' % key)
+        names = []
+        for key in total:
+            value = resq.redis.get(key)
+            if value:
+                w = Worker.find(key[7:], resq)
+                names.append(w)
+        #for key in resq.redis.mget(*total):
+        #    w = Worker.find(key[7:], resq)
+        #    if w:
+        #        names.append(w)
         #total = [id if Worker.exists(id,resq) for id in resq.redis.smembers('workers')]
-        names = [Worker.find(key[7:],resq) for key in resq._redis.mget(*total)] if total else []
+        #names = [Worker.find(key[7:],resq) for key in resq._redis.mget(*total)] if total else []
         return names
     
     @classmethod
     def find(cls, worker_id, resq):
         if Worker.exists(worker_id, resq):
             queues = worker_id.split(':')[-1].split(',')
-            worker = cls(queues,resq._server)
+            worker = cls(queues,resq)
             worker.id = worker_id
             return worker
         else:
