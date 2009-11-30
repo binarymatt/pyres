@@ -169,12 +169,6 @@ class Worker(object):
             if value:
                 w = Worker.find(key[7:], resq)
                 names.append(w)
-        #for key in resq.redis.mget(*total):
-        #    w = Worker.find(key[7:], resq)
-        #    if w:
-        #        names.append(w)
-        #total = [id if Worker.exists(id,resq) for id in resq.redis.smembers('workers')]
-        #names = [Worker.find(key[7:],resq) for key in resq._redis.mget(*total)] if total else []
         return names
     
     @classmethod
