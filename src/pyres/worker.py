@@ -6,6 +6,7 @@ import datetime
 import os, sys
 import time
 import simplejson
+
 class Worker(object):
     def __init__(self, queues=[], server="localhost:6379"):
         self.queues = queues
@@ -25,13 +26,13 @@ class Worker(object):
             raise NoQueueError("Please give each worker at least one queue.")
     
     def register_worker(self):
-        self.resq.redis.sadd('workers',str(self))
+        self.resq.redis.sadd('resque:workers',str(self))
         #self.resq._redis.add("worker:#{self}:started", Time.now.to_s)
         #Stat.clear("processed:#{self}")
         #Stat.clear("failed:#{self}")
     
     def unregister_worker(self):
-        self.resq.redis.srem('workers',str(self))
+        self.resq.redis.srem('resque:workers',str(self))
     
     def startup(self):
         self.register_signal_handlers()
@@ -108,11 +109,11 @@ class Worker(object):
             'payload': job._payload
         }
         data = simplejson.dumps(data)
-        self.resq.redis["worker:%s" % str(self)] = data
+        self.resq.redis["resque:worker:%s" % str(self)] = data
     
     def done_working(self):
         self.processed()
-        self.resq.redis.delete("worker:%s" % str(self))
+        self.resq.redis.delete("resque:worker:%s" % str(self))
     
     def processed(self):
         total_processed = Stat("processed", self.resq)
@@ -127,7 +128,7 @@ class Worker(object):
         stat.incr()
     
     def job(self):
-        data = self.resq.redis.get("worker:%s" % self)
+        data = self.resq.redis.get("resque:worker:%s" % self)
         if data:
             return ResQ.decode(data)
         return {}
@@ -151,7 +152,7 @@ class Worker(object):
             resq = ResQ(host)
         elif isinstance(host, ResQ):
             resq = host
-        return resq.redis.smembers('workers')
+        return resq.redis.smembers('resque:workers')
     
     @classmethod
     def working(cls, host):
@@ -162,7 +163,7 @@ class Worker(object):
         total = []
         for key in Worker.all(host):
             if Worker.exists(key, resq):
-                total.append('worker:%s' % key)
+                total.append('resque:worker:%s' % key)
         names = []
         for key in total:
             value = resq.redis.get(key)
@@ -183,7 +184,7 @@ class Worker(object):
     
     @classmethod
     def exists(cls, worker_id, resq):
-        return resq.redis.sismember('workers', worker_id)
+        return resq.redis.sismember('resque:workers', worker_id)
     
 
 if __name__ == "__main__":

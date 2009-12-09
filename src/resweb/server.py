@@ -9,8 +9,11 @@ resq = ResQ(HOST)
 
 @get("/")
 def index(request):
-    queues = ResQ.queues(HOST)
-    failure_count = Failure.count(ResQ(HOST))
+    #queues = ResQ.queues(HOST)
+    #failure_count = Failure.count(ResQ(HOST))
+    rq = ResQ(HOST)
+    queues = rq.queues()
+    failure_count = Failure.count(rq)
     template = env.get_template('overview.html')
     dic = {
         'queues':queues,
@@ -33,9 +36,12 @@ def working(request):
     return str(template.render(dic))
 
 @get("/queues/")
-def queues(request):
-    queues = ResQ.queues(HOST)
-    failure_count = Failure.count(ResQ(HOST))
+def queues(request):    
+    #queues = ResQ.queues(HOST)
+    #failure_count = Failure.count(ResQ(HOST))
+    rq = ResQ(HOST)
+    queues = rq.queues()
+    failure_count = Failure.count(rq)
     template = env.get_template('queues.html')
     dic = {
         'queues':queues,

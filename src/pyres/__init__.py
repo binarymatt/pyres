@@ -24,26 +24,26 @@ class ResQ(object):
 
     def push(self, queue, item):
         self.watch_queue(queue)
-        self.redis.push("queue:%s" % queue, ResQ.encode(item))
+        self.redis.push("resque:queue:%s" % queue, ResQ.encode(item))
 
     def pop(self, queue):
-        ret = self.redis.pop("queue:%s" % queue)
+        ret = self.redis.pop("resque:queue:%s" % queue)
         if ret:
             return ResQ.decode(ret)
         return ret
 
     def size(self, queue):
-        return int(self.redis.llen("queue:%s" % queue))
+        return int(self.redis.llen("resque:queue:%s" % queue))
 
     def watch_queue(self, queue):
         if queue in self._watched_queues:
             return
         else:
-            if self.redis.sadd('queues',str(queue)):
+            if self.redis.sadd('resque:queues',str(queue)):
                 self._watched_queues.add(queue)
 
     def peek(self, queue, start=0, count=1):
-        return self.list_range('queue:%s' % queue, start, count)
+        return self.list_range('resque:queue:%s' % queue, start, count)
 
     def list_range(self, key, start, count):
         items = self.redis.lrange(key,start,start+count-1)
@@ -79,7 +79,7 @@ class ResQ(object):
         self.push(queue, {'class':klass_as_string,'args':args})
     
     def queues(self):
-        return self.redis.smembers("queues")
+        return self.redis.smembers("resque:queues")
     
     def info(self):
         pending = 0
@@ -116,8 +116,8 @@ class ResQ(object):
     def remove_queue(self, queue):
         if queue in self._watched_queues:
             self._watched_queues.remove(queue)
-        self.redis.srem('queues',queue)
-        del self.redis['queue:%s' % queue]
+        self.redis.srem('resque:queues',queue)
+        del self.redis['resque:queue:%s' % queue]
     
     @classmethod
     def encode(cls, item):
@@ -144,7 +144,7 @@ class ResQ(object):
 class Stat(object):
     def __init__(self, name, resq):
         self.name = name
-        self.key = "stat:%s" % self.name
+        self.key = "resque:stat:%s" % self.name
         self.resq = resq
     
     def get(self):
