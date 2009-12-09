@@ -1,6 +1,6 @@
 import pystache
 from pyres import ResQ
-from pyres.worker import Worker
+from pyres.worker import Worker as Wrkr
 class ResWeb(pystache.View):
     template_path = 'templates'
     def __init__(self, host):
@@ -83,7 +83,7 @@ class Overview(ResWeb):
         return str(len(self.workers()))
     
     def total_workers(self):
-        return str(len(Worker.all(self.resq)))
+        return str(len(Wrkr.all(self.resq)))
     
     def empty_workers(self):
         if len(self.workers()):
@@ -101,7 +101,7 @@ class Workers(ResWeb):
         return str(len(self.all()))
     
     def all(self):
-        return Worker.all(self.resq)
+        return Wrkr.all(self.resq)
     
     def workers(self):
         workers = []
@@ -129,7 +129,28 @@ class Workers(ResWeb):
             item['nodata'] = not item['data']
             workers.append(item)
         return workers
+class Queue(ResWeb):
+    def __init__(self, host, key, start=0):
+        self.key = key
+        self._start = start
+        super(Queue, self).__init__(host)
+    def start(self):
+        return str(self._start)
 
+    def end(self):
+        return str(self._start + 20)
+    def queue(self):
+        return self.key
+    def size(self):
+        return str(self.resq.size(self.key) or 0)
+    def jobs(self):
+        jobs = []
+        for job in self.resq.peek(self.key, self._start, self._start+20):
+            jobs.append({
+                'class':job['class'],
+                'args': str(job['args'])
+            })
+        return jobs
 class Failed(ResWeb):
     def __init__(self, host, start=0):
         self._start = start
@@ -139,4 +160,193 @@ class Failed(ResWeb):
         return ''
 
 class Stats(ResWeb):
-    pass
+    def __init__(self, host, key_id):
+        self.key_id = key_id
+        super(Stats, self).__init__(host)
+    
+    def sub_nav(self):
+        sub_nav = []
+        sub_nav.append({
+            'section':'stats',
+            'subtab':'resque'
+        })
+        sub_nav.append({
+            'section':'stats',
+            'subtab':'redis'
+        })
+        sub_nav.append({
+            'section':'stats',
+            'subtab':'keys'
+        })
+        return sub_nav
+    
+    def title(self):
+        if self.key_id == 'resque':
+            return 'Pyres'
+        elif self.key_id == 'redis':
+            return '%s:%s' % (self.resq.redis.host,self.resq.redis.port)
+        elif self.key_id == 'keys':
+            return 'Keys owned by Pyres'
+        else:
+            return ''
+    
+    def stats(self):
+        if self.key_id == 'resque':
+            return self.resque_info()
+        elif self.key_id == 'redis':
+            return self.redis_info()
+        elif self.key_id == 'keys':
+            return self.key_info()
+        else:
+            return []
+    
+    def resque_info(self):
+        stats = []
+        for key, value in self.resq.info().items():
+            stats.append({
+                'key':str(key),
+                'value': str(value)
+            })
+        return stats
+    
+    def redis_info(self):
+        stats = []
+        for key, value in self.resq.redis.info().items():
+            stats.append({
+                'key':str(key),
+                'value': str(value)
+            })
+        return stats
+    def key_info(self):
+        stats = []
+        for key in self.resq.keys():
+            
+            stats.append({
+                'key': key,
+                'type': self.resq.redis.get_type(key),
+                'size': redis_size(key, self.resq) 
+            })
+        return stats
+    def standard(self):
+        return not self.resque_keys()
+    
+    def resque_keys(self):
+        if self.key_id == 'keys':
+            return True
+        return False
+
+class Stat(ResWeb):
+    def __init__(self, host, stat_id):
+        self.stat_id = stat_id
+        super(Stat, self).__init__(host)
+    
+    def key(self):
+        return str(self.stat_id)
+    
+    def key_type(self):
+        return str(self.resq.redis.get_type(self.stat_id))
+    
+    def items(self):
+        items = []
+        if self.key_type() == 'list':
+            for k in self.resq.redis.lrange(self.stat_id,0,20):
+                items.append({
+                    'row':str(k)
+                })
+        elif self.key_type() == 'set':
+            for k in self.resq.redis.smembers(self.stat_id):
+                items.append({
+                    'row':str(k)
+                })
+        elif self.key_type() == 'string':
+            items.append({
+                'row':str(self.resq.redis.get(self.stat_id))
+            })
+        return items
+    
+    def size(self):
+        return redis_size(self.stat_id,self.resq)
+    
+class Worker(ResWeb):
+    def __init__(self, host, worker_id):
+        self.worker_id = worker_id
+        super(Worker, self).__init__(host)
+        self._worker = Wrkr.find(worker_id, self.resq)
+    
+    def worker(self):
+        return str(self.worker_id)
+    
+    def host(self):
+        host,pid,queues = str(self.worker_id).split(':')
+        return str(host)
+    def pid(self):
+        host,pid,queues = str(self.worker_id).split(':')
+        return str(pid)
+    
+    def state(self):
+        return str(self._worker.state())
+    
+    def started_at(self):
+        return str(self._worker.started)
+    
+    def queues(self):
+        host,pid,queues = str(self.worker_id).split(':')
+        qs = []
+        for q in queues.split(','):
+            qs.append({
+                'q':str(q)
+            })
+        return qs
+    def processed(self):
+        return str(self._worker.get_processed())
+    
+    def failed(self):
+        return str(self._worker.get_failed())
+    def data(self):
+        data = self._worker.processing()
+        return data.has_key('queue')
+    def nodata(self):
+        return not self.data()
+    def code(self):
+        data = self._worker.processing()
+        if self.data():
+            return str(data['payload']['class'])
+        return ''
+    def runat(self):
+        data = self._worker.processing()
+        if self.data():
+            return str(data['run_at'])
+        return ''
+    
+        """
+        item = {
+            'state':w.state(),
+            'host': host,
+            'pid':pid,
+            'w':str(w)
+        }
+        qs = []
+        for q in queues.split(','):
+            qs.append({
+                'q':str(q)
+            })
+        item['queues'] = qs
+        if data.has_key('queue'):
+            item['data'] = True
+            item['code'] = data['payload']['class']
+            item['runat'] = data['run_at']
+        else:
+            item['data'] = False
+        item['nodata'] = not item['data']
+        """
+        pass
+def redis_size(key, resq):
+    key_type = resq.redis.get_type(key)
+    item = 0
+    if key_type == 'list':
+        item = resq.redis.llen(key)
+    elif key_type == 'set':
+        item = resq.redis.scard(key)
+    elif key_type == 'string':
+        item = 1
+    return str(item)

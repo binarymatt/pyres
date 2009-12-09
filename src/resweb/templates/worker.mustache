@@ -1,0 +1,37 @@
+{{>header}}
+<h1>Worker {{worker}}</h1>
+  <table class='workers'>
+    <tr>
+      <th>&nbsp;</th>
+      <th>Host</th>
+      <th>Pid</th>
+      <th>Started</th>
+      <th>Queues</th>
+      <th>Processed</th>
+      <th>Failed</th>
+      <th>Processing</th>
+    </tr>
+    <tr>
+      <td class='icon'><img src="/media/{{state}}.png" alt="{{state}}" title="{{state}}"></td>
+      <td>{{host}}</td>
+      <td>{{pid}}</td>
+      <td><span class="time">{{started_at}}</a></td>
+      <td class='queues'>
+      {{#queues}}
+      <a class="queue-tag" href="/queues/{{q}}">{{q}}</a>&nbsp;
+      {{/queues}}
+      </td>
+      <td>{{processed}}</td>
+      <td>{{failed}}</td>
+      <td class='process'>
+          {{#data}}
+              <code>{{code}}</code>
+              <small><a class="queue time" href="/working/{{worker}}">{{runat}}</a></small>
+            {{/data}}
+            {{#nodata}}
+              <span class='waiting'>Waiting for a job...</span>
+            {{/nodata}}
+      </td>
+    </tr>
+  </table>
+{{>footer}}

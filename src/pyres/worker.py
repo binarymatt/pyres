@@ -28,11 +28,27 @@ class Worker(object):
     def register_worker(self):
         self.resq.redis.sadd('workers',str(self))
         #self.resq._redis.add("worker:#{self}:started", Time.now.to_s)
+        self.started = datetime.datetime.now()
         #Stat.clear("processed:#{self}")
         #Stat.clear("failed:#{self}")
     
+    def _set_started(self, time):
+        if time:
+            self.resq.redis.set("worker:%s:started" % self, time.strftime('%Y-%m-%d %H:%M:%S'))
+        else:
+            self.resq.redis.delete("worker:%s:started" % self)
+    
+    def _get_started(self):
+        datestring = self.resq.redis.get("worker:%s:started" % self)
+        ds = None
+        if datestring:
+            ds = datetime.datetime.strptime(datestring, '%Y-%m-%d %H:%M:%S')
+        return ds
+    started = property(_get_started, _set_started)
+    
     def unregister_worker(self):
         self.resq.redis.srem('workers',str(self))
+        self.started = None
     
     def startup(self):
         self.register_signal_handlers()
@@ -140,12 +156,16 @@ class Worker(object):
         total_processed.incr()
         worker_processed.incr()
     
+    def get_processed(self):
+        return Stat("processed:%s" % str(self), self.resq).get()
+    
     def failed(self):
         total_failed = Stat("failed", self.resq)
         stat = Stat("failed:%s" % self, self.resq)
         total_failed.incr()
         stat.incr()
-    
+    def get_failed(self):
+        return Stat("failed:%s" % self, self.resq).get()
     def job(self):
         data = self.resq.redis.get("worker:%s" % self)
         if data:

@@ -290,7 +290,18 @@ class WorkerTests(PyResTests):
         assert len(workers) == 1
         assert str(worker) == str(workers[0])
         assert worker != workers[0]
-
+    
+    def test_started(self):
+        import datetime
+        worker = Worker(['basic'])
+        dt = datetime.datetime.now()
+        worker.started = dt
+        name = "%s:%s:%s" % (os.uname()[1],os.getpid(),'basic')
+        assert self.redis.get('worker:%s:started' % name) == dt.strftime('%Y-%m-%d %H:%M:%S')
+        assert worker.started == datetime.datetime.strptime(dt.strftime('%Y-%m-%d %H:%M:%S'),'%Y-%m-%d %H:%M:%S')
+        worker.started = None
+        assert not self.redis.exists('worker:%s:started' % name)
+        
 class StatTests(PyResTests):
     def test_incr(self):
         stat_obj = Stat('test_stat', self.resq)
