@@ -1,5 +1,3 @@
-from jinja2 import Environment, PackageLoader
-env = Environment(loader=PackageLoader('resweb', 'templates'))
 from itty import *
 from pyres import ResQ
 from pyres.failure import Failure
