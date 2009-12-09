@@ -73,4 +73,4 @@ def stats(request):
     template = env.get_template('stats.html')
     return str(template.render({}))
 
-run_itty()
+run_itty(host="0.0.0.0", port=8080)
