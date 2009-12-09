@@ -168,7 +168,7 @@ class Worker(object):
         for key in total:
             value = resq.redis.get(key)
             if value:
-                w = Worker.find(key[7:], resq)
+                w = Worker.find(key[14:], resq) #resque:worker:
                 names.append(w)
         return names
     

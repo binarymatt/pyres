@@ -281,8 +281,6 @@ class WorkerTests(PyResTests):
         name = "%s:%s:%s" % (os.uname()[1],os.getpid(),'basic')
         workers = Worker.working(self.resq)
         assert len(workers) == 1
-        print "...ccc...",str(worker)
-        print "..ddd...",str(workers[0])
         assert str(worker) == str(workers[0])
         assert worker != workers[0]
 
