@@ -29,6 +29,14 @@ class ErrorObject(object):
     def perform():
         raise Exception("Could not finish job")
 
+class LongObject(object):
+    queue = 'long_runnning'
+    
+    @staticmethod
+    def perform(sleep_time):
+        import time
+        time.sleep(sleep_time)
+        print 'Done Sleeping'
 def test_str_to_class():
     ret = str_to_class('tests.Basic')
     assert ret

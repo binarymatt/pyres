@@ -1,0 +1,33 @@
+<h1 class='wi'>{{worker_size}} of {{total_workers}} Workers Working</h1>
+  <p class='intro'>The list below contains all workers which are currently running a job.</p>
+  <table class='workers'>
+    <tr>
+      <th>&nbsp;</th>
+      <th>Where</th>
+      <th>Queue</th>
+      <th>Processing</th>
+    </tr>
+    {{#empty_workers}}
+    <tr>
+      <td colspan="4" class='no-data'>Nothing is happening right now...</td>
+    </tr>
+    {{/empty_workers}}
+    {{#workers}}
+      <tr>
+        <td class='icon'><img src="/media/{{state}}.png" alt="{{state}}" title="{{state}}"></td>
+        <td class='where'><a href="/workers/{{w}}">{{host}}:{{pid}}</a></td>
+        <td class='queues queue'>
+          <a class="queue-tag" href="/queues/{{queue}}">{{queue}}</a>
+        </td>
+        <td class='process'>
+            {{#data}}
+                <code>{{code}}</code>
+                <small><a class="queue time" href="/working/{{w}}">{{runat}}</a></small>
+              {{/data}}
+              {{#nodata}}
+                <span class='waiting'>Waiting for a job...</span>
+              {{/nodata}}
+        </td>
+      </tr>
+    {{/workers}}
+  </table>

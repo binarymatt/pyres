@@ -1,0 +1,38 @@
+{{>header}}
+<h1 class='wi'>{{size}} Workers</h1>
+<p class='intro'>The workers listed below are all registered as active on your system.</p>
+<table class='workers'>
+  <tr>
+    <th>&nbsp;</th>
+    <th>Where</th>
+    <th>Queues</th>
+    <th>Processing</th>
+  </tr>
+  {{#workers}}
+  <tr class="{{state}}">
+    <td class='icon'><img src="/media/{{state}}.png" alt="{{state}}" title="{{state}}"></td>
+
+    <td class='where'><a href="/workers/{{w}}">{{host}}:{{pid}}</a></td>
+    <td class='queues'>
+        {{#queues}}
+        <a class="queue-tag" href="/queues/{{q}}">{{q}}</a>&nbsp;
+        {{/queues}}
+    </td>
+    <td class='process'>
+      {{#data}}
+        <code>{{code}}</code>
+        <small><a class="queue time" href="/working/{{w}}">{{runat}}</a></small>
+      {{/data}}
+      {{#nodata}}
+        <span class='waiting'>Waiting for a job...</span>
+      {{/nodata}}
+    </td>
+  </tr>
+  {{/workers}}
+  {{#empty}}
+  <tr>
+    <td colspan='4' class='no-data'>There are no registered workers</td>
+  </tr>
+  {{/empty}}
+</table>
+{{>footer}}

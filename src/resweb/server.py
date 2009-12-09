@@ -4,73 +4,49 @@ from itty import *
 from pyres import ResQ
 from pyres.failure import Failure
 from pyres.worker import Worker
+from views import Overview, Queues, Workers, Working, Failed, Stats
 HOST = "localhost:6379"
-resq = ResQ(HOST)
+#resq = ResQ(HOST)
 
 @get("/")
 def index(request):
-    queues = ResQ.queues(HOST)
-    failure_count = Failure.count(ResQ(HOST))
-    template = env.get_template('overview.html')
-    dic = {
-        'queues':queues,
-        'failure_count':failure_count,
-        'resq': resq
-    }
-    return str(template.render(dic))
-
-
+    return str(Overview(HOST).render())
 
 @get("/working/")
 def working(request):
-    workers = Worker.working(resq._server)
-    template = env.get_template('working.html')
-    dic = {
-        'all_workers':Worker.all(HOST),
-        'workers':workers,
-        'resq': resq
-    }
-    return str(template.render(dic))
+    return str(Working(HOST).render())
 
 @get("/queues/")
 def queues(request):
-    queues = ResQ.queues(HOST)
-    failure_count = Failure.count(ResQ(HOST))
-    template = env.get_template('queues.html')
-    dic = {
-        'queues':queues,
-        'failure_count':failure_count,
-        'resq': resq
-    }
-    return str(template.render(dic))
+    return str(Queues(HOST).render())
 
-@get('/queues/(?P<queue_id>\w+)/')
+@get('/queue/(?P<queue_id>\w+)/')
 def queue(request, queue_id):
-    context = {}
-    context['queue'] = queue_id
-    context['resq'] = resq
-    template = env.get_template('queue_detail.html')
-    return str(template.render(context))
+    return str(Queues(HOST, queue_id).render())
 
 @get('/failed/')
 def failed(request):
-    context = {
-        'resq': resq
-    }
-    template = env.get_template('failed.html')
-    return str(template.render(context))
+    return str(Failed(HOST).render())
+
+@get('/workers/(?P<worker_id>\w+)/')
+def worker(request, worker_id):
+    return str(Worker(worker_id).render())
 
 @get('/workers/')
 def workers(request):
-    context = {
-        'workers': Worker.all(HOST)
-    }
-    template = env.get_template('workers.html')
-    return str(template.render(context))
+    return str(Workers(HOST).render())
 
 @get('/stats/')
 def stats(request):
-    template = env.get_template('stats.html')
-    return str(template.render({}))
+    return str(Stats(HOST).render())
+
+@get('/media/(?P<filename>.+)')
+def my_media(request, filename):
+    print filename
+    #my_media.content_type = content_type(filename)
+    my_root = os.path.join(os.path.dirname(__file__), 'media')
+    output = static_file(filename, root=my_root)
+    return Response(output, content_type=content_type(filename))
+    #return static_file(request, filename=filename, root=my_root)
 
 run_itty()
