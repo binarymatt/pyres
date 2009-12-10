@@ -42,7 +42,10 @@ def str_to_class(s):
 
 class ResQ(object):
     
-    def __init__(self, server="localhost:6379", password=None):
+    def __init__(self, server="localhost:6379", password=None, 
+                 timeout=None, retry_connection=True):
+        self.timeout = timeout
+        self.retry_connection = retry_connection
         self.redis = server
         if password:
             self.redis.auth(password)
@@ -85,7 +88,9 @@ class ResQ(object):
         if isinstance(server, basestring):
             self.dsn = server
             host, port = server.split(':')
-            self._redis = Redis(host=host, port=int(port))
+            self._redis = Redis(host=host, port=int(port), 
+                                retry_connection=self.retry_connection,
+                                timeout=self.timeout)
         elif isinstance(server, Redis):
             self.dsn = '%s:%s' % (server.host,server.port)
             self._redis = server
