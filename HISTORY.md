@@ -1,4 +1,4 @@
-## 0.2.1 (2009-12-10)
+## 0.3.0 (2009-12-10)
 
 * updated setup.py
 * refactored package for better testing

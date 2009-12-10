@@ -1,7 +1,7 @@
 from distutils.core import setup
 
 setup(name='PyRes',
-      version='0.2.1',
+      version='0.3.0',
       description='Python Resque Job',
       author='Matt George',
       author_email='mgeorge@gmail.com',
