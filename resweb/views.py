@@ -1,8 +1,10 @@
 import pystache
 from pyres import ResQ
 from pyres.worker import Worker as Wrkr
+import os
+TEMPLATE_PATH = os.path.join(os.path.dirname(__file__), 'templates')
 class ResWeb(pystache.View):
-    template_path = 'templates'
+    template_path = TEMPLATE_PATH
     def __init__(self, host):
         super(ResWeb, self).__init__()
         self.resq = ResQ(host)

@@ -1,3 +1,4 @@
+import os
 from itty import *
 from pyres import ResQ
 from pyres.failure import Failure
@@ -68,4 +69,4 @@ def my_media(request, filename):
     #return Response(output, content_type=content_type(filename))
     #return static_file(request, filename=filename, root=my_root)
 
-run_itty()
+#run_itty()
