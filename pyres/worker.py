@@ -8,14 +8,14 @@ import time
 import simplejson
 
 class Worker(object):
-    def __init__(self, queues=[], server="localhost:6379"):
+    def __init__(self, queues=[], server="localhost:6379", password=None):
         self.queues = queues
         self.validate_queues()
         self._shutdown = False
         self.child = None
         self.pid = os.getpid()
         if isinstance(server,basestring):
-            self.resq = ResQ(server)
+            self.resq = ResQ(server=server, password=password)
         elif isinstance(server, ResQ):
             self.resq = server
         else:
