@@ -13,6 +13,7 @@ class Worker(object):
         self.validate_queues()
         self._shutdown = False
         self.child = None
+        self.pid = os.getpid()
         if isinstance(server,basestring):
             self.resq = ResQ(server)
         elif isinstance(server, ResQ):
@@ -55,11 +56,18 @@ class Worker(object):
         if self.child:
             print "Killing child at %s" % self.child
             os.kill(self.child, signal.SIGKILL)
-    
+            
+    def __str__(self):
+        if getattr(self,'id', None):
+            return self.id
+        hostname = os.uname()[1]
+        return '%s:%s:%s' % (hostname, self.pid, ','.join(self.queues))
+         
     def work(self, interval=5):
         self.startup()
         while True:
             if self._shutdown:
+                print 'shutdown scheduled'
                 break
             job = self.reserve()
             if job:
@@ -67,7 +75,14 @@ class Worker(object):
                 self.child = os.fork()
                 if self.child:
                     print 'Forked %s at %s' % (self.child, datetime.datetime.now())
-                    os.waitpid(self.child, 0)
+                    try:
+                        os.waitpid(self.child, 0)
+                    except OSError, ose:
+                        import errno
+                        if ose.errno != errno.EINTR:
+                            raise ose
+                        #os.wait()
+                        print 'Done waiting'
                 else:
                     print 'Processing %s since %s' % (job._queue, datetime.datetime.now())
                     self.process(job)
@@ -103,6 +118,7 @@ class Worker(object):
                 return job
     
     def working_on(self, job):
+        print 'marking as working on'
         data = {
             'queue': job._queue,
             'run_at': str(datetime.datetime.now()),
@@ -110,8 +126,11 @@ class Worker(object):
         }
         data = simplejson.dumps(data)
         self.resq.redis["resque:worker:%s" % str(self)] = data
+        print "worker:%s" % str(self)
+        print self.resq.redis["resque:worker:%s" % str(self)]
     
     def done_working(self):
+        print 'done working'
         self.processed()
         self.resq.redis.delete("resque:worker:%s" % str(self))
     
@@ -132,18 +151,16 @@ class Worker(object):
         if data:
             return ResQ.decode(data)
         return {}
+
+    def processing(self):
+        return self.job()
     
-    def __str__(self):
-        if getattr(self,'id', None):
-            return self.id
-        import os; 
-        hostname = os.uname()[1]
-        pid = os.getpid()
-        return '%s:%s:%s' % (hostname, pid, ','.join(self.queues))
+    def state(self):
+        return 'working' if self.resq.redis.exists('resque:worker:%s' % self) else 'idle'
     
     @classmethod
     def run(cls, queues, server):
-        worker = cls(queues=queues, host=server)
+        worker = cls(queues=queues, server=server)
         worker.work()
     
     @classmethod
@@ -152,7 +169,7 @@ class Worker(object):
             resq = ResQ(host)
         elif isinstance(host, ResQ):
             resq = host
-        return resq.redis.smembers('resque:workers')
+        return [Worker.find(w,resq) for w in resq.redis.smembers('resque:workers')]
     
     @classmethod
     def working(cls, host):
@@ -161,9 +178,8 @@ class Worker(object):
         elif isinstance(host, ResQ):
             resq = host
         total = []
-        for key in Worker.all(host):
-            if Worker.exists(key, resq):
-                total.append('resque:worker:%s' % key)
+        for key in Worker.all(host):            
+            total.append('resque:worker:%s' % key)
         names = []
         for key in total:
             value = resq.redis.get(key)
@@ -194,6 +210,7 @@ if __name__ == "__main__":
     parser.add_option("-s", dest="server", default="localhost:6379")
     (options,args) = parser.parse_args()
     if not options.queue_list:
+        parser.print_hel()
         parser.error("Please give each worker at least one queue.")
     queues = options.queue_list.split(',')
     import sys
