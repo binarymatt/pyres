@@ -20,8 +20,10 @@ def str_to_class(s):
 
 class ResQ(object):
     
-    def __init__(self, server="localhost:6379"):
+    def __init__(self, server="localhost:6379", password=None):
         self.redis = server
+        if password:
+            self.redis.auth(password)
         self._watched_queues = set()
 
     def push(self, queue, item):
