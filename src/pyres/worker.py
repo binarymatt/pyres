@@ -35,12 +35,12 @@ class Worker(object):
     
     def _set_started(self, time):
         if time:
-            self.resq.redis.set("worker:%s:started" % self, time.strftime('%Y-%m-%d %H:%M:%S'))
+            self.resq.redis.set("resque:worker:%s:started" % self, time.strftime('%Y-%m-%d %H:%M:%S'))
         else:
-            self.resq.redis.delete("worker:%s:started" % self)
+            self.resq.redis.delete("resque:worker:%s:started" % self)
             
     def _get_started(self):
-        datestring = self.resq.redis.get("worker:%s:started" % self)
+        datestring = self.resq.redis.get("resque:worker:%s:started" % self)
         ds = None
         if datestring:
             ds = datetime.datetime.strptime(datestring, '%Y-%m-%d %H:%M:%S')
