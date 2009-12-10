@@ -2,7 +2,7 @@ import datetime
 from pyres import ResQ 
 import sys, traceback
 class Failure(object):
-    def __init__(self, exp, worker, queue, payload):
+    def __init__(self, exp, queue, payload, worker=None):
         excc, _, tb = sys.exc_info()
         
         self._exception = excc

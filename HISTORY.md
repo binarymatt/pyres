@@ -2,6 +2,8 @@
 
 * updated setup.py
 * refactored package for better testing
+* resque namespacing by fakechris
+* smarter import from string by fakechris
 
 ## 0.2.0 (2009-12-09)
 

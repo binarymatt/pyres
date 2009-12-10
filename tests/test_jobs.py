@@ -18,6 +18,6 @@ class JobTests(PyResTests):
     def test_fail(self):
         self.resq.enqueue(Basic,"test1")
         job = Job.reserve('basic',self.resq)
-        assert self.redis.llen('failed') == 0
+        assert self.redis.llen('resque:failed') == 0
         job.fail("problem")
-        assert self.redis.llen('failed') == 1
+        assert self.redis.llen('resque:failed') == 1
