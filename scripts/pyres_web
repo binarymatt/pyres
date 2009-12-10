@@ -13,7 +13,10 @@ def main():
                     dest="port",
                     type="int", 
                     default=8080)
+    parser.add_option("--dsn",dest="dsn",help="redis server to display")
     (options,args) = parser.parse_args()
+    if options.dsn:
+        server.HOST = options.dsn
     run_itty(host=options.host, port=options.port)
 
 if __name__ == "__main__":

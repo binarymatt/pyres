@@ -1,5 +1,6 @@
 import pystache
-from pyres import ResQ
+
+from pyres import ResQ, __version__
 from pyres.worker import Worker as Wrkr
 import os
 TEMPLATE_PATH = os.path.join(os.path.dirname(__file__), 'templates')
@@ -12,6 +13,8 @@ class ResWeb(pystache.View):
         return '/media/'
     def address(self):
         return '%s:%s' % (self.resq.redis.host,self.resq.redis.port)
+    def version(self):
+        return str(__version__)
     
 
 class Overview(ResWeb):
@@ -224,9 +227,9 @@ class Stats(ResWeb):
         for key in self.resq.keys():
             
             stats.append({
-                'key': key,
-                'type': self.resq.redis.get_type(key),
-                'size': redis_size(key, self.resq) 
+                'key': str(key),
+                'type': str(self.resq.redis.get_type('resque:'+key)),
+                'size': str(redis_size(key, self.resq)) 
             })
         return stats
     def standard(self):
@@ -251,18 +254,18 @@ class Stat(ResWeb):
     def items(self):
         items = []
         if self.key_type() == 'list':
-            for k in self.resq.redis.lrange(self.stat_id,0,20):
+            for k in self.resq.redis.lrange('resque:'+self.stat_id,0,20):
                 items.append({
                     'row':str(k)
                 })
         elif self.key_type() == 'set':
-            for k in self.resq.redis.smembers(self.stat_id):
+            for k in self.resq.redis.smembers('resque:'+self.stat_id):
                 items.append({
                     'row':str(k)
                 })
         elif self.key_type() == 'string':
             items.append({
-                'row':str(self.resq.redis.get(self.stat_id))
+                'row':str(self.resq.redis.get('resque:'+self.stat_id))
             })
         return items
     
@@ -343,12 +346,12 @@ class Worker(ResWeb):
         """
         pass
 def redis_size(key, resq):
-    key_type = resq.redis.get_type(key)
+    key_type = resq.redis.get_type('resque:'+key)
     item = 0
     if key_type == 'list':
-        item = resq.redis.llen(key)
+        item = resq.redis.llen('resque:'+key)
     elif key_type == 'set':
-        item = resq.redis.scard(key)
+        item = resq.redis.scard('resque:'+key)
     elif key_type == 'string':
         item = 1
     return str(item)
