@@ -1,3 +1,10 @@
+## 0.2.1 (2009-12-10)
+
+* updated setup.py
+* refactored package for better testing
+* resque namespacing by fakechris
+* smarter import from string by fakechris
+
 ## 0.2.0 (2009-12-09)
 
 * Better web interface via resweb

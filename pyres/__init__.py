@@ -1,9 +1,31 @@
-__version__ = '0.2.0'
+__version__ = '0.2.1'
 
 from redis import Redis
 import simplejson
 
 import types
+
+def my_import(name):
+    mod = __import__(name)    
+    components = name.split('.')    
+    for comp in components[1:]:        
+        mod = getattr(mod, comp)    
+    return mod
+
+def safe_str_to_class(s):
+    lst = s.split(".")
+    klass = lst[-1]
+    mod_list = lst[:-1]
+    module = ".".join(mod_list)
+    try:
+        mod = my_import(module)
+        if hasattr(mod, klass):
+            return getattr(mod, klass)
+        else:
+            return None
+    except ImportError:
+        return None
+
 def str_to_class(s):
     lst = s.split(".")
     klass = lst[-1]
@@ -20,32 +42,37 @@ def str_to_class(s):
 
 class ResQ(object):
     
-    def __init__(self, server="localhost:6379"):
+    def __init__(self, server="localhost:6379", password=None, 
+                 timeout=None, retry_connection=True):
+        self.timeout = timeout
+        self.retry_connection = retry_connection
         self.redis = server
+        if password:
+            self.redis.auth(password)
         self._watched_queues = set()
 
     def push(self, queue, item):
         self.watch_queue(queue)
-        self.redis.push("queue:%s" % queue, ResQ.encode(item))
+        self.redis.push("resque:queue:%s" % queue, ResQ.encode(item))
 
     def pop(self, queue):
-        ret = self.redis.pop("queue:%s" % queue)
+        ret = self.redis.pop("resque:queue:%s" % queue)
         if ret:
             return ResQ.decode(ret)
         return ret
 
     def size(self, queue):
-        return int(self.redis.llen("queue:%s" % queue))
+        return int(self.redis.llen("resque:queue:%s" % queue))
 
     def watch_queue(self, queue):
         if queue in self._watched_queues:
             return
         else:
-            if self.redis.sadd('queues',str(queue)):
+            if self.redis.sadd('resque:queues',str(queue)):
                 self._watched_queues.add(queue)
 
     def peek(self, queue, start=0, count=1):
-        return self.list_range('queue:%s' % queue, start, count)
+        return self.list_range('resque:queue:%s' % queue, start, count)
 
     def list_range(self, key, start, count):
         items = self.redis.lrange(key,start,start+count-1)
@@ -61,7 +88,9 @@ class ResQ(object):
         if isinstance(server, basestring):
             self.dsn = server
             host, port = server.split(':')
-            self._redis = Redis(host=host, port=int(port))
+            self._redis = Redis(host=host, port=int(port), 
+                                retry_connection=self.retry_connection,
+                                timeout=self.timeout)
         elif isinstance(server, Redis):
             self.dsn = '%s:%s' % (server.host,server.port)
             self._redis = server
@@ -81,7 +110,7 @@ class ResQ(object):
         self.push(queue, {'class':klass_as_string,'args':args})
     
     def queues(self):
-        return self.redis.smembers("queues")
+        return self.redis.smembers("resque:queues")
     
     def info(self):
         pending = 0
@@ -118,8 +147,8 @@ class ResQ(object):
     def remove_queue(self, queue):
         if queue in self._watched_queues:
             self._watched_queues.remove(queue)
-        self.redis.srem('queues',queue)
-        del self.redis['queue:%s' % queue]
+        self.redis.srem('resque:queues',queue)
+        del self.redis['resque:queue:%s' % queue]
     
     @classmethod
     def encode(cls, item):
@@ -146,7 +175,7 @@ class ResQ(object):
 class Stat(object):
     def __init__(self, name, resq):
         self.name = name
-        self.key = "stat:%s" % self.name
+        self.key = "resque:stat:%s" % self.name
         self.resq = resq
     
     def get(self):

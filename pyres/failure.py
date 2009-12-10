@@ -2,12 +2,12 @@ import datetime
 from pyres import ResQ 
 import sys, traceback
 class Failure(object):
-    def __init__(self, exp, queue, payload):
+    def __init__(self, exp, queue, payload, worker=None):
         excc, _, tb = sys.exc_info()
         
         self._exception = excc
         self._traceback = tb
-        #self._worker = worker
+        self._worker = worker
         self._queue = queue
         self._payload = payload
     
@@ -30,13 +30,14 @@ class Failure(object):
             'payload'   : self._payload,
             'error'     : self._parse_message(self._exception),
             'backtrace' : self._parse_traceback(self._traceback),
-            'queue'     : self._queue
+            'queue'     : self._queue,
+            'worker'    : self._worker
         }
         data = ResQ.encode(data)
-        resq.redis.push('failed', data)
+        resq.redis.push('resque:failed', data)
     
     @classmethod
     def count(cls, resq):
-        return int(resq.redis.llen('failed'))
+        return int(resq.redis.llen('resque:failed'))
     
     

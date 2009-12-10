@@ -1,11 +1,10 @@
 from distutils.core import setup
 
 setup(name='PyRes',
-      version='0.1',
+      version='0.2.1',
       description='Python Resque Job',
       author='Matt George',
       author_email='mgeorge@gmail.com',
-      url='',
-      packages=['pyres'],
-      package_dir = {'': 'src'}
+      url='http://github.com/binarydud/pyres',
+      packages=['pyres', 'resweb']
 )
