@@ -1,4 +1,4 @@
-from pyres import ResQ, str_to_class
+from pyres import ResQ, str_to_class, safe_str_to_class
 from pyres.failure import Failure
 class Job(object):
     def __init__(self, queue, payload, resq, worker):
@@ -9,7 +9,7 @@ class Job(object):
     
     def perform(self):
         payload_class_str = self._payload["class"]
-        payload_class = str_to_class(payload_class_str)
+        payload_class = safe_str_to_class(payload_class_str)
         args = self._payload.get("args", None)
         if args:
             return payload_class.perform(*args)
