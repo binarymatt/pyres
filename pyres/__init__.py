@@ -4,6 +4,28 @@ from redis import Redis
 import simplejson
 
 import types
+
+def my_import(name):
+    mod = __import__(name)    
+    components = name.split('.')    
+    for comp in components[1:]:        
+        mod = getattr(mod, comp)    
+    return mod
+
+def safe_str_to_class(s):
+    lst = s.split(".")
+    klass = lst[-1]
+    mod_list = lst[:-1]
+    module = ".".join(mod_list)
+    try:
+        mod = my_import(module)
+        if hasattr(mod, klass):
+            return getattr(mod, klass)
+        else:
+            return None
+    except ImportError:
+        return None
+
 def str_to_class(s):
     lst = s.split(".")
     klass = lst[-1]
@@ -20,7 +42,10 @@ def str_to_class(s):
 
 class ResQ(object):
     
-    def __init__(self, server="localhost:6379", password=None):
+    def __init__(self, server="localhost:6379", password=None, 
+                 timeout=None, retry_connection=True):
+        self.timeout = timeout
+        self.retry_connection = retry_connection
         self.redis = server
         if password:
             self.redis.auth(password)
@@ -63,7 +88,9 @@ class ResQ(object):
         if isinstance(server, basestring):
             self.dsn = server
             host, port = server.split(':')
-            self._redis = Redis(host=host, port=int(port))
+            self._redis = Redis(host=host, port=int(port), 
+                                retry_connection=self.retry_connection,
+                                timeout=self.timeout)
         elif isinstance(server, Redis):
             self.dsn = '%s:%s' % (server.host,server.port)
             self._redis = server
