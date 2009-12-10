@@ -128,7 +128,7 @@ class Worker(object):
     def reserve(self):
         for q in self.queues:
             print "Checking %s" % q
-            job = Job.reserve(q, self.resq)
+            job = Job.reserve(q, self.resq, self.__str__())
             if job:
                 print "Found job on %s" % q
                 return job
