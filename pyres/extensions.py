@@ -3,6 +3,8 @@ try:
 except:
     import sys
     sys.exit("multiprocessing was not available")
+import os, datetime, time, signal
+from pyres import ResQ
     
 from pyres.exceptions import NoQueueError
 from pyres.worker import Worker
