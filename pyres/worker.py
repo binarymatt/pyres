@@ -35,16 +35,17 @@ class Worker(object):
     
     def _set_started(self, time):
         if time:
-            self.resq.redis.set("worker:%s:started" % self, time.strftime('%Y-%m-%d %H:%M:%S'))
+            self.resq.redis.set("resque:worker:%s:started" % self, time.strftime('%Y-%m-%d %H:%M:%S'))
         else:
-            self.resq.redis.delete("worker:%s:started" % self)
-    
+            self.resq.redis.delete("resque:worker:%s:started" % self)
+            
     def _get_started(self):
-        datestring = self.resq.redis.get("worker:%s:started" % self)
+        datestring = self.resq.redis.get("resque:worker:%s:started" % self)
         ds = None
         if datestring:
             ds = datetime.datetime.strptime(datestring, '%Y-%m-%d %H:%M:%S')
         return ds
+    
     started = property(_get_started, _set_started)
     
     def unregister_worker(self):
@@ -72,14 +73,13 @@ class Worker(object):
         if self.child:
             print "Killing child at %s" % self.child
             os.kill(self.child, signal.SIGKILL)
-    
+            
     def __str__(self):
         if getattr(self,'id', None):
             return self.id
         hostname = os.uname()[1]
-        #pid = os.getpid()
         return '%s:%s:%s' % (hostname, self.pid, ','.join(self.queues))
-    
+         
     def work(self, interval=5):
         self.startup()
         while True:
@@ -144,7 +144,7 @@ class Worker(object):
         data = simplejson.dumps(data)
         self.resq.redis["resque:worker:%s" % str(self)] = data
         print "worker:%s" % str(self)
-        print self.resq.redis["worker:%s" % str(self)]
+        print self.resq.redis["resque:worker:%s" % str(self)]
     
     def done_working(self):
         print 'done working'
@@ -165,6 +165,7 @@ class Worker(object):
         stat = Stat("failed:%s" % self, self.resq)
         total_failed.incr()
         stat.incr()
+        
     def get_failed(self):
         return Stat("failed:%s" % self, self.resq).get()
     def job(self):
@@ -172,13 +173,13 @@ class Worker(object):
         if data:
             return ResQ.decode(data)
         return {}
+
     
     def processing(self):
         return self.job()
     
     def state(self):
-        return 'working' if self.resq.redis.exists('worker:%s' % self) else 'idle'
-    
+        return 'working' if self.resq.redis.exists('resque:worker:%s' % self) else 'idle'
     
     @classmethod
     def run(cls, queues, server):
@@ -200,9 +201,8 @@ class Worker(object):
         elif isinstance(host, ResQ):
             resq = host
         total = []
-        for key in Worker.all(host):
-            if Worker.exists(key, resq):
-                total.append('resque:worker:%s' % key)
+        for key in Worker.all(host):            
+            total.append('resque:worker:%s' % key)
         names = []
         for key in total:
             value = resq.redis.get(key)
