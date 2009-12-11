@@ -30,8 +30,7 @@ class Worker(object):
         self.resq.redis.sadd('resque:workers',str(self))
         #self.resq._redis.add("worker:#{self}:started", Time.now.to_s)
         self.started = datetime.datetime.now()
-        #Stat.clear("processed:#{self}")
-        #Stat.clear("failed:#{self}")
+        
     
     def _set_started(self, time):
         if time:
@@ -51,6 +50,8 @@ class Worker(object):
     def unregister_worker(self):
         self.resq.redis.srem('resque:workers',str(self))
         self.started = None
+        Stat("processed:%s" % self).clear()
+        Stat("failed:%s" % self).clear()
     
     def startup(self):
         self.register_signal_handlers()
@@ -161,13 +162,12 @@ class Worker(object):
         return Stat("processed:%s" % str(self), self.resq).get()
     
     def failed(self):
-        total_failed = Stat("failed", self.resq)
-        stat = Stat("failed:%s" % self, self.resq)
-        total_failed.incr()
-        stat.incr()
+        Stat("failed", self.resq).incr()
+        Stat("failed:%s" % self, self.resq).incr()
         
     def get_failed(self):
         return Stat("failed:%s" % self, self.resq).get()
+    
     def job(self):
         data = self.resq.redis.get("resque:worker:%s" % self)
         if data:
