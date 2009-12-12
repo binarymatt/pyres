@@ -50,8 +50,8 @@ class Worker(object):
     def unregister_worker(self):
         self.resq.redis.srem('resque:workers',str(self))
         self.started = None
-        Stat("processed:%s" % self).clear()
-        Stat("failed:%s" % self).clear()
+        Stat("processed:%s" % self, self.resq).clear()
+        Stat("failed:%s" % self, self.resq).clear()
     
     def startup(self):
         self.register_signal_handlers()
