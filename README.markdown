@@ -15,45 +15,6 @@ Because of some differences between ruby and python, there are a couple of place
  2. Start redis: `$ redis-server [PATH_TO_YOUR_REDIS_CONFIG]`
  3. Run nose: `$ nosetests` Or more verbosely: `$ nosetests -v`
 
-	$ nosetests -v
-	tests.test_str_to_class ... ok
-	test_fail (tests.test_jobs.JobTests) ... ok
-	test_perform (tests.test_jobs.JobTests) ... ok
-	test_reserve (tests.test_jobs.JobTests) ... ok
-	test_enqueue (tests.test_resq.ResQTests) ... ok
-	test_enqueue_from_string (tests.test_resq.ResQTests) ... ok
-	test_info (tests.test_resq.ResQTests) ... ok
-	test_keys (tests.test_resq.ResQTests) ... ok
-	test_peek (tests.test_resq.ResQTests) ... ok
-	test_pop (tests.test_resq.ResQTests) ... ok
-	test_push (tests.test_resq.ResQTests) ... ok
-	test_redis_property (tests.test_resq.ResQTests) ... ok
-	test_remove_queue (tests.test_resq.ResQTests) ... ok
-	test_size (tests.test_resq.ResQTests) ... ok
-	test_workers (tests.test_resq.ResQTests) ... ok
-	test_clear (tests.test_stats.StatTests) ... ok
-	test_decr (tests.test_stats.StatTests) ... ok
-	test_get (tests.test_stats.StatTests) ... ok
-	test_incr (tests.test_stats.StatTests) ... ok
-	test_failed (tests.test_worker.WorkerTests) ... ok
-	test_get_job (tests.test_worker.WorkerTests) ... ok
-	test_job_failure (tests.test_worker.WorkerTests) ... ok
-	test_process (tests.test_worker.WorkerTests) ... ok
-	test_processed (tests.test_worker.WorkerTests) ... ok
-	test_register (tests.test_worker.WorkerTests) ... ok
-	test_signals (tests.test_worker.WorkerTests) ... ok
-	test_started (tests.test_worker.WorkerTests) ... ok
-	test_startup (tests.test_worker.WorkerTests) ... ok
-	test_unregister (tests.test_worker.WorkerTests) ... ok
-	test_worker_init (tests.test_worker.WorkerTests) ... ok
-	test_working (tests.test_worker.WorkerTests) ... ok
-	test_working_on (tests.test_worker.WorkerTests) ... ok
-	
-	----------------------------------------------------------------------
-	Ran 32 tests in 0.794s
-	
-	OK
-
 
 ## TODO
 
