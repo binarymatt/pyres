@@ -2,8 +2,8 @@ from distutils.core import setup
 
 setup(
     name='PyRes',
-    version='0.3.0',
-    description='Python Resque Job',
+    version='0.3.1',
+    description='Python Resque clone',
     author='Matt George',
     author_email='mgeorge@gmail.com',
     url='http://github.com/binarydud/pyres',

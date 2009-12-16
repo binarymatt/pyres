@@ -1,3 +1,9 @@
+## 0.3.1 (2009-12-16)
+
+* minor bug fix in worker.py
+* merged in some setup.py niceties from dsc fork
+* merged in better README info from dsc fork
+
 ## 0.3.0 (2009-12-10)
 
 * updated setup.py
