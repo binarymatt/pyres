@@ -5,6 +5,7 @@ setup(
     version='0.3.1',
     description='Python Resque clone',
     author='Matt George',
+    license='MIT',
     author_email='mgeorge@gmail.com',
     url='http://github.com/binarydud/pyres',
     packages=['pyres', 'resweb'],
