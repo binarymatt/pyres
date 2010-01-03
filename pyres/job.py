@@ -1,5 +1,5 @@
 from pyres import ResQ, str_to_class, safe_str_to_class
-from pyres.failure import Failure
+from pyres import failure
 class Job(object):
     def __init__(self, queue, payload, resq, worker=None):
         self._queue = queue
@@ -18,8 +18,9 @@ class Job(object):
     
     def fail(self, exception):
         #Failure.create(exception)
-        failure = Failure(exception, self._queue, self._payload, self._worker)
-        failure.save(self.resq)
+        fail = failure.create(exception, self._queue, self._payload, self._worker)
+        fail.save(self.resq)
+        return fail
     
     @classmethod
     def reserve(cls, queue, res, worker=None):

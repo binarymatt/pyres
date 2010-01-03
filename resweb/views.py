@@ -2,6 +2,7 @@ import pystache
 
 from pyres import ResQ, __version__
 from pyres.worker import Worker as Wrkr
+from pyres import failure
 import os
 TEMPLATE_PATH = os.path.join(os.path.dirname(__file__), 'templates')
 class ResWeb(pystache.View):
@@ -60,8 +61,8 @@ class Overview(ResWeb):
         return not self._queue
     
     def fail_count(self):
-        from pyres.failure import Failure
-        return str(Failure.count(self.resq))
+        #from pyres.failure import Failure
+        return str(failure.count(self.resq))
     
     def workers(self):
         workers = []
@@ -161,8 +162,25 @@ class Failed(ResWeb):
         self._start = start
         super(Failed, self).__init__(host)
     
+    def start(self):
+        return str(self._start)
+    
+    def end(self):
+        return str(self._start + 20)
+    
+    def size(self):
+        return str(failure.count(self.resq) or 0)
+     
     def failed_jobs(self):
-        return ''
+        jobs = []
+        for job in failure.all(self.resq, self._start, self._start + 20):
+            item = job
+            item['worker_url'] = '/workers/%s/' % job['worker']
+            item['payload_args'] = ','.join(job['payload']['args'])
+            item['payload_class'] = job['payload']['class']
+            item['traceback'] = '\n'.join(job['backtrace'])
+            jobs.append(item)
+        return jobs
 
 class Stats(ResWeb):
     def __init__(self, host, key_id):
