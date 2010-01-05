@@ -236,6 +236,4 @@ if __name__ == "__main__":
         parser.print_help()
         parser.error("Please give each worker at least one queue.")
     queues = options.queue_list.split(',')
-    import sys
-    sys.path.insert(0,'/Users/mgeorge/dev/pyres/src')
     Worker.run(queues, options.server)
