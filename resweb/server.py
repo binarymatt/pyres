@@ -1,7 +1,7 @@
 import os
 from itty import *
 from pyres import ResQ
-from pyres.failure import Failure
+from pyres import failure
 from views import (
     Overview, 
     Queues, 
@@ -36,7 +36,9 @@ def queue(request, queue_id):
 
 @get('/failed/')
 def failed(request):
-    return str(Failed(HOST).render())
+    start = request.GET.get('start',0)
+    start = int(start)
+    return str(Failed(HOST, start).render())
 
 @get('/workers/(?P<worker_id>\w.+)/')
 def worker(request, worker_id):
@@ -69,4 +71,5 @@ def my_media(request, filename):
     #return Response(output, content_type=content_type(filename))
     #return static_file(request, filename=filename, root=my_root)
 
-#run_itty()
+if __name__ == "__main__":
+    run_itty()
