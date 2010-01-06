@@ -1,14 +1,14 @@
 from distutils.core import setup
 
 setup(
-    name='PyRes',
-    version='0.4.0',
+    name='pyres',
+    version='0.4.1',
     description='Python Resque clone',
     author='Matt George',
     license='MIT',
     author_email='mgeorge@gmail.com',
     url='http://github.com/binarydud/pyres',
-    packages=['pyres', 'resweb'],
+    packages=['pyres', 'resweb', 'pyres/failure'],
     package_data={'resweb': ['templates/*.mustache','media/*']},
     scripts=['scripts/pyres_worker', 'scripts/pyres_web'],
     zip_safe = True,
