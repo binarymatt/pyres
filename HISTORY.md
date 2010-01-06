@@ -1,3 +1,7 @@
+## 0.4.0 (2010-01-06)
+
+* added the basics of failure backend support
+
 ## 0.3.1 (2009-12-16)
 
 * minor bug fix in worker.py
