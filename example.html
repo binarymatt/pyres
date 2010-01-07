@@ -5,8 +5,8 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title><no title> &mdash; PyRes v0.4.1 documentation</title>
-    <link rel="stylesheet" href="_static/default.css" type="text/css" />
+    <title>EXAMPLE &mdash; PyRes v0.4.1 documentation</title>
+    <link rel="stylesheet" href="_static/nature.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
@@ -37,7 +37,47 @@
         <div class="bodywrapper">
           <div class="body">
             
-  <p>More coming up</p>
+  <div class="section" id="example">
+<h1>EXAMPLE<a class="headerlink" href="#example" title="Permalink to this headline">¶</a></h1>
+<p>Let&#8217;s take a real wold example of a blog where comments need to be checked for
+spam check. When the comment is saved in the database, we create a job in the
+queue with comment data. Let&#8217;s take a django model in this case.:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="k">class</span> <span class="nc">Comment</span><span class="p">(</span><span class="n">models</span><span class="o">.</span><span class="n">Model</span><span class="p">):</span>
+    <span class="n">name</span> <span class="o">=</span> <span class="n">Model</span><span class="o">.</span><span class="n">CharField</span><span class="p">()</span>
+    <span class="n">email</span> <span class="o">=</span> <span class="n">Model</span><span class="o">.</span><span class="n">EmailField</span><span class="p">()</span>
+    <span class="n">body</span> <span class="o">=</span> <span class="n">Model</span><span class="o">.</span><span class="n">TextField</span><span class="p">()</span>
+    <span class="n">spam</span> <span class="o">=</span> <span class="n">Model</span><span class="o">.</span><span class="n">BooleanField</span><span class="p">()</span>
+    <span class="n">queue</span> <span class="o">=</span> <span class="s">&quot;Spam&quot;</span>
+
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">perform</span><span class="p">(</span><span class="n">comment_id</span><span class="p">):</span>
+        <span class="n">comment</span> <span class="o">=</span> <span class="n">Comment</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">pk</span><span class="o">=</span><span class="n">comment_id</span><span class="p">)</span>
+        <span class="n">params</span> <span class="o">=</span> <span class="p">{</span><span class="s">&quot;comment_author_email&quot;</span><span class="p">:</span> <span class="n">comment</span><span class="o">.</span><span class="n">user</span><span class="o">.</span><span class="n">email</span><span class="p">,</span>
+                  <span class="s">&quot;comment_content&quot;</span><span class="p">:</span> <span class="n">comment</span><span class="o">.</span><span class="n">body</span><span class="p">,</span>
+                  <span class="s">&quot;comment_author_name&quot;</span><span class="p">:</span> <span class="n">comment</span><span class="o">.</span><span class="n">user</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
+                  <span class="s">&quot;request_ip&quot;</span><span class="p">:</span> <span class="n">comment</span><span class="o">.</span><span class="n">author_ip</span><span class="p">}</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="n">urllib</span><span class="o">.</span><span class="n">urlopen</span><span class="p">(</span><span class="s">&quot;http://apikey.rest.akismet.com/1.1/comment-check&quot;</span><span class="p">,</span> <span class="n">params</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">x</span> <span class="o">==</span> <span class="s">&quot;true&quot;</span><span class="p">:</span>
+            <span class="n">comment</span><span class="o">.</span><span class="n">spam</span> <span class="o">=</span> <span class="bp">True</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">comment</span><span class="o">.</span><span class="n">spam</span> <span class="o">=</span> <span class="bp">False</span>
+        <span class="n">comment</span><span class="o">.</span><span class="n">save</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>You can convert your existing class to be compatible with Pyres. All you need
+to do is add a &#64;queue&#64; variable and define a &#64;perform&#64; method on the class.</p>
+<p>To insert a job into the queue you need to do something like this::</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">pyres</span> <span class="kn">import</span> <span class="n">ResQ</span>
+<span class="n">r</span> <span class="o">=</span> <span class="n">Resq</span><span class="p">()</span>
+<span class="n">r</span><span class="o">.</span><span class="n">enqueue</span><span class="p">(</span><span class="n">Spam</span><span class="p">,</span> <span class="mf">23</span><span class="p">)</span>   <span class="c"># Passing the comment id 23</span>
+</pre></div>
+</div>
+<p>This puts a job into the queue <strong>Spam</strong>. Now we need to fire off our workers.
+In the <strong>scripts</strong> folder there is an executable:</p>
+<div class="highlight-python"><pre>$ ./pyres_worker Spam</pre>
+</div>
+<p>Just pass a comma seperated list of queues the worker should poll.</p>
+</div>
 
 
           </div>
