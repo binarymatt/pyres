@@ -1,7 +1,7 @@
-import datetime
-from pyres import ResQ 
-import sys, traceback
-class Failure(object):
+import sys
+import traceback
+
+class BaseBackend(object):
     def __init__(self, exp, queue, payload, worker=None):
         excc, _, tb = sys.exc_info()
         
@@ -10,6 +10,7 @@ class Failure(object):
         self._worker = worker
         self._queue = queue
         self._payload = payload
+    
     
     def _parse_traceback(self, trace):
         """Return the given traceback string formatted for a notification."""
@@ -23,21 +24,4 @@ class Failure(object):
     def _parse_message(self, exc):
         """Return a message for a notification from the given exception."""
         return '%s: %s' % (exc.__class__.__name__, str(exc))
-    
-    def save(self, resq):
-        data = {
-            'failed_at' : str(datetime.datetime.now()),
-            'payload'   : self._payload,
-            'error'     : self._parse_message(self._exception),
-            'backtrace' : self._parse_traceback(self._traceback),
-            'queue'     : self._queue,
-            'worker'    : self._worker
-        }
-        data = ResQ.encode(data)
-        resq.redis.push('resque:failed', data)
-    
-    @classmethod
-    def count(cls, resq):
-        return int(resq.redis.llen('resque:failed'))
-    
     

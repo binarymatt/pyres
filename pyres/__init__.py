@@ -1,4 +1,4 @@
-__version__ = '0.3.1'
+__version__ = '0.4.1'
 
 from redis import Redis
 import simplejson
@@ -75,7 +75,7 @@ class ResQ(object):
         return self.list_range('resque:queue:%s' % queue, start, count)
 
     def list_range(self, key, start, count):
-        items = self.redis.lrange(key,start,start+count-1)
+        items = self.redis.lrange(key, start,start+count-1)
         ret_list = []
         for i in items:
             ret_list.append(ResQ.decode(i))

@@ -1,3 +1,12 @@
+## 0.4.1 (2010-01-06)
+
+* fixed issue with new failure package in distutils sdist
+* changed setup.py to remove camel case, because it's ugly
+
+## 0.4.0 (2010-01-06)
+
+* added the basics of failure backend support
+
 ## 0.3.1 (2009-12-16)
 
 * minor bug fix in worker.py
