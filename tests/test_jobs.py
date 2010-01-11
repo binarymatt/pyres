@@ -6,6 +6,7 @@ class JobTests(PyResTests):
         job = Job.reserve('basic', self.resq)
         assert job._queue == 'basic'
         assert job._payload
+        assert job._payload == {'class':'tests.Basic','args':['test1']}
     
     def test_perform(self):
         self.resq.enqueue(Basic,"test1")

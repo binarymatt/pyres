@@ -1,4 +1,38 @@
 {{>header}}
+<script type="text/javascript">
+$(document).ready(function(){
+    $('.backtrace').click(function() {
+        $(this).next().toggle();
+        return false;
+    });
+});
+</script>
 <h1>Failed Jobs</h1>
-Pending Failure module completion!
+<p class='sub'>Showing {{start}} to {{end}} of <b>{{size}}</b> jobs</p>
+
+<ul class='failed'>
+    {{#failed_jobs}}
+    <li>
+      <dl>
+        <dt>Worker</dt>
+        <dd>
+            <a href="{{worker_url}}">{{worker}}</a> on <b class='queue-tag'>{{queue}}</b > at <b>
+            <span class="time">{{failed_at}}</span></b>
+        </dd>
+        <dt>Class</dt>
+        <dd><code>{{payload_class}}</code></dd>
+        <dt>Arguments</dt>
+        <dd><pre>{{payload_args}}</pre></dd>
+        <dt>Error</dt>
+        <dd>
+          <a href="#" class="backtrace">{{error}}</a>
+          <pre style='display:none'>{{traceback}}</pre>          
+        </dd>
+      </dl>
+      <div class='r'>
+      </div>
+    </li>
+  {{/failed_jobs}}
+</ul>
+
 {{>footer}}
