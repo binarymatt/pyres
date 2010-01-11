@@ -12,6 +12,10 @@ Contents:
    :maxdepth: 2
 
    intro
+   install
+   example
+   class
+   tests
 
 Indices and tables
 ==================

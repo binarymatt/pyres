@@ -41,7 +41,17 @@ def str_to_class(s):
         return None
 
 class ResQ(object):
+    """ResQ class which defines the Queue object to enqueue jobs into various
+    queues.
     
+    Example usage::
+
+        >>> from pyres import *
+        >>> r = ResQ(server="192.168.1.10:6379", password="some_pwd")
+            # Assuming redis is running on default port with no password
+    
+    
+    """
     def __init__(self, server="localhost:6379", password=None, 
                  timeout=None, retry_connection=True):
         self.timeout = timeout
