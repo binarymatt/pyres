@@ -3,10 +3,10 @@ Installation
 
 Requirements:
 --------------
-simplejson>=2.0.9  
-itty>=0.6.2   
-redis>=0.6.0   
-pystache>=0.1.0  
+simplejson>=2.0.9
+itty>=0.6.2
+redis>=0.6.0
+pystache>=0.1.0
 
 Make sure you install these requirements before proceeding. 
 

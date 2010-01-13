@@ -4,7 +4,10 @@
 
 Let's take a real wold example of a blog where comments need to be checked for
 spam check. When the comment is saved in the database, we create a job in the
-queue with comment data. Let's take a django model in this case.::
+queue with comment data. Let's take a django model in this case.
+
+.. code-block:: python
+   :linenos:
 
     class Comment(models.Model):
         name = Model.CharField()
