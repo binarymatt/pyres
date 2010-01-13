@@ -62,6 +62,80 @@ queues.</p>
 <span class="go">    # Assuming redis is running on default port with no password</span>
 </pre></div>
 </div>
+<p><strong>r</strong> is a resque object on which we can enqueue tasks.:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="go">&gt;&gt;&gt;&gt; r.enqueue(SomeClass, args)</span>
+</pre></div>
+</div>
+<p>SomeClass can be any python class with <em>perform</em> method and a <em>queue</em> 
+attribute on it.</p>
+<dl class="method">
+<dt id="pyres.ResQ.enqueue">
+<tt class="descname">enqueue</tt><big>(</big><em>klass</em>, <em>*args</em><big>)</big><a class="headerlink" href="#pyres.ResQ.enqueue" title="Permalink to this definition">¶</a></dt>
+<dd>Enqueue a job into a specific queue. Make sure the class you are passing
+has <strong>queue</strong> attribute and a <strong>perform</strong> method on it.</dd></dl>
+
+<dl class="method">
+<dt id="pyres.ResQ.info">
+<tt class="descname">info</tt><big>(</big><big>)</big><a class="headerlink" href="#pyres.ResQ.info" title="Permalink to this definition">¶</a></dt>
+<dd>Returns a dictionary of the current status of the pending jobs, 
+processed, no. of queues, no. of workers, no. of failed jobs.</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="job-classes">
+<h1>Job Classes<a class="headerlink" href="#job-classes" title="Permalink to this headline">¶</a></h1>
+<dl class="class">
+<dt id="pyres.job.Job">
+<em class="property">
+class </em><tt class="descclassname">pyres.job.</tt><tt class="descname">Job</tt><big>(</big><em>queue</em>, <em>payload</em>, <em>resq</em>, <em>worker=None</em><big>)</big><a class="headerlink" href="#pyres.job.Job" title="Permalink to this definition">¶</a></dt>
+<dd><p>Every job on the ResQ is a <em>Job</em> object which has queue and payload(all the
+args data and when its created etc).</p>
+<dl class="method">
+<dt id="pyres.job.Job.perform">
+<tt class="descname">perform</tt><big>(</big><big>)</big><a class="headerlink" href="#pyres.job.Job.perform" title="Permalink to this definition">¶</a></dt>
+<dd>This method converts payload into args and calls the <strong>perform</strong> method
+on the payload class.</dd></dl>
+
+<dl class="classmethod">
+<dt id="pyres.job.Job.reserve">
+<em class="property">
+classmethod </em><tt class="descname">reserve</tt><big>(</big><em>queue</em>, <em>res</em>, <em>worker=None</em><big>)</big><a class="headerlink" href="#pyres.job.Job.reserve" title="Permalink to this definition">¶</a></dt>
+<dd>Reserve a job on the queue. In simple marking this job so that other worker
+will not pick it up</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="worker-classes">
+<h1>Worker Classes<a class="headerlink" href="#worker-classes" title="Permalink to this headline">¶</a></h1>
+<dl class="class">
+<dt id="pyres.worker.Worker">
+<em class="property">
+class </em><tt class="descclassname">pyres.worker.</tt><tt class="descname">Worker</tt><big>(</big><em>queues=</em><span class="optional">[</span><span class="optional">]</span>, <em>server='localhost:6379'</em>, <em>password=None</em><big>)</big><a class="headerlink" href="#pyres.worker.Worker" title="Permalink to this definition">¶</a></dt>
+<dd><p>Defines a worker. The <em>pyres_worker</em> script instantiates this Worker class and
+pass a comma seperate list of queues to listen on.:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">pyres.worker</span> <span class="kn">import</span> <span class="n">Worker</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">Worker</span><span class="o">.</span><span class="n">run</span><span class="p">([</span><span class="n">queue1</span><span class="p">,</span> <span class="n">queue2</span><span class="p">],</span> <span class="n">server</span><span class="o">=</span><span class="s">&quot;localhost:6379&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<dl class="method">
+<dt id="pyres.worker.Worker.validate_queues">
+<tt class="descname">validate_queues</tt><big>(</big><big>)</big><a class="headerlink" href="#pyres.worker.Worker.validate_queues" title="Permalink to this definition">¶</a></dt>
+<dd>Checks if a worker is given atleast one queue to work on.</dd></dl>
+
+<dl class="method">
+<dt id="pyres.worker.Worker.work">
+<tt class="descname">work</tt><big>(</big><em>interval=5</em><big>)</big><a class="headerlink" href="#pyres.worker.Worker.work" title="Permalink to this definition">¶</a></dt>
+<dd><p>Invoked by run() method. work() listens on a list of queues and sleeps
+for <em>interval</em> time.</p>
+<p>default  &#8211;  5 secs</p>
+<p>Whenever a worker finds a job on the queue it first calls <tt class="docutils literal"><span class="pre">reserve</span></tt> on
+that job to make sure other worker won&#8217;t run it, then <em>Forks</em> itself to 
+work on that job.</p>
+<p>Finally process() method actually processes the job.</p>
+</dd></dl>
+
 </dd></dl>
 
 </div>
@@ -72,6 +146,13 @@ queues.</p>
       </div>
       <div class="sphinxsidebar">
         <div class="sphinxsidebarwrapper">
+            <h3><a href="index.html">Table Of Contents</a></h3>
+            <ul>
+<li><a class="reference external" href="">ResQ Classes</a></li>
+<li><a class="reference external" href="#job-classes">Job Classes</a></li>
+<li><a class="reference external" href="#worker-classes">Worker Classes</a></li>
+</ul>
+
             <h4>Previous topic</h4>
             <p class="topless"><a href="example.html"
                                   title="previous chapter">EXAMPLE</a></p>

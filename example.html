@@ -20,7 +20,8 @@
     <script type="text/javascript" src="_static/jquery.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
     <link rel="top" title="PyRes v0.4.1 documentation" href="index.html" />
-    <link rel="prev" title="Introduction" href="intro.html" /> 
+    <link rel="next" title="ResQ Classes" href="class.html" />
+    <link rel="prev" title="Installation" href="install.html" /> 
   </head>
   <body>
     <div class="related">
@@ -30,7 +31,13 @@
           <a href="genindex.html" title="General Index"
              accesskey="I">index</a></li>
         <li class="right" >
-          <a href="intro.html" title="Introduction"
+          <a href="modindex.html" title="Global Module Index"
+             accesskey="M">modules</a> |</li>
+        <li class="right" >
+          <a href="class.html" title="ResQ Classes"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="install.html" title="Installation"
              accesskey="P">previous</a> |</li>
         <li><a href="index.html">PyRes v0.4.1 documentation</a> &raquo;</li> 
       </ul>
@@ -45,29 +52,48 @@
 <h1>EXAMPLE<a class="headerlink" href="#example" title="Permalink to this headline">¶</a></h1>
 <p>Let&#8217;s take a real wold example of a blog where comments need to be checked for
 spam check. When the comment is saved in the database, we create a job in the
-queue with comment data. Let&#8217;s take a django model in this case.:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="k">class</span> <span class="nc">Comment</span><span class="p">(</span><span class="n">models</span><span class="o">.</span><span class="n">Model</span><span class="p">):</span>
-    <span class="n">name</span> <span class="o">=</span> <span class="n">Model</span><span class="o">.</span><span class="n">CharField</span><span class="p">()</span>
-    <span class="n">email</span> <span class="o">=</span> <span class="n">Model</span><span class="o">.</span><span class="n">EmailField</span><span class="p">()</span>
-    <span class="n">body</span> <span class="o">=</span> <span class="n">Model</span><span class="o">.</span><span class="n">TextField</span><span class="p">()</span>
-    <span class="n">spam</span> <span class="o">=</span> <span class="n">Model</span><span class="o">.</span><span class="n">BooleanField</span><span class="p">()</span>
-    <span class="n">queue</span> <span class="o">=</span> <span class="s">&quot;Spam&quot;</span>
+queue with comment data. Let&#8217;s take a django model in this case.</p>
+<div class="highlight-python"><table class="highlighttable"><tr><td class="linenos"><pre> 1
+ 2
+ 3
+ 4
+ 5
+ 6
+ 7
+ 8
+ 9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20</pre></td><td class="code"><div class="highlight"><pre> <span class="k">class</span> <span class="nc">Comment</span><span class="p">(</span><span class="n">models</span><span class="o">.</span><span class="n">Model</span><span class="p">):</span>
+     <span class="n">name</span> <span class="o">=</span> <span class="n">Model</span><span class="o">.</span><span class="n">CharField</span><span class="p">()</span>
+     <span class="n">email</span> <span class="o">=</span> <span class="n">Model</span><span class="o">.</span><span class="n">EmailField</span><span class="p">()</span>
+     <span class="n">body</span> <span class="o">=</span> <span class="n">Model</span><span class="o">.</span><span class="n">TextField</span><span class="p">()</span>
+     <span class="n">spam</span> <span class="o">=</span> <span class="n">Model</span><span class="o">.</span><span class="n">BooleanField</span><span class="p">()</span>
+     <span class="n">queue</span> <span class="o">=</span> <span class="s">&quot;Spam&quot;</span>
 
-    <span class="nd">@staticmethod</span>
-    <span class="k">def</span> <span class="nf">perform</span><span class="p">(</span><span class="n">comment_id</span><span class="p">):</span>
-        <span class="n">comment</span> <span class="o">=</span> <span class="n">Comment</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">pk</span><span class="o">=</span><span class="n">comment_id</span><span class="p">)</span>
-        <span class="n">params</span> <span class="o">=</span> <span class="p">{</span><span class="s">&quot;comment_author_email&quot;</span><span class="p">:</span> <span class="n">comment</span><span class="o">.</span><span class="n">user</span><span class="o">.</span><span class="n">email</span><span class="p">,</span>
-                  <span class="s">&quot;comment_content&quot;</span><span class="p">:</span> <span class="n">comment</span><span class="o">.</span><span class="n">body</span><span class="p">,</span>
-                  <span class="s">&quot;comment_author_name&quot;</span><span class="p">:</span> <span class="n">comment</span><span class="o">.</span><span class="n">user</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
-                  <span class="s">&quot;request_ip&quot;</span><span class="p">:</span> <span class="n">comment</span><span class="o">.</span><span class="n">author_ip</span><span class="p">}</span>
-        <span class="n">x</span> <span class="o">=</span> <span class="n">urllib</span><span class="o">.</span><span class="n">urlopen</span><span class="p">(</span><span class="s">&quot;http://apikey.rest.akismet.com/1.1/comment-check&quot;</span><span class="p">,</span> <span class="n">params</span><span class="p">)</span>
-        <span class="k">if</span> <span class="n">x</span> <span class="o">==</span> <span class="s">&quot;true&quot;</span><span class="p">:</span>
-            <span class="n">comment</span><span class="o">.</span><span class="n">spam</span> <span class="o">=</span> <span class="bp">True</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="n">comment</span><span class="o">.</span><span class="n">spam</span> <span class="o">=</span> <span class="bp">False</span>
-        <span class="n">comment</span><span class="o">.</span><span class="n">save</span><span class="p">()</span>
+     <span class="nd">@staticmethod</span>
+     <span class="k">def</span> <span class="nf">perform</span><span class="p">(</span><span class="n">comment_id</span><span class="p">):</span>
+         <span class="n">comment</span> <span class="o">=</span> <span class="n">Comment</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">pk</span><span class="o">=</span><span class="n">comment_id</span><span class="p">)</span>
+         <span class="n">params</span> <span class="o">=</span> <span class="p">{</span><span class="s">&quot;comment_author_email&quot;</span><span class="p">:</span> <span class="n">comment</span><span class="o">.</span><span class="n">user</span><span class="o">.</span><span class="n">email</span><span class="p">,</span>
+                   <span class="s">&quot;comment_content&quot;</span><span class="p">:</span> <span class="n">comment</span><span class="o">.</span><span class="n">body</span><span class="p">,</span>
+                   <span class="s">&quot;comment_author_name&quot;</span><span class="p">:</span> <span class="n">comment</span><span class="o">.</span><span class="n">user</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
+                   <span class="s">&quot;request_ip&quot;</span><span class="p">:</span> <span class="n">comment</span><span class="o">.</span><span class="n">author_ip</span><span class="p">}</span>
+         <span class="n">x</span> <span class="o">=</span> <span class="n">urllib</span><span class="o">.</span><span class="n">urlopen</span><span class="p">(</span><span class="s">&quot;http://apikey.rest.akismet.com/1.1/comment-check&quot;</span><span class="p">,</span> <span class="n">params</span><span class="p">)</span>
+         <span class="k">if</span> <span class="n">x</span> <span class="o">==</span> <span class="s">&quot;true&quot;</span><span class="p">:</span>
+             <span class="n">comment</span><span class="o">.</span><span class="n">spam</span> <span class="o">=</span> <span class="bp">True</span>
+         <span class="k">else</span><span class="p">:</span>
+             <span class="n">comment</span><span class="o">.</span><span class="n">spam</span> <span class="o">=</span> <span class="bp">False</span>
+         <span class="n">comment</span><span class="o">.</span><span class="n">save</span><span class="p">()</span>
 </pre></div>
-</div>
+</td></tr></table></div>
 <p>You can convert your existing class to be compatible with Pyres. All you need
 to do is add a &#64;queue&#64; variable and define a &#64;perform&#64; method on the class.</p>
 <p>To insert a job into the queue you need to do something like this::</p>
@@ -90,8 +116,11 @@ In the <strong>scripts</strong> folder there is an executable:</p>
       <div class="sphinxsidebar">
         <div class="sphinxsidebarwrapper">
             <h4>Previous topic</h4>
-            <p class="topless"><a href="intro.html"
-                                  title="previous chapter">Introduction</a></p>
+            <p class="topless"><a href="install.html"
+                                  title="previous chapter">Installation</a></p>
+            <h4>Next topic</h4>
+            <p class="topless"><a href="class.html"
+                                  title="next chapter">ResQ Classes</a></p>
             <h3>This Page</h3>
             <ul class="this-page-menu">
               <li><a href="_sources/example.txt"
@@ -121,7 +150,13 @@ In the <strong>scripts</strong> folder there is an executable:</p>
           <a href="genindex.html" title="General Index"
              >index</a></li>
         <li class="right" >
-          <a href="intro.html" title="Introduction"
+          <a href="modindex.html" title="Global Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="class.html" title="ResQ Classes"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="install.html" title="Installation"
              >previous</a> |</li>
         <li><a href="index.html">PyRes v0.4.1 documentation</a> &raquo;</li> 
       </ul>

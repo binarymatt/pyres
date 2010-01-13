@@ -2,4 +2,12 @@
 # Project: PyRes
 # Version: 0.4.1
 pyres mod class.html
+pyres.ResQ.enqueue method class.html
 pyres.ResQ class class.html
+pyres.worker.Worker.validate_queues method class.html
+pyres.job.Job.reserve classmethod class.html
+pyres.ResQ.info method class.html
+pyres.worker.Worker class class.html
+pyres.job.Job class class.html
+pyres.job.Job.perform method class.html
+pyres.worker.Worker.work method class.html
