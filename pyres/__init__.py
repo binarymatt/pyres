@@ -41,7 +41,22 @@ def str_to_class(s):
         return None
 
 class ResQ(object):
+    """ResQ class which defines the Queue object to enqueue jobs into various
+    queues.
     
+    Example usage::
+
+        >>> from pyres import *
+        >>> r = ResQ(server="192.168.1.10:6379", password="some_pwd")
+            # Assuming redis is running on default port with no password
+    
+    **r** is a resque object on which we can enqueue tasks.::
+
+        >>>> r.enqueue(SomeClass, args)
+
+    SomeClass can be any python class with *perform* method and a *queue* 
+    attribute on it.
+    """
     def __init__(self, server="localhost:6379", password=None, 
                  timeout=None, retry_connection=True):
         self.timeout = timeout
@@ -99,6 +114,10 @@ class ResQ(object):
     redis = property(_get_redis, _set_redis)
 
     def enqueue(self, klass, *args):
+        """
+        Enqueue a job into a specific queue. Make sure the class you are passing
+        has **queue** attribute and a **perform** method on it.
+        """
         queue = getattr(klass,'queue', None)
         #print cls._res
         if queue:
@@ -113,6 +132,10 @@ class ResQ(object):
         return self.redis.smembers("resque:queues")
     
     def info(self):
+        """
+        Returns a dictionary of the current status of the pending jobs, 
+        processed, no. of queues, no. of workers, no. of failed jobs.
+        """
         pending = 0
         for q in self.queues():
              pending += self.size(q)
@@ -173,6 +196,9 @@ class ResQ(object):
             #Job.create(queue, klass,*args)
 
 class Stat(object):
+    """
+    A Stat class which shows the current status of the queue.
+    """
     def __init__(self, name, resq):
         self.name = name
         self.key = "resque:stat:%s" % self.name
