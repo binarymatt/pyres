@@ -1,3 +1,9 @@
+## 0.5.0 (2010-0114)
+
+* added new documentation to the project
+* update setup.py
+* preparing for semantic versioning
+
 ## 0.4.1 (2010-01-06)
 
 * fixed issue with new failure package in distutils sdist

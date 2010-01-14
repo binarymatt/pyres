@@ -2,7 +2,7 @@ try:
     from setuptools import setup
 except ImportError:
     from distutils.core import setup
-version='0.4.1'
+version='0.5.0'
 setup(
     name='pyres',
     version=version,
