@@ -5,7 +5,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Welcome to PyRes’s documentation! &mdash; PyRes v0.4.1 documentation</title>
+    <title>Installation &mdash; PyRes v0.4.1 documentation</title>
     <link rel="stylesheet" href="_static/nature.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <script type="text/javascript">
@@ -19,8 +19,9 @@
     </script>
     <script type="text/javascript" src="_static/jquery.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
-    <link rel="top" title="PyRes v0.4.1 documentation" href="" />
-    <link rel="next" title="Introduction" href="intro.html" /> 
+    <link rel="top" title="PyRes v0.4.1 documentation" href="index.html" />
+    <link rel="next" title="EXAMPLE" href="example.html" />
+    <link rel="prev" title="Introduction" href="intro.html" /> 
   </head>
   <body>
     <div class="related">
@@ -33,9 +34,12 @@
           <a href="modindex.html" title="Global Module Index"
              accesskey="M">modules</a> |</li>
         <li class="right" >
-          <a href="intro.html" title="Introduction"
+          <a href="example.html" title="EXAMPLE"
              accesskey="N">next</a> |</li>
-        <li><a href="">PyRes v0.4.1 documentation</a> &raquo;</li> 
+        <li class="right" >
+          <a href="intro.html" title="Introduction"
+             accesskey="P">previous</a> |</li>
+        <li><a href="index.html">PyRes v0.4.1 documentation</a> &raquo;</li> 
       </ul>
     </div>  
 
@@ -44,29 +48,23 @@
         <div class="bodywrapper">
           <div class="body">
             
-  <div class="section" id="welcome-to-pyres-s-documentation">
-<h1>Welcome to PyRes&#8217;s documentation!<a class="headerlink" href="#welcome-to-pyres-s-documentation" title="Permalink to this headline">¶</a></h1>
-<p>Contents:</p>
-<ul>
-<li class="toctree-l1"><a class="reference external" href="intro.html">Introduction</a></li>
-<li class="toctree-l1"><a class="reference external" href="install.html">Installation</a><ul>
-<li class="toctree-l2"><a class="reference external" href="install.html#requirements">Requirements:</a></li>
-</ul>
-</li>
-<li class="toctree-l1"><a class="reference external" href="example.html">EXAMPLE</a></li>
-<li class="toctree-l1"><a class="reference external" href="class.html">ResQ Classes</a></li>
-<li class="toctree-l1"><a class="reference external" href="class.html#job-classes">Job Classes</a></li>
-<li class="toctree-l1"><a class="reference external" href="class.html#worker-classes">Worker Classes</a></li>
-<li class="toctree-l1"><a class="reference external" href="tests.html">Tests</a></li>
-</ul>
+  <div class="section" id="installation">
+<h1>Installation<a class="headerlink" href="#installation" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="requirements">
+<h2>Requirements:<a class="headerlink" href="#requirements" title="Permalink to this headline">¶</a></h2>
+<p>simplejson&gt;=2.0.9
+itty&gt;=0.6.2
+redis&gt;=0.6.0
+pystache&gt;=0.1.0</p>
+<p>Make sure you install these requirements before proceeding.</p>
+<p>To install pyres.:</p>
+<div class="highlight-python"><pre>$ git clone git://github.com/binarydud/pyres.git
+$ cd pyres
+$ python setup.py build
+$ python setup.py install</pre>
 </div>
-<div class="section" id="indices-and-tables">
-<h1>Indices and tables<a class="headerlink" href="#indices-and-tables" title="Permalink to this headline">¶</a></h1>
-<ul class="simple">
-<li><a class="reference external" href="genindex.html"><em>Index</em></a></li>
-<li><a class="reference external" href="modindex.html"><em>Module Index</em></a></li>
-<li><a class="reference external" href="search.html"><em>Search Page</em></a></li>
-</ul>
+<p>Might need to run as sudo to install.</p>
+</div>
 </div>
 
 
@@ -75,20 +73,23 @@
       </div>
       <div class="sphinxsidebar">
         <div class="sphinxsidebarwrapper">
-            <h3><a href="">Table Of Contents</a></h3>
+            <h3><a href="index.html">Table Of Contents</a></h3>
             <ul>
-<li><a class="reference external" href="">Welcome to PyRes&#8217;s documentation!</a><ul>
+<li><a class="reference external" href="">Installation</a><ul>
+<li><a class="reference external" href="#requirements">Requirements:</a></li>
 </ul>
 </li>
-<li><a class="reference external" href="#indices-and-tables">Indices and tables</a></li>
 </ul>
 
-            <h4>Next topic</h4>
+            <h4>Previous topic</h4>
             <p class="topless"><a href="intro.html"
-                                  title="next chapter">Introduction</a></p>
+                                  title="previous chapter">Introduction</a></p>
+            <h4>Next topic</h4>
+            <p class="topless"><a href="example.html"
+                                  title="next chapter">EXAMPLE</a></p>
             <h3>This Page</h3>
             <ul class="this-page-menu">
-              <li><a href="_sources/index.txt"
+              <li><a href="_sources/install.txt"
                      rel="nofollow">Show Source</a></li>
             </ul>
           <div id="searchbox" style="display: none">
@@ -118,9 +119,12 @@
           <a href="modindex.html" title="Global Module Index"
              >modules</a> |</li>
         <li class="right" >
-          <a href="intro.html" title="Introduction"
+          <a href="example.html" title="EXAMPLE"
              >next</a> |</li>
-        <li><a href="">PyRes v0.4.1 documentation</a> &raquo;</li> 
+        <li class="right" >
+          <a href="intro.html" title="Introduction"
+             >previous</a> |</li>
+        <li><a href="index.html">PyRes v0.4.1 documentation</a> &raquo;</li> 
       </ul>
     </div>
     <div class="footer">

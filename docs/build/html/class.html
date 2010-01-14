@@ -5,7 +5,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Welcome to PyRes’s documentation! &mdash; PyRes v0.4.1 documentation</title>
+    <title>ResQ Classes &mdash; PyRes v0.4.1 documentation</title>
     <link rel="stylesheet" href="_static/nature.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <script type="text/javascript">
@@ -19,8 +19,9 @@
     </script>
     <script type="text/javascript" src="_static/jquery.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
-    <link rel="top" title="PyRes v0.4.1 documentation" href="" />
-    <link rel="next" title="Introduction" href="intro.html" /> 
+    <link rel="top" title="PyRes v0.4.1 documentation" href="index.html" />
+    <link rel="next" title="Tests" href="tests.html" />
+    <link rel="prev" title="EXAMPLE" href="example.html" /> 
   </head>
   <body>
     <div class="related">
@@ -33,9 +34,12 @@
           <a href="modindex.html" title="Global Module Index"
              accesskey="M">modules</a> |</li>
         <li class="right" >
-          <a href="intro.html" title="Introduction"
+          <a href="tests.html" title="Tests"
              accesskey="N">next</a> |</li>
-        <li><a href="">PyRes v0.4.1 documentation</a> &raquo;</li> 
+        <li class="right" >
+          <a href="example.html" title="EXAMPLE"
+             accesskey="P">previous</a> |</li>
+        <li><a href="index.html">PyRes v0.4.1 documentation</a> &raquo;</li> 
       </ul>
     </div>  
 
@@ -44,29 +48,22 @@
         <div class="bodywrapper">
           <div class="body">
             
-  <div class="section" id="welcome-to-pyres-s-documentation">
-<h1>Welcome to PyRes&#8217;s documentation!<a class="headerlink" href="#welcome-to-pyres-s-documentation" title="Permalink to this headline">¶</a></h1>
-<p>Contents:</p>
-<ul>
-<li class="toctree-l1"><a class="reference external" href="intro.html">Introduction</a></li>
-<li class="toctree-l1"><a class="reference external" href="install.html">Installation</a><ul>
-<li class="toctree-l2"><a class="reference external" href="install.html#requirements">Requirements:</a></li>
-</ul>
-</li>
-<li class="toctree-l1"><a class="reference external" href="example.html">EXAMPLE</a></li>
-<li class="toctree-l1"><a class="reference external" href="class.html">ResQ Classes</a></li>
-<li class="toctree-l1"><a class="reference external" href="class.html#job-classes">Job Classes</a></li>
-<li class="toctree-l1"><a class="reference external" href="class.html#worker-classes">Worker Classes</a></li>
-<li class="toctree-l1"><a class="reference external" href="tests.html">Tests</a></li>
-</ul>
+  <div class="section" id="resq-classes">
+<span id="module-pyres"></span><h1>ResQ Classes<a class="headerlink" href="#resq-classes" title="Permalink to this headline">¶</a></h1>
+<dl class="class">
+<dt id="pyres.ResQ">
+<em class="property">
+class </em><tt class="descclassname">pyres.</tt><tt class="descname">ResQ</tt><big>(</big><em>server='localhost:6379'</em>, <em>password=None</em>, <em>timeout=None</em>, <em>retry_connection=True</em><big>)</big><a class="headerlink" href="#pyres.ResQ" title="Permalink to this definition">¶</a></dt>
+<dd><p>ResQ class which defines the Queue object to enqueue jobs into various
+queues.</p>
+<p>Example usage:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">pyres</span> <span class="kn">import</span> <span class="o">*</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">r</span> <span class="o">=</span> <span class="n">ResQ</span><span class="p">(</span><span class="n">server</span><span class="o">=</span><span class="s">&quot;192.168.1.10:6379&quot;</span><span class="p">,</span> <span class="n">password</span><span class="o">=</span><span class="s">&quot;some_pwd&quot;</span><span class="p">)</span>
+<span class="go">    # Assuming redis is running on default port with no password</span>
+</pre></div>
 </div>
-<div class="section" id="indices-and-tables">
-<h1>Indices and tables<a class="headerlink" href="#indices-and-tables" title="Permalink to this headline">¶</a></h1>
-<ul class="simple">
-<li><a class="reference external" href="genindex.html"><em>Index</em></a></li>
-<li><a class="reference external" href="modindex.html"><em>Module Index</em></a></li>
-<li><a class="reference external" href="search.html"><em>Search Page</em></a></li>
-</ul>
+</dd></dl>
+
 </div>
 
 
@@ -75,20 +72,15 @@
       </div>
       <div class="sphinxsidebar">
         <div class="sphinxsidebarwrapper">
-            <h3><a href="">Table Of Contents</a></h3>
-            <ul>
-<li><a class="reference external" href="">Welcome to PyRes&#8217;s documentation!</a><ul>
-</ul>
-</li>
-<li><a class="reference external" href="#indices-and-tables">Indices and tables</a></li>
-</ul>
-
+            <h4>Previous topic</h4>
+            <p class="topless"><a href="example.html"
+                                  title="previous chapter">EXAMPLE</a></p>
             <h4>Next topic</h4>
-            <p class="topless"><a href="intro.html"
-                                  title="next chapter">Introduction</a></p>
+            <p class="topless"><a href="tests.html"
+                                  title="next chapter">Tests</a></p>
             <h3>This Page</h3>
             <ul class="this-page-menu">
-              <li><a href="_sources/index.txt"
+              <li><a href="_sources/class.txt"
                      rel="nofollow">Show Source</a></li>
             </ul>
           <div id="searchbox" style="display: none">
@@ -118,9 +110,12 @@
           <a href="modindex.html" title="Global Module Index"
              >modules</a> |</li>
         <li class="right" >
-          <a href="intro.html" title="Introduction"
+          <a href="tests.html" title="Tests"
              >next</a> |</li>
-        <li><a href="">PyRes v0.4.1 documentation</a> &raquo;</li> 
+        <li class="right" >
+          <a href="example.html" title="EXAMPLE"
+             >previous</a> |</li>
+        <li><a href="index.html">PyRes v0.4.1 documentation</a> &raquo;</li> 
       </ul>
     </div>
     <div class="footer">
