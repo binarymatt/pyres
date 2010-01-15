@@ -17,6 +17,7 @@ class Job(object):
         """
         payload_class_str = self._payload["class"]
         payload_class = safe_str_to_class(payload_class_str)
+        payload_class.resq = self.resq
         args = self._payload.get("args", None)
         if args:
             return payload_class.perform(*args)
