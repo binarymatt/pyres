@@ -9,9 +9,12 @@ class ResWeb(pystache.View):
     template_path = TEMPLATE_PATH
     def __init__(self, host):
         super(ResWeb, self).__init__()
-        self.resq = ResQ(host)
+        self.resq = host
     def media_folder(self):
         return '/media/'
+    def close(self):
+        self.resq.close()
+    
     def address(self):
         return '%s:%s' % (self.resq.redis.host,self.resq.redis.port)
     def version(self):

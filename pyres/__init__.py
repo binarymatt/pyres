@@ -173,6 +173,12 @@ class ResQ(object):
         self.redis.srem('resque:queues',queue)
         del self.redis['resque:queue:%s' % queue]
     
+    def close(self):
+        """
+        close the underlying redis connection
+        """
+        self.redis.disconnect()
+    
     @classmethod
     def encode(cls, item):
         return simplejson.dumps(item)

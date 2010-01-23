@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 from resweb import server
-from itty import *
+from itty import run_itty
 def main():
     from optparse import OptionParser
     usage = "usage: %prog [options]"
@@ -16,7 +16,8 @@ def main():
     parser.add_option("--dsn",dest="dsn",help="redis server to display")
     (options,args) = parser.parse_args()
     if options.dsn:
-        server.HOST = options.dsn
+        from pyres import ResQ
+        server.HOST = ResQ(options.dsn)
     run_itty(host=options.host, port=options.port)
 
 if __name__ == "__main__":

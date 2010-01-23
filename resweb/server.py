@@ -14,7 +14,7 @@ from views import (
     Worker
 )
 
-HOST = "localhost:6379"
+HOST = ResQ("localhost:6379")
 MY_ROOT = os.path.join(os.path.dirname(__file__), 'media')
 #resq = ResQ(HOST)
 
