@@ -14,10 +14,16 @@ class BaseBackend(object):
     
     def _parse_traceback(self, trace):
         """Return the given traceback string formatted for a notification."""
-        p_traceback = [ "%s:%d:in `%s'" % (filename, lineno, funcname) 
-                        for filename, lineno, funcname, _
-                        in traceback.extract_tb(trace) ]
-        p_traceback.reverse()
+        reversed_backtrace = list(
+                reversed(traceback.extract_tb(trace))
+        )
+        p_traceback = []
+        for filename, lineno, funcname, text in reversed_backtrace:
+            p_traceback.append("%s:%s:%d:in `%s`" % (text, filename, lineno, funcname))
+        #p_traceback = [ "%s:%d:in `%s'" % (filename, lineno, funcname) 
+        #               for filename, lineno, funcname, _
+        #                in traceback.extract_tb(trace) ]
+        #p_traceback.reverse()
 
         return p_traceback
     

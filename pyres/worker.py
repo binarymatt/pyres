@@ -138,8 +138,9 @@ class Worker(object):
             self.working_on(job)
             job.perform()
         except Exception, e:
+            exceptionType, exceptionValue, exceptionTraceback = sys.exc_info()
             print "%s failed: %s" % (job, e)
-            job.fail(e)
+            job.fail(exceptionTraceback)
             self.failed()
         else:
             print "done: %s" % job
