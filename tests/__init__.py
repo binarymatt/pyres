@@ -11,6 +11,13 @@ class Basic(object):
         print s
         return s
 
+class ReturnAllArgsJob(object):
+    queue = 'basic'
+
+    @staticmethod
+    def perform(*args):
+        return args
+
 class TestProcess(object):
     queue = 'high'
     
