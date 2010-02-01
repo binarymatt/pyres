@@ -1,4 +1,5 @@
-from tests import PyResTests, Basic, TestProcess
+from datetime import datetime
+from tests import PyResTests, Basic, TestProcess, ReturnAllArgsJob
 from pyres.job import Job
 class JobTests(PyResTests):
     def test_reserve(self):
@@ -22,3 +23,10 @@ class JobTests(PyResTests):
         assert self.redis.llen('resque:failed') == 0
         job.fail("problem")
         assert self.redis.llen('resque:failed') == 1
+
+    def test_date_arg_type(self):
+        dt = datetime.now().replace(microsecond=0)
+        self.resq.enqueue(ReturnAllArgsJob, dt)
+        job = Job.reserve('basic',self.resq)
+        result = job.perform()
+        assert result[0] == dt

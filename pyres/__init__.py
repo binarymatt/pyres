@@ -1,7 +1,7 @@
 __version__ = '0.5.0'
 
 from redis import Redis
-import simplejson
+import pyres.json_parser as json
 
 import types
 
@@ -175,12 +175,12 @@ class ResQ(object):
     
     @classmethod
     def encode(cls, item):
-        return simplejson.dumps(item)
+        return json.dumps(item)
 
     @classmethod
     def decode(cls, item):
         if item:
-            ret = simplejson.loads(item)
+            ret = json.loads(item)
             return ret
         return None
     

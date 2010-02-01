@@ -5,7 +5,7 @@ import signal
 import datetime
 import os, sys
 import time
-import simplejson
+import json_parser as json
 
 class Worker(object):
     """
@@ -161,7 +161,7 @@ class Worker(object):
             'run_at': str(datetime.datetime.now()),
             'payload': job._payload
         }
-        data = simplejson.dumps(data)
+        data = json.dumps(data)
         self.resq.redis["resque:worker:%s" % str(self)] = data
         print "worker:%s" % str(self)
         print self.resq.redis["resque:worker:%s" % str(self)]
