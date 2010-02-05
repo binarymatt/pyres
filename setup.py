@@ -1,23 +1,19 @@
-try:
-    from setuptools import setup
-except ImportError:
-    from distutils.core import setup
+from setuptools import setup, find_packages
+    
 version='0.5.0'
 setup(
     name='pyres',
     version=version,
-    description='Python Resque clone',
+    description='Python resque clone',
     author='Matt George',
     author_email='mgeorge@gmail.com',
     maintainer='Matt George',
     license='MIT',
     url='http://github.com/binarydud/pyres',
-    packages=['pyres', 'resweb', 'pyres/failure'],
-    download_url='http://github.com/binarydud/pyres/tarball/v%s' % version,
-    package_data={'resweb': ['templates/*.mustache','media/*']},
+    packages=find_packages(exclude=['ez_setup', 'examples', 'tests']),
+    download_url='http://cloud.github.com/downloads/binarydud/pyres/pyres-v%s.tar.gz' % version,
     include_package_data=True,
     scripts=['scripts/pyres_worker', 'scripts/pyres_web'],
-    zip_safe = True,
     install_requires=[
         'simplejson>=2.0.9',
         'itty>=0.6.2',

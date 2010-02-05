@@ -32,7 +32,8 @@ def queues(request):
 
 @get('/queues/(?P<queue_id>\w+)/')
 def queue(request, queue_id):
-    return str(Queue(HOST, queue_id).render())
+    start = int(request.GET.get('start',0))
+    return str(Queue(HOST, queue_id, start).render())
 
 @get('/failed/')
 def failed(request):
