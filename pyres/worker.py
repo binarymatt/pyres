@@ -41,7 +41,6 @@ class Worker(object):
         self.resq.redis.sadd('resque:workers',str(self))
         #self.resq._redis.add("worker:#{self}:started", Time.now.to_s)
         self.started = datetime.datetime.now()
-        
     
     def _set_started(self, dt):
         if dt:
@@ -228,7 +227,7 @@ class Worker(object):
                                        grep pyres_worker").split("\n"))
     
     @classmethod
-    def run(cls, queues, server, interval):
+    def run(cls, queues, server="localhost:6379", interval):
         worker = cls(queues=queues, server=server)
         if interval is not None:
             worker.work(interval)            
