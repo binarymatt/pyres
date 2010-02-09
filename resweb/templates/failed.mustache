@@ -9,7 +9,13 @@ $(document).ready(function(){
 </script>
 <h1>Failed Jobs</h1>
 <p class='sub'>Showing {{start}} to {{end}} of <b>{{size}}</b> jobs</p>
-
+<ul class='pagination'>
+{{#pagination}}
+      <li>
+          {{#current}}<a href='{{link}}'>{{/current}}{{link_name}}{{#current}}</a>{{/current}}
+      </li>
+  {{/pagination}}
+ </ul>
 <ul class='failed'>
     {{#failed_jobs}}
     <li>

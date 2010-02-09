@@ -5,6 +5,10 @@ Version 0.6
 * better webtests
 * resweb pagination
 
+Version 0.7
+===========
+* resweb controls for failed queues
+
 Version 0.8
 ===========
 * horde package integration
@@ -13,4 +17,4 @@ Version 0.8
 Version 1.0
 ===========
 * stabilize the api
-* semantic versioniong
+* semantic versioning

@@ -1,6 +1,14 @@
 {{>header}}
+
 <h1>Pending jobs on <span class='hl'>{{queue}}</span></h1>
   <p class='sub'>Showing {{start}} to {{end}} of <b>{{size}}</b> jobs</p>
+  <ul class='pagination'>
+  {{#pagination}}
+      <li>
+          {{#current}}<a href='{{link}}'>{{/current}}{{link_name}}{{#current}}</a>{{/current}}
+      </li>
+  {{/pagination}}
+  </ul>
   <table class='jobs'>
     <tr>
       <th>Class</th>

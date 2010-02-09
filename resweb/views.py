@@ -19,7 +19,24 @@ class ResWeb(pystache.View):
         return '%s:%s' % (self.resq.redis.host,self.resq.redis.port)
     def version(self):
         return str(__version__)
-    
+    def pages(self, start, size, link_function, width=20):
+        pages = []
+
+        num_pages = size / width
+        if size % width > 0:
+            num_pages += 1
+
+        if size < width:
+            return pages
+
+        for i in range(num_pages):
+            current = True
+            if start == i*width:
+                current = False
+            link = link_function(i*width)
+            link_name = str(i+1)
+            pages.append(dict(link=link,link_name=link_name,current=current))
+        return pages
 
 class Overview(ResWeb):
     def __init__(self, host, queue=None, start=0):
@@ -138,20 +155,28 @@ class Workers(ResWeb):
             item['nodata'] = not item['data']
             workers.append(item)
         return workers
+
 class Queue(ResWeb):
     def __init__(self, host, key, start=0):
         self.key = key
         self._start = start
         super(Queue, self).__init__(host)
+    
     def start(self):
         return str(self._start)
 
     def end(self):
-        return str(self._start + 20)
+        end = self._start + 20
+        if end > int(self.size()):
+            end = self.size()
+        return str(end)
+    
     def queue(self):
         return self.key
+    
     def size(self):
         return str(self.resq.size(self.key) or 0)
+    
     def jobs(self):
         jobs = []
         for job in self.resq.peek(self.key, self._start, self._start+20):
@@ -160,6 +185,14 @@ class Queue(ResWeb):
                 'args': str(job['args'])
             })
         return jobs
+    
+    def pagination(self):
+        return self.pages(self._start, int(self.size()), self.link_func)
+    
+    def link_func(self, start):
+        return '/queues/%s/?start=%s' % (self.key, start)
+    
+
 class Failed(ResWeb):
     def __init__(self, host, start=0):
         self._start = start
@@ -184,7 +217,12 @@ class Failed(ResWeb):
             item['traceback'] = '\n'.join(job['backtrace'])
             jobs.append(item)
         return jobs
-
+    
+    def pagination(self):
+        return self.pages(self._start, int(self.size()), self.link_func)
+    
+    def link_func(self, start):
+        return '/failed/?start=%s' % start
 class Stats(ResWeb):
     def __init__(self, host, key_id):
         self.key_id = key_id

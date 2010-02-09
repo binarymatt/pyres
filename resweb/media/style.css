@@ -73,3 +73,11 @@ body { padding:0; margin:0; }
 #main p.pagination a.more { float:right;}
 
 #main form.clear-failed {float:right; margin-top:-10px;}
+
+ul.pagination{
+    list-style-type: none;
+}
+ul.pagination li{
+    text-decoration: none;
+    display:inline;
+}
