@@ -7,6 +7,7 @@ except:
 import time, os, signal
 from pyres.worker import Worker
 from pyres import ResQ
+from pyres.exceptions import NoQueueError
 from pyres.utils import OrderedDict
 import datetime
 
@@ -56,11 +57,12 @@ class Khan(object):
     def __init__(self, pool_size=5, queues=[], server='localhost:6379', password=None):
         #super(Khan,self).__init__(queues=queues,server=server,password=password)
         self._shutdown = False
-        self.pool_size = pool_size
+        self.pool_size = int(pool_size)
         self.queues = queues
         self.server = server
         self.password = password
         self.pid = os.getpid()
+        self.validate_queues()
         if isinstance(server,basestring):
             self.resq = ResQ(server=server, password=password)
         elif isinstance(server, ResQ):
@@ -68,6 +70,11 @@ class Khan(object):
         else:
             raise Exception("Bad server argument")
         #self._workers = list()
+    
+    def validate_queues(self):
+        "Checks if a worker is given atleast one queue to work on."
+        if not self.queues:
+            raise NoQueueError("Please give each worker at least one queue.")
     
     def startup(self):
         self.register_signal_handlers()
