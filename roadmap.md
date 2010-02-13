@@ -8,6 +8,7 @@ Version 0.6
 Version 0.7
 ===========
 * resweb controls for failed queues
+* scheduled tasks
 
 Version 0.8
 ===========
