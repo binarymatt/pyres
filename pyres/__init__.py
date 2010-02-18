@@ -3,7 +3,8 @@ __version__ = '0.5.0'
 from redis import Redis
 import pyres.json_parser as json
 
-import types
+#import types
+import time, datetime
 
 def my_import(name):
     mod = __import__(name)    
@@ -178,6 +179,45 @@ class ResQ(object):
         close the underlying redis connection
         """
         self.redis.disconnect()
+    
+    def enqueue_at(self, timestamp, klass, *args):
+        class_name = '%s.%s' % (klass.__module__, klass.__name__)
+        self.delayed_push(timestamp, {'class':class_name,'queue': klass.queue, 'args':args})
+    
+    def delayed_push(self, timestamp, item):
+        key = int(time.mktime(timestamp.timetuple()))
+        self.redis.push('resque:delayed:%s' % key, ResQ.encode(item))
+        self.redis.zadd('resque:delayed_queue_schedule', key, key)
+    
+    def delayed_queue_peek(self, start, count):
+        return [int(item) for item in self.redis.zrange('resque:delayed_queue_schedule', start, start+count)]
+    
+    def delayed_queue_schedule_size(self):
+        return self.redis.zcard('resque:delayed_queue_schedule')
+    
+    def delayed_timestamp_size(self, timestamp):
+        key = int(time.mktime(timestamp.timetuple()))
+        return self.redis.llen("resque:delayed:%i" % key)
+    
+    def next_delayed_timestamp(self):
+        key = int(time.mktime(datetime.datetime.now().timetuple()))
+        array = self.redis.zrangebyscore('resque:delayed_queue_schedule', '-inf', key)
+        timestamp = None
+        if array:
+            timestamp = array[0]
+        return timestamp
+    
+    def next_item_for_timestamp(self, timestamp):
+        #key = int(time.mktime(timestamp.timetuple()))
+        key = "resque:delayed:%s" % timestamp
+        ret = self.redis.pop(key)
+        item = None
+        if ret:
+            item = ResQ.decode(ret)
+        if self.redis.llen(key) == 0:
+            self.redis.delete(key)
+            self.redis.zrem('resque:delayed_queue_schedule', timestamp)
+        return item
     
     @classmethod
     def encode(cls, item):
