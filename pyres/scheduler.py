@@ -32,7 +32,7 @@ class Scheduler(object):
             time.sleep(5)
     
     def next_timestamp(self):
-        while True
+        while True:
             timestamp = self.resq.next_delayed_timestamp()
             if timestamp:
                 yield timestamp
