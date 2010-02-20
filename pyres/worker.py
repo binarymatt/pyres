@@ -212,7 +212,8 @@ class Worker(object):
             resq = ResQ(host)
         elif isinstance(host, ResQ):
             resq = host
-        return [Worker.find(w,resq) for w in resq.redis.smembers('resque:workers')]
+        
+        return [Worker.find(w,resq) for w in resq.redis.smembers('resque:workers') or []]
     
     @classmethod
     def working(cls, host):

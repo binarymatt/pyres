@@ -48,11 +48,11 @@ class WorkerTests(PyResTests):
         worker.processed()
         assert self.redis.exists("resque:stat:processed")
         assert self.redis.exists("resque:stat:processed:%s" % name)
-        assert self.redis.get("resque:stat:processed") == 1
-        assert self.redis.get("resque:stat:processed:%s" % name) == 1
+        assert self.redis.get("resque:stat:processed") == str(1)
+        assert self.redis.get("resque:stat:processed:%s" % name) == str(1)
         worker.processed()
-        assert self.redis.get("resque:stat:processed") == 2
-        assert self.redis.get("resque:stat:processed:%s" % name) == 2
+        assert self.redis.get("resque:stat:processed") == str(2)
+        assert self.redis.get("resque:stat:processed:%s" % name) == str(2)
     
     def test_failed(self):
         name = "%s:%s:%s" % (os.uname()[1],os.getpid(),'basic')
@@ -60,11 +60,11 @@ class WorkerTests(PyResTests):
         worker.failed()
         assert self.redis.exists("resque:stat:failed")
         assert self.redis.exists("resque:stat:failed:%s" % name)
-        assert self.redis.get("resque:stat:failed") == 1
-        assert self.redis.get("resque:stat:failed:%s" % name) == 1
+        assert self.redis.get("resque:stat:failed") == str(1)
+        assert self.redis.get("resque:stat:failed:%s" % name) == str(1)
         worker.failed()
-        assert self.redis.get("resque:stat:failed") == 2
-        assert self.redis.get("resque:stat:failed:%s" % name) == 2
+        assert self.redis.get("resque:stat:failed") == str(2)
+        assert self.redis.get("resque:stat:failed:%s" % name) == str(2)
     
     def test_process(self):
         name = "%s:%s:%s" % (os.uname()[1],os.getpid(),'basic')
@@ -102,8 +102,8 @@ class WorkerTests(PyResTests):
         worker.process()
         name = "%s:%s:%s" % (os.uname()[1],os.getpid(),'basic')
         assert not self.redis.get('resque:worker:%s' % worker)
-        assert self.redis.get("resque:stat:failed") == 1
-        assert self.redis.get("resque:stat:failed:%s" % name) == 1
+        assert self.redis.get("resque:stat:failed") == str(1)
+        assert self.redis.get("resque:stat:failed:%s" % name) == str(1)
     
     def test_get_job(self):
         worker = Worker(['basic'])

@@ -51,9 +51,9 @@ class PyResTests(unittest.TestCase):
     def setUp(self):
         self.resq = ResQ()
         self.redis = self.resq.redis
-        self.redis.flush(True)
+        self.redis.flushall()
     
     def tearDown(self):
-        self.redis.flush(True)
+        self.redis.flushall()
         del self.redis
         del self.resq
