@@ -36,9 +36,13 @@ def main():
         
     logging.basicConfig(level=log_level, format="%(asctime)s: %(levelname)s: %(message)s")
 
+    interval = options.interval
+    if interval is not None: 
+        interval = float(interval)
+
     queues = args[0].split(',')
     server = '%s:%s' % (options.host,options.port)
-    Worker.run(queues, server, options.interval)
+    Worker.run(queues, server, interval)
 
 if __name__ == "__main__":
     main()
