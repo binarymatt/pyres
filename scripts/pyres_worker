@@ -7,13 +7,14 @@ def main():
     #parser.add_option("-q", dest="queue_list")
     parser.add_option("--host", dest="host", default="localhost")
     parser.add_option("--port",dest="port",type="int", default=6379)
+    parser.add_option("-i", '--interval', dest='interval', default=None, help='the default time interval to sleep between runs')    
     (options,args) = parser.parse_args()
     if len(args) != 1:
         parser.print_help()
         parser.error("Argument must be a comma seperated list of queues")
     queues = args[0].split(',')
     server = '%s:%s' % (options.host,options.port)
-    Worker.run(queues, server)
+    Worker.run(queues, server, options.interval)
 
 if __name__ == "__main__":
     main()

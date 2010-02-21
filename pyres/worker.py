@@ -203,9 +203,12 @@ class Worker(object):
         return 'working' if self.resq.redis.exists('resque:worker:%s' % self) else 'idle'
     
     @classmethod
-    def run(cls, queues, server):
+    def run(cls, queues, server, interval):
         worker = cls(queues=queues, server=server)
-        worker.work()
+        if interval is not None:
+            worker.work(interval)            
+        else:
+            worker.work()
     
     @classmethod
     def all(cls, host="localhost:6379"):
