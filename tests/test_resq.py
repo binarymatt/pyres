@@ -90,3 +90,13 @@ class ResQTests(PyResTests):
         assert 'queue:basic' in self.resq.keys()
         assert 'queues' in self.resq.keys()
     
+    def test_queues(self):
+        assert self.resq.queues() == []
+        self.resq.enqueue_from_string('tests.Basic','basic','test1')
+        assert len(self.resq.queues()) == 1
+        self.resq.enqueue_from_string('tests.Basic','basic','test1')
+        assert len(self.resq.queues()) == 1
+        self.resq.enqueue_from_string('tests.Basic','basic2','test1')
+        assert len(self.resq.queues()) == 2
+        assert 'test' not in self.resq.queues()
+        assert 'basic' in self.resq.queues()

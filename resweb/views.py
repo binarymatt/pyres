@@ -313,12 +313,14 @@ class Stat(ResWeb):
     def items(self):
         items = []
         if self.key_type() == 'list':
-            for k in self.resq.redis.lrange('resque:'+self.stat_id,0,20):
+            lst = self.resq.redis.lrange('resque:'+self.stat_id,0,20) or []
+            for k in lst:
                 items.append({
                     'row':str(k)
                 })
         elif self.key_type() == 'set':
-            for k in self.resq.redis.smembers('resque:'+self.stat_id):
+            st = self.resq.redis.smembers('resque:'+self.stat_id) or set([])
+            for k in st:
                 items.append({
                     'row':str(k)
                 })
