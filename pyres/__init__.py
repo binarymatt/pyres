@@ -3,6 +3,8 @@ __version__ = '0.5.0'
 from redis import Redis
 import pyres.json_parser as json
 
+import logging
+
 def my_import(name):
     """Helper function for walking import calls when searching for classes by string names."""
     mod = __import__(name)    
@@ -73,10 +75,7 @@ class ResQ(object):
     attribute on it.
     
     """
-    def __init__(self, server="localhost:6379", password=None, 
-                 timeout=None, retry_connection=True):
-        self.timeout = timeout
-        #self.retry_connection = retry_connection
+    def __init__(self, server="localhost:6379", password=None):
         self.redis = server
         if password:
             self.redis.auth(password)
@@ -133,14 +132,18 @@ class ResQ(object):
         
         """
         queue = getattr(klass,'queue', None)
-        #print cls._res
         if queue:
             class_name = '%s.%s' % (klass.__module__, klass.__name__)
-            #print class_name
             self.push(queue, {'class':class_name,'args':args})
-            #Job.create(queue, klass,*args)
+            logging.info("enqueued '%s' job" % class_name)
+            logging.debug("job arguments: %s" % args)
+        else:
+            logging.warning("unable to enqueue job with class %s" % str(klass))
+
     def enqueue_from_string(self, klass_as_string, queue, *args):
         self.push(queue, {'class':klass_as_string,'args':args})
+        logging.info("enqueued '%s' job" % class_name)
+        logging.debug("job arguments: %s" % args)
     
     def queues(self):
         return self.redis.smembers("resque:queues") or []
@@ -207,13 +210,11 @@ class ResQ(object):
     @classmethod
     def _enqueue(cls, klass, *args):
         queue = getattr(klass,'queue', None)
-        #print cls._res
         _self = cls()
         if queue:
             class_name = '%s.%s' % (klass.__module__, klass.__name__)
-            #print class_name
             _self.push(queue, {'class':class_name,'args':args})
-            #Job.create(queue, klass,*args)
+
 
 class Stat(object):
     """A Stat class which shows the current status of the queue.

@@ -1,6 +1,7 @@
 from pyres.exceptions import NoQueueError
 from pyres.job import Job
 from pyres import ResQ, Stat
+import logging
 import signal
 import datetime
 import os, sys
@@ -80,7 +81,7 @@ class Worker(object):
     
     def kill_child(self, signum, frame):
         if self.child:
-            print "Killing child at %s" % self.child
+            logging.info("Killing child at %s" % self.child)
             os.kill(self.child, signal.SIGKILL)
             
     def __str__(self):
@@ -105,14 +106,15 @@ class Worker(object):
         self.startup()
         while True:
             if self._shutdown:
-                print 'shutdown scheduled'
+                logging.info('shutdown scheduled')
                 break
             job = self.reserve()
             if job:
-                print "got: %s" % job
+                logging.info('picked up job')
+                logging.debug('job details: %s' % job)
                 self.child = os.fork()
                 if self.child:
-                    print 'Forked %s at %s' % (self.child, datetime.datetime.now())
+                    logging.info('Forked %s at %s' % (self.child, datetime.datetime.now()))
                     try:
                         os.waitpid(self.child, 0)
                     except OSError, ose:
@@ -120,9 +122,9 @@ class Worker(object):
                         if ose.errno != errno.EINTR:
                             raise ose
                     #os.wait()
-                    print 'Done waiting'
+                    logging.debug('done waiting')
                 else:
-                    print 'Processing %s since %s' % (job._queue, datetime.datetime.now())
+                    logging.info('Processing %s since %s' % (job._queue, datetime.datetime.now()))
                     self.process(job)
                     os._exit(0)
                 self.child = None
@@ -140,24 +142,25 @@ class Worker(object):
             job.perform()
         except Exception, e:
             exceptionType, exceptionValue, exceptionTraceback = sys.exc_info()
-            print "%s failed: %s" % (job, e)
+            logging.error("%s failed: %s" % (job, e))
             job.fail(exceptionTraceback)
             self.failed()
         else:
-            print "done: %s" % job
+            logging.info('completed job')
+            logging.debug('job details: %s' % job)
         finally:
             self.done_working()
     
     def reserve(self):
         for q in self.queues:
-            print "Checking %s" % q
+            logging.debug('checking queue %s' % q)
             job = Job.reserve(q, self.resq, self.__str__())
             if job:
-                print "Found job on %s" % q
+                logging.info('Found job on %s' % q)
                 return job
     
     def working_on(self, job):
-        print 'marking as working on'
+        logging.debug('marking as working on')
         data = {
             'queue': job._queue,
             'run_at': str(datetime.datetime.now()),
@@ -165,11 +168,11 @@ class Worker(object):
         }
         data = json.dumps(data)
         self.resq.redis["resque:worker:%s" % str(self)] = data
-        print "worker:%s" % str(self)
-        print self.resq.redis["resque:worker:%s" % str(self)]
+        logging.debug("worker:%s" % str(self))
+        logging.debug(self.resq.redis["resque:worker:%s" % str(self)])
     
     def done_working(self):
-        print 'done working'
+        logging.info('done working')
         self.processed()
         self.resq.redis.delete("resque:worker:%s" % str(self))
     
