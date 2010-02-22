@@ -1,0 +1,30 @@
+{{>header}}
+
+<h1>Delayed jobs scheduled for {{formated_timestamp}}</h1>
+
+<p class='sub'>Showing {{start}} to {{end}} of <b>{{size}}</b> jobs</p>
+
+<table class='jobs'>
+  <tr>
+    <th>Class</th>
+    <th>Args</th>
+  </tr>
+  {{#jobs}}
+    <tr>
+      <td class='class'>{{class}}</td>
+      <td class='args'>{{args}}</td>
+    </tr>
+  {{/jobs}}
+  {{#no_jobs}}
+    <tr>
+      <td class='no-data' colspan='2'>There are no pending jobs scheduled for this time.</td>
+    </tr>
+  {{/no_jobs}}
+</table>
+
+{{#pagination}}
+  <li>
+      {{#current}}<a href='{{link}}'>{{/current}}{{link_name}}{{#current}}</a>{{/current}}
+  </li>
+{{/pagination}}
+{{>footer}}

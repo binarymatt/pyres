@@ -34,9 +34,9 @@ class ScheduleTests(PyResTests):
         key = int(time.mktime(d.timetuple()))
         key2 = int(time.mktime(d2.timetuple()))
         self.resq.enqueue_at(d, Basic,"test1")
-        assert self.resq.delayed_timestamp_size(d) == 1
+        assert self.resq.delayed_timestamp_size(key) == 1
         self.resq.enqueue_at(d, Basic,"test1")
-        assert self.resq.delayed_timestamp_size(d) == 2
+        assert self.resq.delayed_timestamp_size(key) == 2
     
     def test_next_delayed_timestamp(self):
         d = datetime.datetime.now() + datetime.timedelta(days=-1)

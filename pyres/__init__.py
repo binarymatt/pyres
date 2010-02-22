@@ -177,24 +177,27 @@ class ResQ(object):
         """
         self.redis.disconnect()
     
-    def enqueue_at(self, timestamp, klass, *args):
+    def enqueue_at(self, datetime, klass, *args):
         class_name = '%s.%s' % (klass.__module__, klass.__name__)
-        self.delayed_push(timestamp, {'class':class_name,'queue': klass.queue, 'args':args})
+        self.delayed_push(datetime, {'class':class_name,'queue': klass.queue, 'args':args})
     
-    def delayed_push(self, timestamp, item):
-        key = int(time.mktime(timestamp.timetuple()))
+    def delayed_push(self, datetime, item):
+        key = int(time.mktime(datetime.timetuple()))
         self.redis.rpush('resque:delayed:%s' % key, ResQ.encode(item))
         self.redis.zadd('resque:delayed_queue_schedule', key, key)
     
     def delayed_queue_peek(self, start, count):
-        return [int(item) for item in self.redis.zrange('resque:delayed_queue_schedule', start, start+count)]
+        return [int(item) for item in self.redis.zrange('resque:delayed_queue_schedule', start, start+count) or []]
     
+    def delayed_timestamp_peek(self, timestamp, start, count):
+        return self.list_range('resque:delayed:%s' % timestamp, start, count)
+        
     def delayed_queue_schedule_size(self):
         return self.redis.zcard('resque:delayed_queue_schedule')
     
     def delayed_timestamp_size(self, timestamp):
-        key = int(time.mktime(timestamp.timetuple()))
-        return self.redis.llen("resque:delayed:%i" % key)
+        #key = int(time.mktime(timestamp.timetuple()))
+        return self.redis.llen("resque:delayed:%s" % timestamp)
     
     def next_delayed_timestamp(self):
         key = int(time.mktime(datetime.datetime.now().timetuple()))

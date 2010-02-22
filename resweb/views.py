@@ -1,24 +1,30 @@
 import pystache
 
-from pyres import ResQ, __version__
+from pyres import __version__
 from pyres.worker import Worker as Wrkr
 from pyres import failure
 import os
+import datetime
+
 TEMPLATE_PATH = os.path.join(os.path.dirname(__file__), 'templates')
 class ResWeb(pystache.View):
     template_path = TEMPLATE_PATH
     def __init__(self, host):
         super(ResWeb, self).__init__()
         self.resq = host
+    
     def media_folder(self):
         return '/media/'
+    
     def close(self):
         self.resq.close()
     
     def address(self):
         return '%s:%s' % (self.resq.redis.host,self.resq.redis.port)
+    
     def version(self):
         return str(__version__)
+    
     def pages(self, start, size, link_function, width=20):
         pages = []
 
@@ -406,6 +412,80 @@ class Worker(ResWeb):
         item['nodata'] = not item['data']
         """
         pass
+
+class Delayed(ResWeb):
+    def __init__(self, host, start=0):
+        self._start = start
+        super(Delayed, self).__init__(host)
+
+    def start(self):
+        return str(self._start)
+
+    def end(self):
+        return str(self._start + 20)
+
+    def size(self):
+        item = self.resq.delayed_queue_schedule_size() or 0
+        return str(item)
+
+    def jobs(self):
+        jobs = []
+        for timestamp in self.resq.delayed_queue_peek(self.start(), self.end()):
+            t = datetime.datetime.fromtimestamp(float(timestamp))
+            item = dict(timestamp=str(timestamp))
+            item['size'] = str(self.resq.delayed_timestamp_size(timestamp))
+            
+            item['formated_time'] = str(t)
+            
+            jobs.append(item)
+        return jobs
+
+    def pagination(self):
+        return self.pages(self._start, int(self.size()), self.link_func)
+
+    def link_func(self, start):
+        return '/delayed/?start=%s' % start
+
+class DelayedTimestamp(ResWeb):
+    def __init__(self, host, timestamp, start=0):
+        self._start = start
+        self._timestamp = timestamp
+        super(DelayedTimestamp, self).__init__(host)
+    
+    def formated_timestamp(self):
+        return str(datetime.datetime.fromtimestamp(float(self._timestamp)))
+    
+    def start(self):
+        return str(self._start)
+
+    def end(self):
+        return str(self._start + 20)
+
+    def size(self):
+        item = self.resq.delayed_timestamp_size(self._timestamp) or 0
+        return str(item)
+
+    def jobs(self):
+        jobs = []
+        for job in self.resq.delayed_timestamp_peek(self._timestamp, int(self.start()), int(self.end())):
+            item = {
+                'class': str(job['class']),
+                'args': str(job['args'])
+            }
+            jobs.append(item)
+        return jobs
+    
+    def no_jobs(self):
+        if int(self.size()) > 0:
+            return False
+        return True
+    
+    def pagination(self):
+        return self.pages(self._start, int(self.size()), self.link_func)
+
+    def link_func(self, start):
+        return '/delayed/?start=%s' % start
+
 def redis_size(key, resq):
     key_type = resq.redis.get_type('resque:'+key)
     item = 0
