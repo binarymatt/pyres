@@ -48,11 +48,13 @@ class WorkerTests(PyResTests):
         worker.processed()
         assert self.redis.exists("resque:stat:processed")
         assert self.redis.exists("resque:stat:processed:%s" % name)
-        assert self.redis.get("resque:stat:processed") == 1
-        assert self.redis.get("resque:stat:processed:%s" % name) == 1
+        assert self.redis.get("resque:stat:processed") == str(1)
+        assert self.redis.get("resque:stat:processed:%s" % name) == str(1)
+        assert worker.get_processed() == 1
         worker.processed()
-        assert self.redis.get("resque:stat:processed") == 2
-        assert self.redis.get("resque:stat:processed:%s" % name) == 2
+        assert self.redis.get("resque:stat:processed") == str(2)
+        assert self.redis.get("resque:stat:processed:%s" % name) == str(2)
+        assert worker.get_processed() == 2
     
     def test_failed(self):
         name = "%s:%s:%s" % (os.uname()[1],os.getpid(),'basic')
@@ -60,11 +62,13 @@ class WorkerTests(PyResTests):
         worker.failed()
         assert self.redis.exists("resque:stat:failed")
         assert self.redis.exists("resque:stat:failed:%s" % name)
-        assert self.redis.get("resque:stat:failed") == 1
-        assert self.redis.get("resque:stat:failed:%s" % name) == 1
+        assert self.redis.get("resque:stat:failed") == str(1)
+        assert self.redis.get("resque:stat:failed:%s" % name) == str(1)
+        assert worker.get_failed() == 1
         worker.failed()
-        assert self.redis.get("resque:stat:failed") == 2
-        assert self.redis.get("resque:stat:failed:%s" % name) == 2
+        assert self.redis.get("resque:stat:failed") == str(2)
+        assert self.redis.get("resque:stat:failed:%s" % name) == str(2)
+        assert worker.get_failed() == 2
     
     def test_process(self):
         name = "%s:%s:%s" % (os.uname()[1],os.getpid(),'basic')
@@ -102,8 +106,8 @@ class WorkerTests(PyResTests):
         worker.process()
         name = "%s:%s:%s" % (os.uname()[1],os.getpid(),'basic')
         assert not self.redis.get('resque:worker:%s' % worker)
-        assert self.redis.get("resque:stat:failed") == 1
-        assert self.redis.get("resque:stat:failed:%s" % name) == 1
+        assert self.redis.get("resque:stat:failed") == str(1)
+        assert self.redis.get("resque:stat:failed:%s" % name) == str(1)
     
     def test_get_job(self):
         worker = Worker(['basic'])
@@ -112,6 +116,7 @@ class WorkerTests(PyResTests):
         worker.working_on(job)
         name = "%s:%s:%s" % (os.uname()[1],os.getpid(),'basic')
         assert worker.job() == ResQ.decode(self.redis.get('resque:worker:%s' % name))
+        assert worker.processing() == ResQ.decode(self.redis.get('resque:worker:%s' % name))
         worker.done_working()
         w2 = Worker(['basic'])
         print w2.job()
@@ -139,3 +144,15 @@ class WorkerTests(PyResTests):
         assert worker.started == datetime.datetime.strptime(dt.strftime('%Y-%m-%d %H:%M:%S'),'%Y-%m-%d %H:%M:%S')
         worker.started = None
         assert not self.redis.exists('resque:worker:%s:started' % name)
+    
+    def test_state(self):
+        worker = Worker(['basic'])
+        assert worker.state() == 'idle'
+        self.resq.enqueue_from_string('tests.Basic','basic','test1')
+        worker.register_worker()
+        job = Job.reserve('basic', self.resq)
+        worker.working_on(job)
+        assert worker.state() == 'working'
+        worker.done_working()
+        assert worker.state() == 'idle'
+    

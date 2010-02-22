@@ -3,8 +3,6 @@ __version__ = '0.5.0'
 from redis import Redis
 import pyres.json_parser as json
 
-import types
-
 def my_import(name):
     mod = __import__(name)    
     components = name.split('.')    
@@ -60,7 +58,7 @@ class ResQ(object):
     def __init__(self, server="localhost:6379", password=None, 
                  timeout=None, retry_connection=True):
         self.timeout = timeout
-        self.retry_connection = retry_connection
+        #self.retry_connection = retry_connection
         self.redis = server
         if password:
             self.redis.auth(password)
@@ -68,10 +66,10 @@ class ResQ(object):
 
     def push(self, queue, item):
         self.watch_queue(queue)
-        self.redis.push("resque:queue:%s" % queue, ResQ.encode(item))
+        self.redis.rpush("resque:queue:%s" % queue, ResQ.encode(item))
 
     def pop(self, queue):
-        ret = self.redis.pop("resque:queue:%s" % queue)
+        ret = self.redis.lpop("resque:queue:%s" % queue)
         if ret:
             return ResQ.decode(ret)
         return ret
@@ -90,7 +88,7 @@ class ResQ(object):
         return self.list_range('resque:queue:%s' % queue, start, count)
 
     def list_range(self, key, start, count):
-        items = self.redis.lrange(key, start,start+count-1)
+        items = self.redis.lrange(key, start,start+count-1) or []
         ret_list = []
         for i in items:
             ret_list.append(ResQ.decode(i))
@@ -103,9 +101,7 @@ class ResQ(object):
         if isinstance(server, basestring):
             self.dsn = server
             host, port = server.split(':')
-            self._redis = Redis(host=host, port=int(port), 
-                                retry_connection=self.retry_connection,
-                                timeout=self.timeout)
+            self._redis = Redis(host=host, port=int(port))
         elif isinstance(server, Redis):
             self.dsn = '%s:%s' % (server.host,server.port)
             self._redis = server
@@ -129,7 +125,7 @@ class ResQ(object):
         self.push(queue, {'class':klass_as_string,'args':args})
     
     def queues(self):
-        return self.redis.smembers("resque:queues")
+        return self.redis.smembers("resque:queues") or []
     
     def info(self):
         """

@@ -43,17 +43,26 @@ class LongObject(object):
         import time
         time.sleep(sleep_time)
         print 'Done Sleeping'
+
 def test_str_to_class():
     ret = str_to_class('tests.Basic')
     assert ret
+    assert ret == Basic
+    assert str_to_class('hello.World') == None
+
+def test_safe_str_to_class():
+    from pyres import safe_str_to_class
+    assert safe_str_to_class('tests.Basic') == Basic
+    assert safe_str_to_class('test.Mine') == None
+    assert safe_str_to_class('hello.World') == None
 
 class PyResTests(unittest.TestCase):
     def setUp(self):
         self.resq = ResQ()
         self.redis = self.resq.redis
-        self.redis.flush(True)
+        self.redis.flushall()
     
     def tearDown(self):
-        self.redis.flush(True)
+        self.redis.flushall()
         del self.redis
         del self.resq

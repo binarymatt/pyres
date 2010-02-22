@@ -15,7 +15,7 @@ class RedisBackend(BaseBackend):
         if self._worker:
             data['worker'] = self._worker
         data = ResQ.encode(data)
-        resq.redis.push('resque:failed', data)
+        resq.redis.rpush('resque:failed', data)
     
     @classmethod
     def count(cls, resq):
