@@ -45,7 +45,7 @@ class ScheduleTests(PyResTests):
         key2 = int(time.mktime(d2.timetuple()))
         self.resq.enqueue_at(d, Basic,"test1")
         self.resq.enqueue_at(d2, Basic,"test1")
-        item = self.resq.next_delayed_timestamp()
+        int(item) = self.resq.next_delayed_timestamp()
         assert  item == key2
     
     def test_next_item_for_timestamp(self):
