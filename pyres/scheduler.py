@@ -15,21 +15,27 @@ class Scheduler(object):
             raise Exception("Bad server argument")
     
     def register_signal_handlers(self):
+        print 'registering signals'
         signal.signal(signal.SIGTERM, self.schedule_shutdown)
         signal.signal(signal.SIGINT, self.schedule_shutdown)
         signal.signal(signal.SIGQUIT, self.schedule_shutdown)
     
-    def schedule_shutdown(self):
+    def schedule_shutdown(self, signal, frame):
+        print 'shutting down started'
         self._shutdown = True
     
-    def run(self):
+    def __call__(self):
+        print 'starting up'
         self.register_signal_handlers()
         #self.load_schedule()
+        print 'looking for delayed items'
         while True:
             if self._shutdown is True:
                 break
             self.handle_delayed_items()
+            print 'sleeping'
             time.sleep(5)
+        print 'shutting down complete'
     
     def next_timestamp(self):
         while True:
@@ -50,12 +56,18 @@ class Scheduler(object):
     
     def handle_delayed_items(self):
         for timestamp in self.next_timestamp():
+            print 'handling timestamp: %s' % timestamp
             for item in self.next_item(timestamp):
-                print 'queueing item'
+                print 'queueing item %s' % item
                 klass = item['class']
                 queue = item['queue']
                 args = item['args']
-                self.resq.enqueue_from_string(klass, queue, args)
+                self.resq.enqueue_from_string(klass, queue, *args)
             
         
+    @classmethod
+    def run(cls, server, password=None):
+        sched = cls(server=server, password=password)
+        sched()
+    
     

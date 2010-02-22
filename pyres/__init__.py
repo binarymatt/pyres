@@ -183,7 +183,7 @@ class ResQ(object):
     
     def delayed_push(self, timestamp, item):
         key = int(time.mktime(timestamp.timetuple()))
-        self.redis.push('resque:delayed:%s' % key, ResQ.encode(item))
+        self.redis.rpush('resque:delayed:%s' % key, ResQ.encode(item))
         self.redis.zadd('resque:delayed_queue_schedule', key, key)
     
     def delayed_queue_peek(self, start, count):
@@ -207,7 +207,7 @@ class ResQ(object):
     def next_item_for_timestamp(self, timestamp):
         #key = int(time.mktime(timestamp.timetuple()))
         key = "resque:delayed:%s" % timestamp
-        ret = self.redis.pop(key)
+        ret = self.redis.lpop(key)
         item = None
         if ret:
             item = ResQ.decode(ret)
