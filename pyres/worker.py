@@ -8,12 +8,12 @@ import time
 import json_parser as json
 
 class Worker(object):
-    """
-    Defines a worker. The *pyres_worker* script instantiates this Worker class and
-    pass a comma seperate list of queues to listen on.::
+    """Defines a worker. The ``pyres_worker`` script instantiates this Worker class and
+    passes a comma-separated list of queues to listen on.::
     
        >>> from pyres.worker import Worker
        >>> Worker.run([queue1, queue2], server="localhost:6379")
+       
     """
     def __init__(self, queues=[], server="localhost:6379", password=None):
         self.queues = queues
@@ -30,7 +30,7 @@ class Worker(object):
         
     
     def validate_queues(self):
-        "Checks if a worker is given atleast one queue to work on."
+        """Checks if a worker is given at least one queue to work on."""
         if not self.queues:
             raise NoQueueError("Please give each worker at least one queue.")
     
@@ -90,16 +90,17 @@ class Worker(object):
         return '%s:%s:%s' % (hostname, self.pid, ','.join(self.queues))
          
     def work(self, interval=5):
-        """Invoked by run() method. work() listens on a list of queues and sleeps
-        for *interval* time. 
+        """Invoked by ``run`` method. ``work`` listens on a list of queues and sleeps
+        for ``interval`` time. 
         
-        default  --  5 secs
+        ``interval`` -- Number of seconds the worker will wait until processing the next job. Default is "5".
         
         Whenever a worker finds a job on the queue it first calls ``reserve`` on
-        that job to make sure other worker won't run it, then *Forks* itself to 
+        that job to make sure another worker won't run it, then *forks* itself to 
         work on that job.
         
-        Finally process() method actually processes the job.
+        Finally, the ``process`` method actually processes the job by eventually calling the Job instance's ``perform`` method.
+        
         """
         self.startup()
         while True:

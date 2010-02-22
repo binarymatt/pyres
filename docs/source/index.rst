@@ -9,13 +9,15 @@ Welcome to pyres's documentation!
 Contents:
 
 .. toctree::
-   :maxdepth: 2
+	:maxdepth: 2
 
-   intro
-   install
-   example
-   class
-   tests
+	intro
+	install
+	example
+	class
+	tests
+	failures
+
 
 Indices and tables
 ==================

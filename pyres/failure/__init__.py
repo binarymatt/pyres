@@ -2,7 +2,9 @@ import datetime
 from pyres import ResQ 
 import sys, traceback
 from pyres.failure.redis import RedisBackend
+
 _backend = RedisBackend
+
 def create(*args, **kwargs):
     return _backend(*args, **kwargs)
 

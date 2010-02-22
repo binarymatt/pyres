@@ -34,9 +34,9 @@ to do is add a :attr:`queue` attribute and define a :meth:`perform` method on th
 
 To insert a job into the queue you need to do something like this::
 
-    from pyres import ResQ
-    r = Resq()
-    r.enqueue(Spam, 23)   # Passing the comment id 23
+    >>> from pyres import ResQ
+    >>> r = Resq()
+    >>> r.enqueue(Spam, 23)   # Passing the comment id 23
 
 This puts a job into the queue **Spam**. Now we need to fire off our workers. 
 In the **scripts** folder there is an executable::

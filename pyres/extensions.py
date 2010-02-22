@@ -8,6 +8,7 @@ from pyres import ResQ
     
 from pyres.exceptions import NoQueueError
 from pyres.worker import Worker
+
 class JuniorWorker(Worker):
     def work(self, interval=5):
         self.startup()

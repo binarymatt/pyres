@@ -4,17 +4,25 @@ ResQ Classes
 ==========================================
 
 .. autoclass:: pyres.ResQ
-   :members:
-
+	:members:
 
 Job Classes
 =================
 
 .. autoclass:: pyres.job.Job
-   :members:
+	:members:
 
 Worker Classes
 =================
 
 .. autoclass:: pyres.worker.Worker
-   :members:
+	:members:
+
+Failure Classes
+=================
+
+.. autoclass:: pyres.failure.base.BaseBackend
+	:members:
+	
+.. autoclass:: pyres.failure.RedisBackend
+	:members:
