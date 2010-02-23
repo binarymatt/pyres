@@ -5,13 +5,13 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>ResQ Classes &mdash; PyRes v0.4.1 documentation</title>
+    <title>ResQ Classes &mdash; pyres v0.5.0 documentation</title>
     <link rel="stylesheet" href="_static/nature.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
-        URL_ROOT:    '',
-        VERSION:     '0.4.1',
+        URL_ROOT:    '#',
+        VERSION:     '0.5.0',
         COLLAPSE_MODINDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -19,9 +19,9 @@
     </script>
     <script type="text/javascript" src="_static/jquery.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
-    <link rel="top" title="PyRes v0.4.1 documentation" href="index.html" />
+    <link rel="top" title="pyres v0.5.0 documentation" href="index.html" />
     <link rel="next" title="Tests" href="tests.html" />
-    <link rel="prev" title="EXAMPLE" href="example.html" /> 
+    <link rel="prev" title="Example" href="example.html" /> 
   </head>
   <body>
     <div class="related">
@@ -37,9 +37,9 @@
           <a href="tests.html" title="Tests"
              accesskey="N">next</a> |</li>
         <li class="right" >
-          <a href="example.html" title="EXAMPLE"
+          <a href="example.html" title="Example"
              accesskey="P">previous</a> |</li>
-        <li><a href="index.html">PyRes v0.4.1 documentation</a> &raquo;</li> 
+        <li><a href="index.html">pyres v0.5.0 documentation</a> &raquo;</li> 
       </ul>
     </div>  
 
@@ -52,16 +52,141 @@
 <span id="module-pyres"></span><h1>ResQ Classes<a class="headerlink" href="#resq-classes" title="Permalink to this headline">¶</a></h1>
 <dl class="class">
 <dt id="pyres.ResQ">
-<em class="property">
-class </em><tt class="descclassname">pyres.</tt><tt class="descname">ResQ</tt><big>(</big><em>server='localhost:6379'</em>, <em>password=None</em>, <em>timeout=None</em>, <em>retry_connection=True</em><big>)</big><a class="headerlink" href="#pyres.ResQ" title="Permalink to this definition">¶</a></dt>
-<dd><p>ResQ class which defines the Queue object to enqueue jobs into various
-queues.</p>
+<em class="property">class </em><tt class="descclassname">pyres.</tt><tt class="descname">ResQ</tt><big>(</big><em>server='localhost:6379'</em>, <em>password=None</em>, <em>timeout=None</em>, <em>retry_connection=True</em><big>)</big><a class="headerlink" href="#pyres.ResQ" title="Permalink to this definition">¶</a></dt>
+<dd><p>The ResQ class defines the Redis server object to which we will
+enqueue jobs into various queues.</p>
+<p>The <tt class="docutils literal"><span class="pre">__init__</span></tt> takes these keyword arguments:</p>
+<blockquote>
+<p><tt class="docutils literal"><span class="pre">server</span></tt> &#8211; IP address and port of the Redis server to which you want to connect. Default is <cite>localhost:6379</cite>.</p>
+<p><tt class="docutils literal"><span class="pre">password</span></tt> &#8211; The password, if required, of your Redis server. Default is &#8220;None&#8221;.</p>
+<p><tt class="docutils literal"><span class="pre">timeout</span></tt> &#8211; The timeout keyword is in the signature, but is unused. Default is &#8220;None&#8221;.</p>
+<p><tt class="docutils literal"><span class="pre">retry_connection</span></tt> &#8211; This keyword is in the signature but is deprecated. Default is &#8220;True&#8221;.</p>
+</blockquote>
+<p>Both <tt class="docutils literal"><span class="pre">timeout</span></tt> and <tt class="docutils literal"><span class="pre">retry_connection</span></tt> will be removed as the python-redis client
+no longer uses them.</p>
 <p>Example usage:</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">pyres</span> <span class="kn">import</span> <span class="o">*</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">r</span> <span class="o">=</span> <span class="n">ResQ</span><span class="p">(</span><span class="n">server</span><span class="o">=</span><span class="s">&quot;192.168.1.10:6379&quot;</span><span class="p">,</span> <span class="n">password</span><span class="o">=</span><span class="s">&quot;some_pwd&quot;</span><span class="p">)</span>
 <span class="go">    # Assuming redis is running on default port with no password</span>
 </pre></div>
 </div>
+<p><strong>r</strong> is a resque object on which we can enqueue tasks.:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="go">&gt;&gt;&gt;&gt; r.enqueue(SomeClass, args)</span>
+</pre></div>
+</div>
+<p>SomeClass can be any python class with a <em>perform</em> method and a <em>queue</em> 
+attribute on it.</p>
+<dl class="method">
+<dt id="pyres.ResQ.close">
+<tt class="descname">close</tt><big>(</big><big>)</big><a class="headerlink" href="#pyres.ResQ.close" title="Permalink to this definition">¶</a></dt>
+<dd>Close the underlying redis connection.</dd></dl>
+
+<dl class="method">
+<dt id="pyres.ResQ.enqueue">
+<tt class="descname">enqueue</tt><big>(</big><em>klass</em>, <em>*args</em><big>)</big><a class="headerlink" href="#pyres.ResQ.enqueue" title="Permalink to this definition">¶</a></dt>
+<dd>Enqueue a job into a specific queue. Make sure the class you are passing
+has <strong>queue</strong> attribute and a <strong>perform</strong> method on it.</dd></dl>
+
+<dl class="method">
+<dt id="pyres.ResQ.info">
+<tt class="descname">info</tt><big>(</big><big>)</big><a class="headerlink" href="#pyres.ResQ.info" title="Permalink to this definition">¶</a></dt>
+<dd>Returns a dictionary of the current status of the pending jobs, 
+processed, no. of queues, no. of workers, no. of failed jobs.</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="job-classes">
+<h1>Job Classes<a class="headerlink" href="#job-classes" title="Permalink to this headline">¶</a></h1>
+<dl class="class">
+<dt id="pyres.job.Job">
+<em class="property">class </em><tt class="descclassname">pyres.job.</tt><tt class="descname">Job</tt><big>(</big><em>queue</em>, <em>payload</em>, <em>resq</em>, <em>worker=None</em><big>)</big><a class="headerlink" href="#pyres.job.Job" title="Permalink to this definition">¶</a></dt>
+<dd><p>Every job on the ResQ is an instance of the <em>Job</em> class.</p>
+<p>The <tt class="docutils literal"><span class="pre">__init__</span></tt> takes these keyword arguments:</p>
+<blockquote>
+<p><tt class="docutils literal"><span class="pre">queue</span></tt> &#8211; A string defining the queue to which this Job will be added.</p>
+<p><tt class="docutils literal"><span class="pre">payload</span></tt> &#8211; A dictionary which contains the string name of a class which extends this Job and
+a list of args which will be passed to that class.</p>
+<p><tt class="docutils literal"><span class="pre">resq</span></tt> &#8211; An instance of the ResQ class.</p>
+<p><tt class="docutils literal"><span class="pre">worker</span></tt> &#8211; The name of a specific worker if you&#8217;d like this Job to be done by that worker. Default is &#8220;None&#8221;.</p>
+</blockquote>
+<dl class="method">
+<dt id="pyres.job.Job.fail">
+<tt class="descname">fail</tt><big>(</big><em>exception</em><big>)</big><a class="headerlink" href="#pyres.job.Job.fail" title="Permalink to this definition">¶</a></dt>
+<dd>This method provides a way to fail a job and will use whatever failure backend
+you&#8217;ve provided. The default is the <tt class="docutils literal"><span class="pre">RedisBackend</span></tt>.</dd></dl>
+
+<dl class="method">
+<dt id="pyres.job.Job.perform">
+<tt class="descname">perform</tt><big>(</big><big>)</big><a class="headerlink" href="#pyres.job.Job.perform" title="Permalink to this definition">¶</a></dt>
+<dd>This method converts payload into args and calls the <tt class="docutils literal"><span class="pre">perform</span></tt> method
+on the payload class.</dd></dl>
+
+<dl class="classmethod">
+<dt id="pyres.job.Job.reserve">
+<em class="property">classmethod </em><tt class="descname">reserve</tt><big>(</big><em>queue</em>, <em>res</em>, <em>worker=None</em><big>)</big><a class="headerlink" href="#pyres.job.Job.reserve" title="Permalink to this definition">¶</a></dt>
+<dd>Reserve a job on the queue. This marks this job so that other workers
+will not pick it up.</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="worker-classes">
+<h1>Worker Classes<a class="headerlink" href="#worker-classes" title="Permalink to this headline">¶</a></h1>
+<dl class="class">
+<dt id="pyres.worker.Worker">
+<em class="property">class </em><tt class="descclassname">pyres.worker.</tt><tt class="descname">Worker</tt><big>(</big><em>queues=</em><span class="optional">[</span><span class="optional">]</span>, <em>server='localhost:6379'</em>, <em>password=None</em><big>)</big><a class="headerlink" href="#pyres.worker.Worker" title="Permalink to this definition">¶</a></dt>
+<dd><p>Defines a worker. The <tt class="docutils literal"><span class="pre">pyres_worker</span></tt> script instantiates this Worker class and
+passes a comma-separated list of queues to listen on.:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">pyres.worker</span> <span class="kn">import</span> <span class="n">Worker</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">Worker</span><span class="o">.</span><span class="n">run</span><span class="p">([</span><span class="n">queue1</span><span class="p">,</span> <span class="n">queue2</span><span class="p">],</span> <span class="n">server</span><span class="o">=</span><span class="s">&quot;localhost:6379&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<dl class="method">
+<dt id="pyres.worker.Worker.validate_queues">
+<tt class="descname">validate_queues</tt><big>(</big><big>)</big><a class="headerlink" href="#pyres.worker.Worker.validate_queues" title="Permalink to this definition">¶</a></dt>
+<dd>Checks if a worker is given at least one queue to work on.</dd></dl>
+
+<dl class="method">
+<dt id="pyres.worker.Worker.work">
+<tt class="descname">work</tt><big>(</big><em>interval=5</em><big>)</big><a class="headerlink" href="#pyres.worker.Worker.work" title="Permalink to this definition">¶</a></dt>
+<dd><p>Invoked by <tt class="docutils literal"><span class="pre">run</span></tt> method. <tt class="docutils literal"><span class="pre">work</span></tt> listens on a list of queues and sleeps
+for <tt class="docutils literal"><span class="pre">interval</span></tt> time.</p>
+<p><tt class="docutils literal"><span class="pre">interval</span></tt> &#8211; Number of seconds the worker will wait until processing the next job. Default is &#8220;5&#8221;.</p>
+<p>Whenever a worker finds a job on the queue it first calls <tt class="docutils literal"><span class="pre">reserve</span></tt> on
+that job to make sure another worker won&#8217;t run it, then <em>forks</em> itself to 
+work on that job.</p>
+<p>Finally, the <tt class="docutils literal"><span class="pre">process</span></tt> method actually processes the job by eventually calling the Job instance&#8217;s <tt class="docutils literal"><span class="pre">perform</span></tt> method.</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="failure-classes">
+<h1>Failure Classes<a class="headerlink" href="#failure-classes" title="Permalink to this headline">¶</a></h1>
+<dl class="class">
+<dt id="pyres.failure.base.BaseBackend">
+<em class="property">class </em><tt class="descclassname">pyres.failure.base.</tt><tt class="descname">BaseBackend</tt><big>(</big><em>exp</em>, <em>queue</em>, <em>payload</em>, <em>worker=None</em><big>)</big><a class="headerlink" href="#pyres.failure.base.BaseBackend" title="Permalink to this definition">¶</a></dt>
+<dd><p>Provides a base class that custom backends can subclass. Also provides basic
+traceback and message parsing.</p>
+<p>The <tt class="docutils literal"><span class="pre">__init__</span></tt> takes these keyword arguments:</p>
+<blockquote>
+<p><tt class="docutils literal"><span class="pre">exp</span></tt> &#8211; The exception generated by your failure.</p>
+<p><tt class="docutils literal"><span class="pre">queue</span></tt> &#8211; The queue in which the <tt class="docutils literal"><span class="pre">Job</span></tt> was enqueued when it failed.</p>
+<p><tt class="docutils literal"><span class="pre">payload</span></tt> &#8211; The payload that was passed to the <tt class="docutils literal"><span class="pre">Job</span></tt>.</p>
+<p><tt class="docutils literal"><span class="pre">worker</span></tt> &#8211; The worker that was processing the <tt class="docutils literal"><span class="pre">Job</span></tt> when it failed.</p>
+</blockquote>
+</dd></dl>
+
+<dl class="class">
+<dt id="pyres.failure.RedisBackend">
+<em class="property">class </em><tt class="descclassname">pyres.failure.</tt><tt class="descname">RedisBackend</tt><big>(</big><em>exp</em>, <em>queue</em>, <em>payload</em>, <em>worker=None</em><big>)</big><a class="headerlink" href="#pyres.failure.RedisBackend" title="Permalink to this definition">¶</a></dt>
+<dd><p>Extends the <tt class="docutils literal"><span class="pre">BaseBackend</span></tt> to provide a Redis backend for failed jobs.</p>
+<dl class="method">
+<dt id="pyres.failure.RedisBackend.save">
+<tt class="descname">save</tt><big>(</big><em>resq=None</em><big>)</big><a class="headerlink" href="#pyres.failure.RedisBackend.save" title="Permalink to this definition">¶</a></dt>
+<dd>Saves the failed Job into a &#8220;failed&#8221; Redis queue preserving all its original enqueud info.</dd></dl>
+
 </dd></dl>
 
 </div>
@@ -72,9 +197,17 @@ queues.</p>
       </div>
       <div class="sphinxsidebar">
         <div class="sphinxsidebarwrapper">
+            <h3><a href="index.html">Table Of Contents</a></h3>
+            <ul>
+<li><a class="reference external" href="#">ResQ Classes</a></li>
+<li><a class="reference external" href="#job-classes">Job Classes</a></li>
+<li><a class="reference external" href="#worker-classes">Worker Classes</a></li>
+<li><a class="reference external" href="#failure-classes">Failure Classes</a></li>
+</ul>
+
             <h4>Previous topic</h4>
             <p class="topless"><a href="example.html"
-                                  title="previous chapter">EXAMPLE</a></p>
+                                  title="previous chapter">Example</a></p>
             <h4>Next topic</h4>
             <p class="topless"><a href="tests.html"
                                   title="next chapter">Tests</a></p>
@@ -113,14 +246,14 @@ queues.</p>
           <a href="tests.html" title="Tests"
              >next</a> |</li>
         <li class="right" >
-          <a href="example.html" title="EXAMPLE"
+          <a href="example.html" title="Example"
              >previous</a> |</li>
-        <li><a href="index.html">PyRes v0.4.1 documentation</a> &raquo;</li> 
+        <li><a href="index.html">pyres v0.5.0 documentation</a> &raquo;</li> 
       </ul>
     </div>
     <div class="footer">
       &copy; Copyright 2010, Matt George.
-      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 0.6.2.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 0.6.4.
     </div>
   </body>
 </html>

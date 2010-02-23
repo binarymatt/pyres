@@ -5,13 +5,13 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Installation &mdash; PyRes v0.4.1 documentation</title>
+    <title>Installation &mdash; pyres v0.5.0 documentation</title>
     <link rel="stylesheet" href="_static/nature.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
-        URL_ROOT:    '',
-        VERSION:     '0.4.1',
+        URL_ROOT:    '#',
+        VERSION:     '0.5.0',
         COLLAPSE_MODINDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -19,8 +19,8 @@
     </script>
     <script type="text/javascript" src="_static/jquery.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
-    <link rel="top" title="PyRes v0.4.1 documentation" href="index.html" />
-    <link rel="next" title="EXAMPLE" href="example.html" />
+    <link rel="top" title="pyres v0.5.0 documentation" href="index.html" />
+    <link rel="next" title="Example" href="example.html" />
     <link rel="prev" title="Introduction" href="intro.html" /> 
   </head>
   <body>
@@ -34,12 +34,12 @@
           <a href="modindex.html" title="Global Module Index"
              accesskey="M">modules</a> |</li>
         <li class="right" >
-          <a href="example.html" title="EXAMPLE"
+          <a href="example.html" title="Example"
              accesskey="N">next</a> |</li>
         <li class="right" >
           <a href="intro.html" title="Introduction"
              accesskey="P">previous</a> |</li>
-        <li><a href="index.html">PyRes v0.4.1 documentation</a> &raquo;</li> 
+        <li><a href="index.html">pyres v0.5.0 documentation</a> &raquo;</li> 
       </ul>
     </div>  
 
@@ -50,21 +50,30 @@
             
   <div class="section" id="installation">
 <h1>Installation<a class="headerlink" href="#installation" title="Permalink to this headline">¶</a></h1>
-<div class="section" id="requirements">
-<h2>Requirements:<a class="headerlink" href="#requirements" title="Permalink to this headline">¶</a></h2>
-<p>simplejson&gt;=2.0.9
-itty&gt;=0.6.2
-redis&gt;=0.6.0
-pystache&gt;=0.1.0</p>
-<p>Make sure you install these requirements before proceeding.</p>
-<p>To install pyres.:</p>
+<p>Pyres is most easily installed using pip and can be found on PyPI as <a class="reference external" href="http://pypi.python.org/pypi/pyres/">pyres</a>.</p>
+<p>Using <tt class="docutils literal"><span class="pre">pip</span> <span class="pre">install</span> <span class="pre">pyres</span></tt> will install the required versions of the above packages/modules.
+Those requirements are currently:</p>
+<div class="highlight-python"><pre>simplejson==2.0.9
+itty==0.6.4
+redis==1.34.1
+pystache==0.2.0</pre>
+</div>
+<p>If you&#8217;d rather install from the git repository, that&#8217;s easy too:</p>
 <div class="highlight-python"><pre>$ git clone git://github.com/binarydud/pyres.git
 $ cd pyres
 $ python setup.py build
 $ python setup.py install</pre>
 </div>
-<p>Might need to run as sudo to install.</p>
+<p>Of course, you&#8217;ll need to install the Redis server as well. Below is a simple example, but
+please read <a class="reference external" href="http://code.google.com/p/redis/wiki/index?tm=6">Redis&#8217;s own documentation</a> for more details.</p>
+<div class="highlight-python"><pre>$ wget http://redis.googlecode.com/files/redis-1.2.2.tar.gz
+$ tar -xvf redis-1.2.2.tar.gz
+$ cd redis-1.2.2
+$ make
+$ ./redis-server</pre>
 </div>
+<p>This will install and start a Redis server with the default config running on port 6379.
+This default config is good enough for you to run the pyres tests.</p>
 </div>
 
 
@@ -73,20 +82,12 @@ $ python setup.py install</pre>
       </div>
       <div class="sphinxsidebar">
         <div class="sphinxsidebarwrapper">
-            <h3><a href="index.html">Table Of Contents</a></h3>
-            <ul>
-<li><a class="reference external" href="">Installation</a><ul>
-<li><a class="reference external" href="#requirements">Requirements:</a></li>
-</ul>
-</li>
-</ul>
-
             <h4>Previous topic</h4>
             <p class="topless"><a href="intro.html"
                                   title="previous chapter">Introduction</a></p>
             <h4>Next topic</h4>
             <p class="topless"><a href="example.html"
-                                  title="next chapter">EXAMPLE</a></p>
+                                  title="next chapter">Example</a></p>
             <h3>This Page</h3>
             <ul class="this-page-menu">
               <li><a href="_sources/install.txt"
@@ -119,17 +120,17 @@ $ python setup.py install</pre>
           <a href="modindex.html" title="Global Module Index"
              >modules</a> |</li>
         <li class="right" >
-          <a href="example.html" title="EXAMPLE"
+          <a href="example.html" title="Example"
              >next</a> |</li>
         <li class="right" >
           <a href="intro.html" title="Introduction"
              >previous</a> |</li>
-        <li><a href="index.html">PyRes v0.4.1 documentation</a> &raquo;</li> 
+        <li><a href="index.html">pyres v0.5.0 documentation</a> &raquo;</li> 
       </ul>
     </div>
     <div class="footer">
       &copy; Copyright 2010, Matt George.
-      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 0.6.2.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 0.6.4.
     </div>
   </body>
 </html>

@@ -5,13 +5,13 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Tests &mdash; PyRes v0.4.1 documentation</title>
+    <title>Tests &mdash; pyres v0.5.0 documentation</title>
     <link rel="stylesheet" href="_static/nature.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
-        URL_ROOT:    '',
-        VERSION:     '0.4.1',
+        URL_ROOT:    '#',
+        VERSION:     '0.5.0',
         COLLAPSE_MODINDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -19,7 +19,7 @@
     </script>
     <script type="text/javascript" src="_static/jquery.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
-    <link rel="top" title="PyRes v0.4.1 documentation" href="index.html" />
+    <link rel="top" title="pyres v0.5.0 documentation" href="index.html" />
     <link rel="prev" title="ResQ Classes" href="class.html" /> 
   </head>
   <body>
@@ -35,7 +35,7 @@
         <li class="right" >
           <a href="class.html" title="ResQ Classes"
              accesskey="P">previous</a> |</li>
-        <li><a href="index.html">PyRes v0.4.1 documentation</a> &raquo;</li> 
+        <li><a href="index.html">pyres v0.5.0 documentation</a> &raquo;</li> 
       </ul>
     </div>  
 
@@ -46,12 +46,23 @@
             
   <div class="section" id="tests">
 <h1>Tests<a class="headerlink" href="#tests" title="Permalink to this headline">¶</a></h1>
-<p>PyRes comes with a test suite which connects to a local redis server and
-creates a couple of <em>Queues</em> and <em>jobs</em>.</p>
-<p>To run tests make sure you have <a class="reference external" href="http://somethingaboutorange.com/mrl/projects/nose/0.11.1/">nose</a> installed.:</p>
-<div class="highlight-python"><pre>$ easy_install nose
-$ redis-server [PATH_TO_YOUR_REDIS_CONFIG]
-$ nosetests</pre>
+<p>Pyres comes with a test suite which connects to a local Redis server and
+creates a couple of <em>queues</em> and <em>jobs</em>.</p>
+<p>Make sure you have <a class="reference external" href="http://somethingaboutorange.com/mrl/projects/nose/0.11.1/">nose</a> installed:</p>
+<div class="highlight-python"><pre>$ pip install nose</pre>
+</div>
+<p>Also make sure your Redis server is running:</p>
+<div class="highlight-python"><pre>$ cd path_to_redis_installation
+$ ./redis-server [PATH_TO_YOUR_REDIS_CONFIG]</pre>
+</div>
+<p>If you don&#8217;t give the <tt class="docutils literal"><span class="pre">./redis-server</span></tt> command the config path, it will use a default config, which should run the tests just fine.</p>
+<p>Now, we&#8217;re ready to run the tests. From the pyres install directory:</p>
+<div class="highlight-python"><pre>$ nosetests
+............................................
+----------------------------------------------------------------------
+Ran 44 tests in 0.901s
+
+OK</pre>
 </div>
 <p>Add <strong>-v</strong> flag if you want verbose output.</p>
 </div>
@@ -99,12 +110,12 @@ $ nosetests</pre>
         <li class="right" >
           <a href="class.html" title="ResQ Classes"
              >previous</a> |</li>
-        <li><a href="index.html">PyRes v0.4.1 documentation</a> &raquo;</li> 
+        <li><a href="index.html">pyres v0.5.0 documentation</a> &raquo;</li> 
       </ul>
     </div>
     <div class="footer">
       &copy; Copyright 2010, Matt George.
-      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 0.6.2.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 0.6.4.
     </div>
   </body>
 </html>

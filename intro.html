@@ -5,13 +5,13 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Introduction &mdash; PyRes v0.4.1 documentation</title>
+    <title>Introduction &mdash; pyres v0.5.0 documentation</title>
     <link rel="stylesheet" href="_static/nature.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
-        URL_ROOT:    '',
-        VERSION:     '0.4.1',
+        URL_ROOT:    '#',
+        VERSION:     '0.5.0',
         COLLAPSE_MODINDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -19,9 +19,9 @@
     </script>
     <script type="text/javascript" src="_static/jquery.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
-    <link rel="top" title="PyRes v0.4.1 documentation" href="index.html" />
-    <link rel="next" title="EXAMPLE" href="example.html" />
-    <link rel="prev" title="Welcome to PyRes’s documentation!" href="index.html" /> 
+    <link rel="top" title="pyres v0.5.0 documentation" href="index.html" />
+    <link rel="next" title="Installation" href="install.html" />
+    <link rel="prev" title="Welcome to pyres’s documentation!" href="index.html" /> 
   </head>
   <body>
     <div class="related">
@@ -31,12 +31,15 @@
           <a href="genindex.html" title="General Index"
              accesskey="I">index</a></li>
         <li class="right" >
-          <a href="example.html" title="EXAMPLE"
+          <a href="modindex.html" title="Global Module Index"
+             accesskey="M">modules</a> |</li>
+        <li class="right" >
+          <a href="install.html" title="Installation"
              accesskey="N">next</a> |</li>
         <li class="right" >
-          <a href="index.html" title="Welcome to PyRes’s documentation!"
+          <a href="index.html" title="Welcome to pyres’s documentation!"
              accesskey="P">previous</a> |</li>
-        <li><a href="index.html">PyRes v0.4.1 documentation</a> &raquo;</li> 
+        <li><a href="index.html">pyres v0.5.0 documentation</a> &raquo;</li> 
       </ul>
     </div>  
 
@@ -47,19 +50,19 @@
             
   <div class="section" id="introduction">
 <h1>Introduction<a class="headerlink" href="#introduction" title="Permalink to this headline">¶</a></h1>
-<p>PyRes is a <a class="reference external" href="http://github.com/defunkt/resque#readme">resque</a> clone built in python. Resque is used by Github as their
-message queue. <a class="reference external" href="http://github.com/blog/542-introducing-resque">Read</a> the blog post from github about how they use resque in
-production.</p>
+<p>Pyres is a <a class="reference external" href="http://github.com/defunkt/resque#readme">resque</a> clone built in python. Resque is used by Github as their
+message queue. Both use <a class="reference external" href="http://code.google.com/p/redis/">Redis</a> as the queue backend and provide a web-based
+monitoring application.</p>
+<p><a class="reference external" href="http://github.com/blog/542-introducing-resque">Read</a> the blog post from github about how they use resque in production.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field"><th class="field-name">synopsis:</th><td class="field-body">Any job which takes a little while to run can be put on a message</td>
+<tr class="field"><th class="field-name">synopsis:</th><td class="field-body">Put jobs (which can be any kind of class) on a queue and process them while watching the progress via your browser.</td>
 </tr>
 </tbody>
 </table>
-<p>queue. Read our <a class="reference external" href="example.html"><em>Example</em></a> implementation of how a PyRes can be used to spam
-check comments.</p>
+<p>Read our <a class="reference external" href="example.html"><em>example implementation</em></a> of how pyres can be used to spam check comments.</p>
 </div>
 
 
@@ -70,10 +73,10 @@ check comments.</p>
         <div class="sphinxsidebarwrapper">
             <h4>Previous topic</h4>
             <p class="topless"><a href="index.html"
-                                  title="previous chapter">Welcome to PyRes&#8217;s documentation!</a></p>
+                                  title="previous chapter">Welcome to pyres&#8217;s documentation!</a></p>
             <h4>Next topic</h4>
-            <p class="topless"><a href="example.html"
-                                  title="next chapter">EXAMPLE</a></p>
+            <p class="topless"><a href="install.html"
+                                  title="next chapter">Installation</a></p>
             <h3>This Page</h3>
             <ul class="this-page-menu">
               <li><a href="_sources/intro.txt"
@@ -103,17 +106,20 @@ check comments.</p>
           <a href="genindex.html" title="General Index"
              >index</a></li>
         <li class="right" >
-          <a href="example.html" title="EXAMPLE"
+          <a href="modindex.html" title="Global Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="install.html" title="Installation"
              >next</a> |</li>
         <li class="right" >
-          <a href="index.html" title="Welcome to PyRes’s documentation!"
+          <a href="index.html" title="Welcome to pyres’s documentation!"
              >previous</a> |</li>
-        <li><a href="index.html">PyRes v0.4.1 documentation</a> &raquo;</li> 
+        <li><a href="index.html">pyres v0.5.0 documentation</a> &raquo;</li> 
       </ul>
     </div>
     <div class="footer">
       &copy; Copyright 2010, Matt George.
-      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 0.6.2.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 0.6.4.
     </div>
   </body>
 </html>

@@ -1,5 +1,18 @@
 # Sphinx inventory version 1
-# Project: PyRes
-# Version: 0.4.1
+# Project: pyres
+# Version: 0.5.0
 pyres mod class.html
+pyres.ResQ.enqueue method class.html
 pyres.ResQ class class.html
+pyres.worker.Worker.validate_queues method class.html
+pyres.job.Job.reserve classmethod class.html
+pyres.job.Job.fail method class.html
+pyres.failure.RedisBackend class class.html
+pyres.ResQ.info method class.html
+pyres.ResQ.close method class.html
+pyres.worker.Worker class class.html
+pyres.failure.base.BaseBackend class class.html
+pyres.job.Job class class.html
+pyres.failure.RedisBackend.save method class.html
+pyres.job.Job.perform method class.html
+pyres.worker.Worker.work method class.html
