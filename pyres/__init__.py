@@ -136,13 +136,16 @@ class ResQ(object):
             class_name = '%s.%s' % (klass.__module__, klass.__name__)
             self.push(queue, {'class':class_name,'args':args})
             logging.info("enqueued '%s' job" % class_name)
-            logging.debug("job arguments: %s" % args)
+            if args:
+                logging.debug("job arguments: %s" % args)
+            else:
+                logging.debug("no arguments passed in.")
         else:
             logging.warning("unable to enqueue job with class %s" % str(klass))
 
     def enqueue_from_string(self, klass_as_string, queue, *args):
         self.push(queue, {'class':klass_as_string,'args':args})
-        logging.info("enqueued '%s' job" % class_name)
+        logging.info("enqueued '%s' job" % klass_as_string)
         logging.debug("job arguments: %s" % args)
     
     def queues(self):
