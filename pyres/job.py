@@ -22,6 +22,10 @@ class Job(object):
         self.resq = resq
         self._worker = worker
     
+    def __str__(self):
+        return "(Job{%s} | %s | %s)" % (
+            self._queue, self._payload['class'], repr(self._payload['args']))
+    
     def perform(self):
         """This method converts payload into args and calls the ``perform`` method
         on the payload class.
