@@ -59,4 +59,16 @@ class ScheduleTests(PyResTests):
         item = self.resq.next_item_for_timestamp(timestamp)
         assert isinstance(item, dict)
         assert self.redis.zcard('resque:delayed_queue_schedule') == 1
+    
+    def test_scheduler_init(self):
+        scheduler = Scheduler(self.resq)
+        assert not scheduler._shutdown
+        scheduler = Scheduler('localhost:6379')
+        assert not scheduler._shutdown
+        self.assertRaises(Exception, Scheduler, Basic)
+    
+    def test_schedule_shutdown(self):
+        scheduler = Scheduler(self.resq)
+        scheduler.schedule_shutdown(19,'')
+        assert scheduler._shutdown
         

@@ -148,7 +148,8 @@ class ResQ(object):
     def enqueue_from_string(self, klass_as_string, queue, *args):
         self.push(queue, {'class':klass_as_string,'args':args})
         logging.info("enqueued '%s' job" % klass_as_string)
-        logging.debug("job arguments: %s" % args)
+        if args:
+            logging.debug("job arguments: %s" % args)
     
     def queues(self):
         return self.redis.smembers("resque:queues") or []
@@ -203,6 +204,9 @@ class ResQ(object):
     
     def enqueue_at(self, datetime, klass, *args):
         class_name = '%s.%s' % (klass.__module__, klass.__name__)
+        logging.info("enqueued '%s' job for execution at %s" % (class_name, datetime))
+        if args:
+            logging.debug("job arguments are: %s" % args)
         self.delayed_push(datetime, {'class':class_name,'queue': klass.queue, 'args':args})
     
     def delayed_push(self, datetime, item):

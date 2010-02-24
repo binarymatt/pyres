@@ -1,11 +1,16 @@
 import signal
 import time
+import logging
 
 from pyres import ResQ
 
 class Scheduler(object):
     
     def __init__(self, server="localhost:6379", password=None):
+        """
+        >>> from pyres.scheduler import Scheduler
+        >>> scheduler = Scheduler('localhost:6379')
+        """
         self._shutdown = False
         if isinstance(server,basestring):
             self.resq = ResQ(server=server, password=password)
@@ -15,27 +20,27 @@ class Scheduler(object):
             raise Exception("Bad server argument")
     
     def register_signal_handlers(self):
-        print 'registering signals'
+        logging.info('registering signals')
         signal.signal(signal.SIGTERM, self.schedule_shutdown)
         signal.signal(signal.SIGINT, self.schedule_shutdown)
         signal.signal(signal.SIGQUIT, self.schedule_shutdown)
     
     def schedule_shutdown(self, signal, frame):
-        print 'shutting down started'
+        logging.info('shutting down started')
         self._shutdown = True
     
     def __call__(self):
-        print 'starting up'
+        logging.info('starting up')
         self.register_signal_handlers()
         #self.load_schedule()
-        print 'looking for delayed items'
+        logging.info('looking for delayed items')
         while True:
             if self._shutdown is True:
                 break
             self.handle_delayed_items()
-            print 'sleeping'
+            logging.info('sleeping')
             time.sleep(5)
-        print 'shutting down complete'
+        logging.info('shutting down complete')
     
     def next_timestamp(self):
         while True:
@@ -56,9 +61,9 @@ class Scheduler(object):
     
     def handle_delayed_items(self):
         for timestamp in self.next_timestamp():
-            print 'handling timestamp: %s' % timestamp
+            logging.info('handling timestamp: %s' % timestamp)
             for item in self.next_item(timestamp):
-                print 'queueing item %s' % item
+                logging.debug('queueing item %s' % item)
                 klass = item['class']
                 queue = item['queue']
                 args = item['args']
