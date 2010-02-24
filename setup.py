@@ -13,6 +13,7 @@ setup(
     packages=find_packages(exclude=['ez_setup', 'examples', 'tests']),
     download_url='http://cloud.github.com/downloads/binarydud/pyres/pyres-v%s.tar.gz' % version,
     include_package_data=True,
+    package_data={'resweb': ['templates/*.mustache','media/*']},
     scripts=['scripts/pyres_worker', 'scripts/pyres_web'],
     install_requires=[
         'simplejson>=2.0.9',

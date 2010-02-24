@@ -1,8 +1,12 @@
 import datetime
 from base import BaseBackend
 from pyres import ResQ
+
 class RedisBackend(BaseBackend):
+    """Extends the ``BaseBackend`` to provide a Redis backend for failed jobs."""
+    
     def save(self, resq=None):
+        """Saves the failed Job into a "failed" Redis queue preserving all its original enqueud info."""
         if not resq:
             resq = ResQ()
         data = {

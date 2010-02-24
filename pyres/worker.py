@@ -1,6 +1,7 @@
 from pyres.exceptions import NoQueueError
 from pyres.job import Job
 from pyres import ResQ, Stat
+import logging
 import signal
 import datetime
 import os, sys
@@ -8,12 +9,12 @@ import time
 import json_parser as json
 
 class Worker(object):
-    """
-    Defines a worker. The *pyres_worker* script instantiates this Worker class and
-    pass a comma seperate list of queues to listen on.::
+    """Defines a worker. The ``pyres_worker`` script instantiates this Worker class and
+    passes a comma-separated list of queues to listen on.::
     
        >>> from pyres.worker import Worker
        >>> Worker.run([queue1, queue2], server="localhost:6379")
+       
     """
     def __init__(self, queues=[], server="localhost:6379", password=None):
         self.queues = queues
@@ -30,7 +31,7 @@ class Worker(object):
         
     
     def validate_queues(self):
-        "Checks if a worker is given atleast one queue to work on."
+        """Checks if a worker is given at least one queue to work on."""
         if not self.queues:
             raise NoQueueError("Please give each worker at least one queue.")
     
@@ -80,7 +81,7 @@ class Worker(object):
     
     def kill_child(self, signum, frame):
         if self.child:
-            print "Killing child at %s" % self.child
+            logging.info("Killing child at %s" % self.child)
             os.kill(self.child, signal.SIGKILL)
             
     def __str__(self):
@@ -90,28 +91,30 @@ class Worker(object):
         return '%s:%s:%s' % (hostname, self.pid, ','.join(self.queues))
          
     def work(self, interval=5):
-        """Invoked by run() method. work() listens on a list of queues and sleeps
-        for *interval* time. 
+        """Invoked by ``run`` method. ``work`` listens on a list of queues and sleeps
+        for ``interval`` time. 
         
-        default  --  5 secs
+        ``interval`` -- Number of seconds the worker will wait until processing the next job. Default is "5".
         
         Whenever a worker finds a job on the queue it first calls ``reserve`` on
-        that job to make sure other worker won't run it, then *Forks* itself to 
+        that job to make sure another worker won't run it, then *forks* itself to 
         work on that job.
         
-        Finally process() method actually processes the job.
+        Finally, the ``process`` method actually processes the job by eventually calling the Job instance's ``perform`` method.
+        
         """
         self.startup()
         while True:
             if self._shutdown:
-                print 'shutdown scheduled'
+                logging.info('shutdown scheduled')
                 break
             job = self.reserve()
             if job:
-                print "got: %s" % job
+                logging.info('picked up job')
+                logging.debug('job details: %s' % job)
                 self.child = os.fork()
                 if self.child:
-                    print 'Forked %s at %s' % (self.child, datetime.datetime.now())
+                    logging.info('Forked %s at %s' % (self.child, datetime.datetime.now()))
                     try:
                         os.waitpid(self.child, 0)
                     except OSError, ose:
@@ -119,9 +122,9 @@ class Worker(object):
                         if ose.errno != errno.EINTR:
                             raise ose
                     #os.wait()
-                    print 'Done waiting'
+                    logging.debug('done waiting')
                 else:
-                    print 'Processing %s since %s' % (job._queue, datetime.datetime.now())
+                    logging.info('Processing %s since %s' % (job._queue, datetime.datetime.now()))
                     self.process(job)
                     os._exit(0)
                 self.child = None
@@ -139,24 +142,25 @@ class Worker(object):
             job.perform()
         except Exception, e:
             exceptionType, exceptionValue, exceptionTraceback = sys.exc_info()
-            print "%s failed: %s" % (job, e)
+            logging.error("%s failed: %s" % (job, e))
             job.fail(exceptionTraceback)
             self.failed()
         else:
-            print "done: %s" % job
+            logging.info('completed job')
+            logging.debug('job details: %s' % job)
         finally:
             self.done_working()
     
     def reserve(self):
         for q in self.queues:
-            print "Checking %s" % q
+            logging.debug('checking queue %s' % q)
             job = Job.reserve(q, self.resq, self.__str__())
             if job:
-                print "Found job on %s" % q
+                logging.info('Found job on %s' % q)
                 return job
     
     def working_on(self, job):
-        print 'marking as working on'
+        logging.debug('marking as working on')
         data = {
             'queue': job._queue,
             'run_at': str(datetime.datetime.now()),
@@ -164,11 +168,11 @@ class Worker(object):
         }
         data = json.dumps(data)
         self.resq.redis["resque:worker:%s" % str(self)] = data
-        print "worker:%s" % str(self)
-        print self.resq.redis["resque:worker:%s" % str(self)]
+        logging.debug("worker:%s" % str(self))
+        logging.debug(self.resq.redis["resque:worker:%s" % str(self)])
     
     def done_working(self):
-        print 'done working'
+        logging.info('done working')
         self.processed()
         self.resq.redis.delete("resque:worker:%s" % str(self))
     
@@ -202,9 +206,12 @@ class Worker(object):
         return 'working' if self.resq.redis.exists('resque:worker:%s' % self) else 'idle'
     
     @classmethod
-    def run(cls, queues, server):
+    def run(cls, queues, server, interval):
         worker = cls(queues=queues, server=server)
-        worker.work()
+        if interval is not None:
+            worker.work(interval)            
+        else:
+            worker.work()
     
     @classmethod
     def all(cls, host="localhost:6379"):

@@ -5,7 +5,10 @@ import pyres.json_parser as json
 
 import time, datetime
 
+import logging
+
 def my_import(name):
+    """Helper function for walking import calls when searching for classes by string names."""
     mod = __import__(name)    
     components = name.split('.')    
     for comp in components[1:]:        
@@ -13,6 +16,7 @@ def my_import(name):
     return mod
 
 def safe_str_to_class(s):
+    """Helper function to map string class names to module classes."""
     lst = s.split(".")
     klass = lst[-1]
     mod_list = lst[:-1]
@@ -27,6 +31,7 @@ def safe_str_to_class(s):
         return None
 
 def str_to_class(s):
+    """Alternate helper function to map string class names to module classes."""
     lst = s.split(".")
     klass = lst[-1]
     mod_list = lst[:-1]
@@ -41,8 +46,22 @@ def str_to_class(s):
         return None
 
 class ResQ(object):
-    """ResQ class which defines the Queue object to enqueue jobs into various
-    queues.
+    """The ResQ class defines the Redis server object to which we will
+    enqueue jobs into various queues.
+    
+    The ``__init__`` takes these keyword arguments:
+    
+        ``server`` -- IP address and port of the Redis server to which you want to connect. Default is `localhost:6379`.
+    
+        ``password`` -- The password, if required, of your Redis server. Default is "None".
+    
+        ``timeout`` -- The timeout keyword is in the signature, but is unused. Default is "None".
+    
+        ``retry_connection`` -- This keyword is in the signature but is deprecated. Default is "True".
+    
+    
+    Both ``timeout`` and ``retry_connection`` will be removed as the python-redis client
+    no longer uses them. 
     
     Example usage::
 
@@ -54,13 +73,11 @@ class ResQ(object):
 
         >>>> r.enqueue(SomeClass, args)
 
-    SomeClass can be any python class with *perform* method and a *queue* 
+    SomeClass can be any python class with a *perform* method and a *queue* 
     attribute on it.
+    
     """
-    def __init__(self, server="localhost:6379", password=None, 
-                 timeout=None, retry_connection=True):
-        self.timeout = timeout
-        #self.retry_connection = retry_connection
+    def __init__(self, server="localhost:6379", password=None):
         self.redis = server
         if password:
             self.redis.auth(password)
@@ -112,27 +129,34 @@ class ResQ(object):
     redis = property(_get_redis, _set_redis)
 
     def enqueue(self, klass, *args):
-        """
-        Enqueue a job into a specific queue. Make sure the class you are passing
+        """Enqueue a job into a specific queue. Make sure the class you are passing
         has **queue** attribute and a **perform** method on it.
+        
         """
         queue = getattr(klass,'queue', None)
-        #print cls._res
         if queue:
             class_name = '%s.%s' % (klass.__module__, klass.__name__)
-            #print class_name
             self.push(queue, {'class':class_name,'args':args})
-            #Job.create(queue, klass,*args)
+            logging.info("enqueued '%s' job" % class_name)
+            if args:
+                logging.debug("job arguments: %s" % args)
+            else:
+                logging.debug("no arguments passed in.")
+        else:
+            logging.warning("unable to enqueue job with class %s" % str(klass))
+
     def enqueue_from_string(self, klass_as_string, queue, *args):
         self.push(queue, {'class':klass_as_string,'args':args})
+        logging.info("enqueued '%s' job" % klass_as_string)
+        logging.debug("job arguments: %s" % args)
     
     def queues(self):
         return self.redis.smembers("resque:queues") or []
     
     def info(self):
-        """
-        Returns a dictionary of the current status of the pending jobs, 
+        """Returns a dictionary of the current status of the pending jobs, 
         processed, no. of queues, no. of workers, no. of failed jobs.
+        
         """
         pending = 0
         for q in self.queues():
@@ -172,8 +196,8 @@ class ResQ(object):
         del self.redis['resque:queue:%s' % queue]
     
     def close(self):
-        """
-        close the underlying redis connection
+        """Close the underlying redis connection.
+        
         """
         self.redis.disconnect()
     
@@ -233,17 +257,15 @@ class ResQ(object):
     @classmethod
     def _enqueue(cls, klass, *args):
         queue = getattr(klass,'queue', None)
-        #print cls._res
         _self = cls()
         if queue:
             class_name = '%s.%s' % (klass.__module__, klass.__name__)
-            #print class_name
             _self.push(queue, {'class':class_name,'args':args})
-            #Job.create(queue, klass,*args)
+
 
 class Stat(object):
-    """
-    A Stat class which shows the current status of the queue.
+    """A Stat class which shows the current status of the queue.
+    
     """
     def __init__(self, name, resq):
         self.name = name
