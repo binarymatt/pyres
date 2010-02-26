@@ -6,7 +6,7 @@ import os
 class ResQTests(PyResTests):
     def test_enqueue(self):
         self.resq.enqueue(Basic,"test1")
-        self.resq.enqueue(Basic,"test2")
+        self.resq.enqueue(Basic,"test2", "moretest2args")
         ResQ._enqueue(Basic, "test3")
         assert self.redis.llen("resque:queue:basic") == 3
         assert self.redis.sismember('resque:queues','basic')

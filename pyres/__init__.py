@@ -137,7 +137,7 @@ class ResQ(object):
             self.push(queue, {'class':class_name,'args':args})
             logging.info("enqueued '%s' job" % class_name)
             if args:
-                logging.debug("job arguments: %s" % args)
+                logging.debug("job arguments: %s" % str(args))
             else:
                 logging.debug("no arguments passed in.")
         else:
@@ -146,7 +146,10 @@ class ResQ(object):
     def enqueue_from_string(self, klass_as_string, queue, *args):
         self.push(queue, {'class':klass_as_string,'args':args})
         logging.info("enqueued '%s' job" % klass_as_string)
-        logging.debug("job arguments: %s" % args)
+        if args:
+            logging.debug("job arguments: %s" % str(args))
+        else:
+            logging.debug("no arguments passed in.")
     
     def queues(self):
         return self.redis.smembers("resque:queues") or []
