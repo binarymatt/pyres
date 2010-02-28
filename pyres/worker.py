@@ -7,6 +7,7 @@ import datetime
 import os, sys
 import time
 import json_parser as json
+import commands
 
 class Worker(object):
     """Defines a worker. The ``pyres_worker`` script instantiates this Worker class and
@@ -22,6 +23,7 @@ class Worker(object):
         self._shutdown = False
         self.child = None
         self.pid = os.getpid()
+        self.hostname = os.uname()[1]
         if isinstance(server,basestring):
             self.resq = ResQ(server=server, password=password)
         elif isinstance(server, ResQ):
@@ -62,8 +64,21 @@ class Worker(object):
         Stat("processed:%s" % self, self.resq).clear()
         Stat("failed:%s" % self, self.resq).clear()
     
+    def prune_dead_workers(self):
+        all_workers = Worker.all(self.resq)
+        known_workers = self.worker_pids()
+        for worker in all_workers:
+            host, pid, queues = worker.id.split(':')
+            if host != self.hostname:
+                continue
+            if pid in known_workers:
+                continue
+            logging.warning("pruning dead worker: %s" % worker)
+            worker.unregister_worker()
+
     def startup(self):
         self.register_signal_handlers()
+        self.prune_dead_workers()
         self.register_worker()
     
     def register_signal_handlers(self):
@@ -83,12 +98,11 @@ class Worker(object):
         if self.child:
             logging.info("Killing child at %s" % self.child)
             os.kill(self.child, signal.SIGKILL)
-            
+
     def __str__(self):
         if getattr(self,'id', None):
             return self.id
-        hostname = os.uname()[1]
-        return '%s:%s:%s' % (hostname, self.pid, ','.join(self.queues))
+        return '%s:%s:%s' % (self.hostname, self.pid, ','.join(self.queues))
          
     def work(self, interval=5):
         """Invoked by ``run`` method. ``work`` listens on a list of queues and sleeps
@@ -204,6 +218,13 @@ class Worker(object):
     
     def state(self):
         return 'working' if self.resq.redis.exists('resque:worker:%s' % self) else 'idle'
+
+    def worker_pids(self):
+        """Returns an array of all pids (as strings) of the workers on
+        this machine.  Used when pruning dead workers."""
+        return map(lambda l: l.split(' ')[0],
+                   commands.getoutput("ps -A -o pid,command | \
+                                       grep pyres_worker").split("\n"))
     
     @classmethod
     def run(cls, queues, server, interval):
