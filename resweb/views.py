@@ -214,7 +214,7 @@ class Failed(ResWeb):
             item['worker_url'] = '/workers/%s/' % job['worker']
             item['payload_args'] = str(job['payload']['args'])
             item['payload_class'] = job['payload']['class']
-            item['traceback'] = '\n'.join(job['backtrace'])
+            item['traceback'] = job['backtrace']
             jobs.append(item)
         return jobs
     
