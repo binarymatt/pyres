@@ -308,7 +308,7 @@ class Stat(ResWeb):
         return str(self.stat_id)
     
     def key_type(self):
-        return str(self.resq.redis.type(self.stat_id))
+        return str(self.resq.redis.type('resque:'+ str(self.stat_id)))
     
     def items(self):
         items = []
