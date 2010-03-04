@@ -212,7 +212,7 @@ class Failed(ResWeb):
         for job in failure.all(self.resq, self._start, self._start + 20):
             item = job
             item['worker_url'] = '/workers/%s/' % job['worker']
-            item['payload_args'] = ','.join(job['payload']['args'])
+            item['payload_args'] = ','.join(str(job['payload']['args']))
             item['payload_class'] = job['payload']['class']
             item['traceback'] = '\n'.join(job['backtrace'])
             jobs.append(item)
