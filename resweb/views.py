@@ -287,7 +287,7 @@ class Stats(ResWeb):
             
             stats.append({
                 'key': str(key),
-                'type': str(self.resq.redis.get_type('resque:'+key)),
+                'type': str(self.resq.redis.type('resque:'+key)),
                 'size': str(redis_size(key, self.resq)) 
             })
         return stats
@@ -308,7 +308,7 @@ class Stat(ResWeb):
         return str(self.stat_id)
     
     def key_type(self):
-        return str(self.resq.redis.get_type(self.stat_id))
+        return str(self.resq.redis.type(self.stat_id))
     
     def items(self):
         items = []
@@ -407,7 +407,7 @@ class Worker(ResWeb):
         """
         pass
 def redis_size(key, resq):
-    key_type = resq.redis.get_type('resque:'+key)
+    key_type = resq.redis.type('resque:'+key)
     item = 0
     if key_type == 'list':
         item = resq.redis.llen('resque:'+key)
