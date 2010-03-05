@@ -50,11 +50,13 @@ def test_str_to_class():
     assert ret == Basic
     assert str_to_class('hello.World') == None
 
-def test_safe_str_to_class():
-    from pyres import safe_str_to_class
-    assert safe_str_to_class('tests.Basic') == Basic
-    assert safe_str_to_class('test.Mine') == None
-    assert safe_str_to_class('hello.World') == None
+class ImportTest(unittest.TestCase):
+    def test_safe_str_to_class(self):
+        from pyres import safe_str_to_class
+        assert safe_str_to_class('tests.Basic') == Basic
+        self.assertRaises(ImportError, safe_str_to_class, 'test.Mine')
+        self.assertRaises(ImportError, safe_str_to_class, 'tests.World')
+    
 
 class PyResTests(unittest.TestCase):
     def setUp(self):
