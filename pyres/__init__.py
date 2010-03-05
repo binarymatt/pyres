@@ -206,7 +206,7 @@ class ResQ(object):
         class_name = '%s.%s' % (klass.__module__, klass.__name__)
         logging.info("enqueued '%s' job for execution at %s" % (class_name, datetime))
         if args:
-            logging.debug("job arguments are: %s" % args)
+            logging.debug("job arguments are: %s" % str(args))
         self.delayed_push(datetime, {'class':class_name,'queue': klass.queue, 'args':args})
     
     def delayed_push(self, datetime, item):

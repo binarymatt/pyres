@@ -38,7 +38,7 @@ class Scheduler(object):
             if self._shutdown is True:
                 break
             self.handle_delayed_items()
-            logging.info('sleeping')
+            logging.debug('sleeping')
             time.sleep(5)
         logging.info('shutting down complete')
     
