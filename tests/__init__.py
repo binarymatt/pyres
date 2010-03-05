@@ -11,6 +11,13 @@ class Basic(object):
         print s
         return s
 
+class BasicMulti(object):
+    queue = 'basic'
+    @staticmethod
+    def perform(name, age):
+        print 'name: %s, age: %s'
+    
+
 class ReturnAllArgsJob(object):
     queue = 'basic'
 

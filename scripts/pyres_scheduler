@@ -1,0 +1,20 @@
+#!/usr/bin/env python
+from pyres.scheduler import Scheduler
+import logging
+
+def main():
+    from optparse import OptionParser
+    usage = "usage: %prog [options] arg1"
+    parser = OptionParser(usage=usage)
+    #parser.add_option("-q", dest="queue_list")
+    parser.add_option("--host", dest="host", default="localhost")
+    parser.add_option("--port",dest="port",type="int", default=6379)
+    parser.add_option('-l', '--log-level', dest='log_level', default='info', help='log level.  Valid values are "debug", "info", "warning", "error", "critical", in decreasing order of verbosity. Defaults to "info" if parameter not specified.')
+    (options,args) = parser.parse_args()
+    log_level = getattr(logging, options.log_level.upper(),'INFO')
+    logging.basicConfig(level=log_level, format="%(module)s: %(asctime)s: %(levelname)s: %(message)s")
+    server = '%s:%s' % (options.host, options.port)
+    Scheduler.run(server)
+
+if __name__ == "__main__":
+    main()

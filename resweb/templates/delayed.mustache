@@ -1,0 +1,31 @@
+{{>header}}
+<h1>Delayed Jobs</h1>
+
+<p class='intro'>
+  This list below contains the timestamps for scheduled delayed jobs.
+</p>
+
+<p class='sub'>
+  Showing {{start}} to {{end}} of <b>{{size}}</b> timestamps
+</p>
+
+
+<table>
+  <tr>
+    <th>Timestamp</th>
+    <th>Job count</th>
+  </tr>
+  {{#jobs}}
+    <tr>
+      <td><a href="/delayed/{{timestamp}}/">{{formated_time}}</a></td>
+      <td>{{size}}</td>
+    </tr>
+  {{/jobs}}
+</table>
+
+{{#pagination}}
+  <li>
+      {{#current}}<a href='{{link}}'>{{/current}}{{link_name}}{{#current}}</a>{{/current}}
+  </li>
+{{/pagination}}
+{{>footer}}

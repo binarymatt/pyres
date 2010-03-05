@@ -3,6 +3,8 @@ __version__ = '0.5.0'
 from redis import Redis
 import pyres.json_parser as json
 
+import time, datetime
+
 import logging
 
 def my_import(name):
@@ -19,12 +21,12 @@ def safe_str_to_class(s):
     klass = lst[-1]
     mod_list = lst[:-1]
     module = ".".join(mod_list)
-    mod = my_import(module)
-    if hasattr(mod, klass):
-        return getattr(mod, klass)
-    else:
+        mod = my_import(module)
+        if hasattr(mod, klass):
+            return getattr(mod, klass)
+        else:
         raise ImportError('')
-    
+
 def str_to_class(s):
     """Alternate helper function to map string class names to module classes."""
     lst = s.split(".")
@@ -198,6 +200,51 @@ class ResQ(object):
         
         """
         self.redis.disconnect()
+    
+    def enqueue_at(self, datetime, klass, *args):
+        class_name = '%s.%s' % (klass.__module__, klass.__name__)
+        logging.info("enqueued '%s' job for execution at %s" % (class_name, datetime))
+        if args:
+            logging.debug("job arguments are: %s" % str(args))
+        self.delayed_push(datetime, {'class':class_name,'queue': klass.queue, 'args':args})
+    
+    def delayed_push(self, datetime, item):
+        key = int(time.mktime(datetime.timetuple()))
+        self.redis.rpush('resque:delayed:%s' % key, ResQ.encode(item))
+        self.redis.zadd('resque:delayed_queue_schedule', key, key)
+    
+    def delayed_queue_peek(self, start, count):
+        return [int(item) for item in self.redis.zrange('resque:delayed_queue_schedule', start, start+count) or []]
+    
+    def delayed_timestamp_peek(self, timestamp, start, count):
+        return self.list_range('resque:delayed:%s' % timestamp, start, count)
+        
+    def delayed_queue_schedule_size(self):
+        return self.redis.zcard('resque:delayed_queue_schedule')
+    
+    def delayed_timestamp_size(self, timestamp):
+        #key = int(time.mktime(timestamp.timetuple()))
+        return self.redis.llen("resque:delayed:%s" % timestamp)
+    
+    def next_delayed_timestamp(self):
+        key = int(time.mktime(datetime.datetime.now().timetuple()))
+        array = self.redis.zrangebyscore('resque:delayed_queue_schedule', '-inf', key)
+        timestamp = None
+        if array:
+            timestamp = array[0]
+        return timestamp
+    
+    def next_item_for_timestamp(self, timestamp):
+        #key = int(time.mktime(timestamp.timetuple()))
+        key = "resque:delayed:%s" % timestamp
+        ret = self.redis.lpop(key)
+        item = None
+        if ret:
+            item = ResQ.decode(ret)
+        if self.redis.llen(key) == 0:
+            self.redis.delete(key)
+            self.redis.zrem('resque:delayed_queue_schedule', timestamp)
+        return item
     
     @classmethod
     def encode(cls, item):

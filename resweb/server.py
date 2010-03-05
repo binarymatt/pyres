@@ -11,7 +11,9 @@ from views import (
     Failed, 
     Stats, 
     Stat, 
-    Worker
+    Worker,
+    Delayed,
+    DelayedTimestamp
 )
 
 HOST = ResQ("localhost:6379")
@@ -60,6 +62,18 @@ def stats(request, key):
 @get('/stat/(?P<stat_id>\w.+)')
 def stat(request, stat_id):
     return str(Stat(HOST, stat_id).render())
+
+@get('/delayed/')
+def delayed(request):
+    start = request.GET.get('start',0)
+    start = int(start)
+    return str(Delayed(HOST, start).render())
+
+@get('/delayed/(?P<timestamp>\w.+)')
+def delayed_timestamp(request, timestamp):
+    start = request.GET.get('start',0)
+    start = int(start)
+    return str(DelayedTimestamp(HOST, timestamp, start).render())
 
 @get('/media/(?P<filename>.+)')
 def my_media(request, filename):
