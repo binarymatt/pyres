@@ -105,7 +105,7 @@ class Overview(ResWeb):
             if data.has_key('queue'):
                 item['data'] = True
                 item['code'] = data['payload']['class']
-                item['runat'] = data['run_at']
+                item['runat'] = str(datetime.datetime.fromtimestamp(float(data['run_at'])))
             else:
                 item['data'] = False
             item['nodata'] = not item['data']
@@ -155,7 +155,7 @@ class Workers(ResWeb):
             if data.has_key('queue'):
                 item['data'] = True
                 item['code'] = data['payload']['class']
-                item['runat'] = data['run_at']
+                item['runat'] = str(datetime.datetime.fromtimestamp(float(data['run_at'])))
             else:
                 item['data'] = False
             item['nodata'] = not item['data']
@@ -217,6 +217,7 @@ class Failed(ResWeb):
         jobs = []
         for job in failure.all(self.resq, self._start, self._start + 20):
             item = job
+            item['failed_at'] = str(datetime.datetime.fromtimestamp(float(item['failed_at'])))
             item['worker_url'] = '/workers/%s/' % job['worker']
             item['payload_args'] = str(job['payload']['args'])
             item['payload_class'] = job['payload']['class']
@@ -387,7 +388,7 @@ class Worker(ResWeb):
     def runat(self):
         data = self._worker.processing()
         if self.data():
-            return str(data['run_at'])
+            return str(datetime.datetime.fromtimestamp(float(data['run_at'])))
         return ''
     
         """

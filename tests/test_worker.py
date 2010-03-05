@@ -3,6 +3,7 @@ from pyres import ResQ
 from pyres.job import Job
 from pyres.worker import Worker
 import os
+import time
 class WorkerTests(PyResTests):
     def test_worker_init(self):
         from pyres.exceptions import NoQueueError
@@ -140,8 +141,8 @@ class WorkerTests(PyResTests):
         dt = datetime.datetime.now()
         worker.started = dt
         name = "%s:%s:%s" % (os.uname()[1],os.getpid(),'basic')
-        assert self.redis.get('resque:worker:%s:started' % name) == dt.strftime('%Y-%m-%d %H:%M:%S')
-        assert worker.started == datetime.datetime.strptime(dt.strftime('%Y-%m-%d %H:%M:%S'),'%Y-%m-%d %H:%M:%S')
+        assert self.redis.get('resque:worker:%s:started' % name) == str(int(time.mktime(dt.timetuple())))
+        assert worker.started == str(int(time.mktime(dt.timetuple())))
         worker.started = None
         assert not self.redis.exists('resque:worker:%s:started' % name)
     
