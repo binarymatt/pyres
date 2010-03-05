@@ -21,10 +21,10 @@ def safe_str_to_class(s):
     klass = lst[-1]
     mod_list = lst[:-1]
     module = ".".join(mod_list)
-        mod = my_import(module)
-        if hasattr(mod, klass):
-            return getattr(mod, klass)
-        else:
+    mod = my_import(module)
+    if hasattr(mod, klass):
+        return getattr(mod, klass)
+    else:
         raise ImportError('')
 
 def str_to_class(s):
