@@ -30,7 +30,7 @@ def working(request):
 def queues(request):
     return str(Queues(HOST).render())
 
-@get('/queues/(?P<queue_id>\w+)/')
+@get('/queues/(?P<queue_id>\w.+)/')
 def queue(request, queue_id):
     start = int(request.GET.get('start',0))
     return str(Queue(HOST, queue_id, start).render())

@@ -156,3 +156,19 @@ class WorkerTests(PyResTests):
         worker.done_working()
         assert worker.state() == 'idle'
     
+    def test_prune_dead_workers(self):
+        worker = Worker(['basic']) # we haven't registered this worker, so the assertion below holds
+        assert self.redis.scard('resque:workers') == 0
+        self.redis.sadd('resque:workers',"%s:%s:%s" % (os.uname()[1],'1','basic'))
+        self.redis.sadd('resque:workers',"%s:%s:%s" % (os.uname()[1],'2','basic'))
+        self.redis.sadd('resque:workers',"%s:%s:%s" % (os.uname()[1],'3','basic'))
+        assert self.redis.scard('resque:workers') == 3
+        worker.prune_dead_workers()
+        assert self.redis.scard('resque:workers') == 0
+        self.redis.sadd('resque:workers',"%s:%s:%s" % ('host-that-does-not-exist','1','basic'))
+        self.redis.sadd('resque:workers',"%s:%s:%s" % ('host-that-does-not-exist','2','basic'))
+        self.redis.sadd('resque:workers',"%s:%s:%s" % ('host-that-does-not-exist','3','basic'))
+        worker.prune_dead_workers()
+        # the assertion below should hold, because the workers we registered above are on a
+        # different host, and thus should not be pruned by this process
+        assert self.redis.scard('resque:workers') == 3

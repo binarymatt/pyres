@@ -170,7 +170,7 @@ class ResQ(object):
         }
     
     def keys(self):
-        return [key.replace('resque:','') for key in self.redis.keys('*')]
+        return [key.replace('resque:','') for key in self.redis.keys('resque:*')]
     
     def reserve(self, queue):
         from pyres.job import Job
