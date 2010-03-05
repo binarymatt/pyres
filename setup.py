@@ -1,6 +1,6 @@
 from setuptools import setup, find_packages
     
-version='0.5.0'
+version='0.7.0'
 setup(
     name='pyres',
     version=version,
@@ -18,7 +18,7 @@ setup(
     install_requires=[
         'simplejson>=2.0.9',
         'itty>=0.6.2',
-        'redis>=0.6.0',
+        'redis==1.34.1',
         'pystache>=0.1.0'
     ],
     classifiers = [

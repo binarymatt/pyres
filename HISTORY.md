@@ -1,3 +1,16 @@
+## 0.7.0 (2010-03-05)
+* delayed tasks
+* resweb pagination
+* switch stored timestamps to a unix timestamp
+* updated documentation
+* upgraded to redis-py 1.34.1
+* switched from print statements to the logging module
+* import errors on jobs are now reported in the failed queue
+* prune dead workers
+* small bugfixes in the resweb package
+* improved failure formatting
+* datetime json parser
+
 ## 0.5.0 (2010-0114)
 
 * added new documentation to the project

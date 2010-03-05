@@ -37,8 +37,4 @@ The archive can be found at <http://librelist.com/browser/>.
 
 Stabalize the api.
 
-Flesh out a python version of the web interface. Currently, there is a resweb module that uses the itty micro framework and the jinja2 templating engine to display basics. I'd like to get this as close to the resque web interface as possible.
-
-Better test coverage.
-
-Better documentation.
+Add a pre-fork worker module
