@@ -61,7 +61,7 @@ class Job(object):
             retry_until = first_attempt + timedelta(seconds=retry_timeout)
             retry_at = now + timedelta(seconds=retry_every)
             if retry_at < retry_until:
-                self.resq.enqueue_at(ResQ._current_time(), payload_class, *args,
+                self.resq.enqueue_at(retry_at, payload_class, *args,
                         **{'first_attempt':first_attempt})
                 return True
         return False
