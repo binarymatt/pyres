@@ -25,6 +25,20 @@ class ReturnAllArgsJob(object):
     def perform(*args):
         return args
 
+
+class RetryOnExceptionJob(object):
+    queue = 'basic'
+    retry_every = 5
+    retry_timeout = 15
+
+    @staticmethod
+    def perform(fail_until):
+        if ResQ._current_time() < fail_until:
+            raise Exception("Don't blame me!  I'm supposed to fail!")
+        else:
+            return True
+
+
 class TestProcess(object):
     queue = 'high'
     

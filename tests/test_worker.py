@@ -1,9 +1,13 @@
-from tests import PyResTests, Basic, TestProcess, ErrorObject
+from tests import PyResTests, Basic, TestProcess, ErrorObject, RetryOnExceptionJob
 from pyres import ResQ
 from pyres.job import Job
+from pyres.scheduler import Scheduler
 from pyres.worker import Worker
 import os
 import time
+import datetime
+
+
 class WorkerTests(PyResTests):
     def test_worker_init(self):
         from pyres.exceptions import NoQueueError
@@ -173,3 +177,54 @@ class WorkerTests(PyResTests):
         # the assertion below should hold, because the workers we registered above are on a
         # different host, and thus should not be pruned by this process
         assert self.redis.scard('resque:workers') == 3
+
+    def test_retry_on_exception(self):
+        now = datetime.datetime.now()
+        self.set_current_time(now)
+        worker = Worker(['basic'])
+        scheduler = Scheduler()
+
+        # queue up a job that will fail for 30 seconds
+        self.resq.enqueue(RetryOnExceptionJob,
+                now + datetime.timedelta(seconds=30))
+        worker.process()
+        assert worker.get_failed() == 0
+
+        # check it retries the first time
+        self.set_current_time(now + datetime.timedelta(seconds=5))
+        scheduler.handle_delayed_items()
+        assert None == worker.process()
+        assert worker.get_failed() == 0
+
+        # check it runs fine when it's stopped crashing
+        self.set_current_time(now + datetime.timedelta(seconds=60))
+        scheduler.handle_delayed_items()
+        assert True == worker.process()
+        assert worker.get_failed() == 0
+
+    def test_retries_give_up_eventually(self):
+        now = datetime.datetime.now()
+        self.set_current_time(now)
+        worker = Worker(['basic'])
+        scheduler = Scheduler()
+
+        # queue up a job that will fail for 60 seconds
+        self.resq.enqueue(RetryOnExceptionJob,
+                now + datetime.timedelta(seconds=60))
+        worker.process()
+        assert worker.get_failed() == 0
+
+        # check it retries the first time
+        self.set_current_time(now + datetime.timedelta(seconds=5))
+        scheduler.handle_delayed_items()
+        assert None == worker.process()
+        assert worker.get_failed() == 0
+
+        # check it fails when we've been trying too long
+        self.set_current_time(now + datetime.timedelta(seconds=20))
+        scheduler.handle_delayed_items()
+        assert None == worker.process()
+        assert worker.get_failed() == 1
+
+    def set_current_time(self, time):
+        ResQ._current_time = staticmethod(lambda: time)

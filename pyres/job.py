@@ -1,3 +1,4 @@
+from datetime import datetime, timedelta
 from pyres import ResQ, str_to_class, safe_str_to_class
 from pyres import failure
 
@@ -35,10 +36,11 @@ class Job(object):
         payload_class = safe_str_to_class(payload_class_str)
         payload_class.resq = self.resq
         args = self._payload.get("args", None)
-        if args:
+        try:
             return payload_class.perform(*args)
-        else:
-            return payload_class.perform()
+        except:
+            if not self.retry(payload_class, args):
+                raise
     
     def fail(self, exception):
         """This method provides a way to fail a job and will use whatever failure backend
@@ -48,7 +50,22 @@ class Job(object):
         fail = failure.create(exception, self._queue, self._payload, self._worker)
         fail.save(self.resq)
         return fail
-    
+
+    def retry(self, payload_class, args):
+        retry_every = getattr(payload_class, 'retry_every', None)
+        retry_timeout = getattr(payload_class, 'retry_timeout', 0)
+
+        if retry_every:
+            now = ResQ._current_time()
+            first_attempt = self._payload.get("first_attempt", now)
+            retry_until = first_attempt + timedelta(seconds=retry_timeout)
+            retry_at = now + timedelta(seconds=retry_every)
+            if retry_at < retry_until:
+                self.resq.enqueue_at(ResQ._current_time(), payload_class, *args,
+                        **{'first_attempt':first_attempt})
+                return True
+        return False
+
     @classmethod
     def reserve(cls, queue, res, worker=None):
         """Reserve a job on the queue. This marks this job so that other workers

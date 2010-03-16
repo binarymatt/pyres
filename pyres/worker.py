@@ -154,7 +154,7 @@ class Worker(object):
             job = self.reserve()
         try:
             self.working_on(job)
-            job.perform()
+            return job.perform()
         except Exception, e:
             exceptionType, exceptionValue, exceptionTraceback = sys.exc_info()
             logging.error("%s failed: %s" % (job, e))
