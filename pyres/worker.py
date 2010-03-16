@@ -217,7 +217,7 @@ class Worker(object):
     def processing(self):
         return self.job()
     
-    def state(self):.
+    def state(self):
         return 'working' if self.resq.redis.exists('resque:worker:%s' % self) else 'idle'
 
     def worker_pids(self):
