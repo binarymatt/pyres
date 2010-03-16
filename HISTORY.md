@@ -1,3 +1,6 @@
+## 0.7.1 (2010-03-16)
+* bug fix for pruning workers.
+
 ## 0.7.0 (2010-03-05)
 * delayed tasks
 * resweb pagination
