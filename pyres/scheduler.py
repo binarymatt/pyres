@@ -67,7 +67,10 @@ class Scheduler(object):
                 klass = item['class']
                 queue = item['queue']
                 args = item['args']
-                self.resq.enqueue_from_string(klass, queue, *args)
+                kwargs = {}
+                if 'first_attempt' in item:
+                    kwargs['first_attempt'] = item['first_attempt']
+                self.resq.enqueue_from_string(klass, queue, *args, **kwargs)
             
         
     @classmethod

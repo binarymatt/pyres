@@ -142,8 +142,11 @@ class ResQ(object):
         else:
             logging.warning("unable to enqueue job with class %s" % str(klass))
 
-    def enqueue_from_string(self, klass_as_string, queue, *args):
-        self.push(queue, {'class':klass_as_string,'args':args})
+    def enqueue_from_string(self, klass_as_string, queue, *args, **kwargs):
+        payload = {'class':klass_as_string, 'queue': queue, 'args':args}
+        if 'first_attempt' in kwargs:
+            payload['first_attempt'] = kwargs['first_attempt']
+        self.push(queue, payload)
         logging.info("enqueued '%s' job" % klass_as_string)
         if args:
             logging.debug("job arguments: %s" % str(args))
@@ -201,12 +204,15 @@ class ResQ(object):
         """
         self.redis.disconnect()
     
-    def enqueue_at(self, datetime, klass, *args):
+    def enqueue_at(self, datetime, klass, *args, **kwargs):
         class_name = '%s.%s' % (klass.__module__, klass.__name__)
         logging.info("enqueued '%s' job for execution at %s" % (class_name, datetime))
         if args:
             logging.debug("job arguments are: %s" % str(args))
-        self.delayed_push(datetime, {'class':class_name,'queue': klass.queue, 'args':args})
+        payload = {'class':class_name, 'queue': klass.queue, 'args':args}
+        if 'first_attempt' in kwargs:
+            payload['first_attempt'] = kwargs['first_attempt']
+        self.delayed_push(datetime, payload)
     
     def delayed_push(self, datetime, item):
         key = int(time.mktime(datetime.timetuple()))
@@ -227,7 +233,7 @@ class ResQ(object):
         return self.redis.llen("resque:delayed:%s" % timestamp)
     
     def next_delayed_timestamp(self):
-        key = int(time.mktime(datetime.datetime.now().timetuple()))
+        key = int(time.mktime(ResQ._current_time().timetuple()))
         array = self.redis.zrangebyscore('resque:delayed_queue_schedule', '-inf', key)
         timestamp = None
         if array:
@@ -264,6 +270,10 @@ class ResQ(object):
         if queue:
             class_name = '%s.%s' % (klass.__module__, klass.__name__)
             _self.push(queue, {'class':class_name,'args':args})
+
+    @staticmethod
+    def _current_time():
+        return datetime.datetime.now()
 
 
 class Stat(object):
