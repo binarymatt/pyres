@@ -223,7 +223,7 @@ class Worker(object):
     def worker_pids(self):
         """Returns an array of all pids (as strings) of the workers on
         this machine.  Used when pruning dead workers."""
-        return map(lambda l: l.split(' ')[0],
+        return map(lambda l: l.strip().split(' ')[0],
                    commands.getoutput("ps -A -o pid,command | \
                                        grep pyres_worker").split("\n"))
     
