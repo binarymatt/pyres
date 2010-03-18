@@ -1,3 +1,6 @@
+## 0.7.5 (2010-03-18)
+* added feature to retry jobs based on a class attribute
+
 ## 0.7.1 (2010-03-16)
 * bug fix for pruning workers.
 
