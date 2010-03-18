@@ -1,3 +1,7 @@
+## 0.7.5.1 (2010-03-18)
+* fixed the pyres_scheduler script
+* changed download link to remove v from version number
+
 ## 0.7.5 (2010-03-18)
 * added feature to retry jobs based on a class attribute
 

@@ -1,6 +1,6 @@
 from setuptools import setup, find_packages
     
-version='0.7.5'
+version='0.7.5.1'
 setup(
     name='pyres',
     version=version,
@@ -11,10 +11,10 @@ setup(
     license='MIT',
     url='http://github.com/binarydud/pyres',
     packages=find_packages(exclude=['ez_setup', 'examples', 'tests']),
-    download_url='http://cloud.github.com/downloads/binarydud/pyres/pyres-v%s.tar.gz' % version,
+    download_url='http://cloud.github.com/downloads/binarydud/pyres/pyres-%s.tar.gz' % version,
     include_package_data=True,
     package_data={'resweb': ['templates/*.mustache','media/*']},
-    scripts=['scripts/pyres_worker', 'scripts/pyres_web'],
+    scripts=['scripts/pyres_worker', 'scripts/pyres_web', 'scripts/pyres_scheduler'],
     install_requires=[
         'simplejson>=2.0.9',
         'itty>=0.6.2',
