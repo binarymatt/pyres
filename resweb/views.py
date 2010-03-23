@@ -202,6 +202,7 @@ class Queue(ResWeb):
 class Failed(ResWeb):
     def __init__(self, host, start=0):
         self._start = start
+        self.host = host
         super(Failed, self).__init__(host)
     
     def start(self):
@@ -214,10 +215,15 @@ class Failed(ResWeb):
         return str(failure.count(self.resq) or 0)
      
     def failed_jobs(self):
+        from base64 import b64encode
+        try:
+            import json
+        except ImportError:
+            import simplejson as json
         jobs = []
         for job in failure.all(self.resq, self._start, self._start + 20):
             item = job
-            item['failed_at'] = str(datetime.datetime.fromtimestamp(float(item['failed_at'])))
+            item['failed_at'] = str(datetime.datetime.fromtimestamp(float(job['failed_at'])))
             item['worker_url'] = '/workers/%s/' % job['worker']
             item['payload_args'] = str(job['payload']['args'])
             item['payload_class'] = job['payload']['class']
@@ -230,6 +236,7 @@ class Failed(ResWeb):
     
     def link_func(self, start):
         return '/failed/?start=%s' % start
+        
 class Stats(ResWeb):
     def __init__(self, host, key_id):
         self.key_id = key_id
