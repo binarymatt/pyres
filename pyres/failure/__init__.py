@@ -24,8 +24,8 @@ def requeue(resq, failure_object):
     
 def retry(resq, queue, payload):
     job = resq.decode(payload)
-    delete(resq, payload)
-    return resq.push(queue, job['payload'])
+    resq.push(queue, job['payload'])
+    return delete(resq, payload)
     
 def delete(resq, payload):
     return resq.redis.lrem(name = 'resque:failed', num = 1, value = payload)
