@@ -227,7 +227,7 @@ class Worker(object):
                                        grep pyres_worker").split("\n"))
     
     @classmethod
-    def run(cls, queues, server="localhost:6379", interval):
+    def run(cls, queues, server="localhost:6379", interval=None):
         worker = cls(queues=queues, server=server)
         if interval is not None:
             worker.work(interval)            

@@ -5,11 +5,14 @@ except:
     sys.exit("multiprocessing was not available")
 
 import time, os, signal
+import datetime
+import logging
+
 from pyres.worker import Worker
 from pyres import ResQ
 from pyres.exceptions import NoQueueError
 from pyres.utils import OrderedDict
-import datetime
+
 
 class Minion(multiprocessing.Process, Worker):
     def __init__(self, queues, server, password):
@@ -18,6 +21,7 @@ class Minion(multiprocessing.Process, Worker):
         self.validate_queues()
         self._shutdown = False
         self.child = None
+        self.hostname = os.uname()[1]
         if isinstance(server,basestring):
             self.resq = ResQ(server=server, password=password)
         elif isinstance(server, ResQ):
@@ -26,12 +30,14 @@ class Minion(multiprocessing.Process, Worker):
             raise Exception("Bad server argument")
         #Worker.__init__(self, queues=queues, server="localhost:6379", password=None)
         #super(Minion,self).__init__(name='Minion')
+    def prune_dead_workers(self):
+        pass
     
     def work(self, interval=5):
         self.startup()
         while True:
             if self._shutdown:
-                print 'shutdown scheduled'
+                logging.info('shutdown scheduled')
                 break
             job = self.reserve()
             if job:
@@ -53,7 +59,6 @@ class Khan(object):
         'REMOVE': '_remove_minion',
         'SHUTDOWN': '_schedule_shutdown'
     }
-    _workers = OrderedDict()
     def __init__(self, pool_size=5, queues=[], server='localhost:6379', password=None):
         #super(Khan,self).__init__(queues=queues,server=server,password=password)
         self._shutdown = False
@@ -63,6 +68,7 @@ class Khan(object):
         self.password = password
         self.pid = os.getpid()
         self.validate_queues()
+        self._workers = OrderedDict()
         if isinstance(server,basestring):
             self.resq = ResQ(server=server, password=password)
         elif isinstance(server, ResQ):
@@ -91,7 +97,7 @@ class Khan(object):
         self.schedule_shutdown(None, None)
     
     def schedule_shutdown(self, signum, frame):
-        print 'Shutdown scheduled'
+        logging.info('Khan Shutdown scheduled')
         self._shutdown = True
     
     def kill_child(self, signum, frame):
@@ -106,10 +112,10 @@ class Khan(object):
     
     def _check_commands(self):
         if not self._shutdown:
-            print 'Checking commands'
+            logging.debug('Checking commands')
             command_key = 'resque:khan:%s' % self
-            command = self.resq.redis.pop(command_key)
-            print 'COMMAND', command
+            command = self.resq.redis.lpop(command_key)
+            logging.debug('COMMAND FOUND:', command)
             if command:
                 self.process_command(command)
                 self._check_commands()
@@ -124,16 +130,16 @@ class Khan(object):
                 fn()
     
     def add_minion(self):
-        print 'Adding minion'
         m = self._add_minion()
         m.start()
     
     def _add_minion(self):
-        print 'Adding mminion'
+        logging.info('Adding minion')
         #parent_conn, child_conn = multiprocessing.Pipe()
         m = Minion(self.queues, self.server, self.password)
         #m.start()
         self._workers[m.pid] = m
+        logging.info('minion added at %s' % m.pid)
         return m
         #self._workers.append(m)
     
@@ -153,12 +159,13 @@ class Khan(object):
         return m
     
     def register_worker(self):
+        logging.debug('registering khan')
         self.resq.redis.sadd('resque:khans',str(self))
         #self.resq._redis.add("worker:#{self}:started", Time.now.to_s)
         self.started = datetime.datetime.now()
     
     def unregister_worker(self):
-        print 'Unregistering'
+        logging.debug('unregistering khan')
         self.resq.redis.srem('resque:khans',str(self))
         self.started = None
     
