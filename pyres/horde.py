@@ -1,43 +1,116 @@
+import sys
 try:
     import multiprocessing
 except:
-    import sys
     sys.exit("multiprocessing was not available")
 
 import time, os, signal
 import datetime
 import logging
 
-from pyres.worker import Worker
 from pyres import ResQ
 from pyres.exceptions import NoQueueError
 from pyres.utils import OrderedDict
+from pyres.job import Job
+import pyres.json_parser as json
 
-
-class Minion(multiprocessing.Process, Worker):
+class Minion(multiprocessing.Process):
     def __init__(self, queues, server, password):
-        multiprocessing.Process.__init__(self, name='Minion')
-        self.queues = queues
-        self.validate_queues()
-        self._shutdown = False
-        self.child = None
-        self.hostname = os.uname()[1]
-        if isinstance(server,basestring):
-            self.resq = ResQ(server=server, password=password)
-        elif isinstance(server, ResQ):
-            self.resq = server
-        else:
-            raise Exception("Bad server argument")
-        #Worker.__init__(self, queues=queues, server="localhost:6379", password=None)
         #super(Minion,self).__init__(name='Minion')
+        multiprocessing.Process.__init__(self, name='Minion')
+        
+        format = '%(asctime)s %(levelname)s %(filename)s-%(lineno)d: %(message)s'
+        logHandler = logging.StreamHandler()
+        logHandler.setFormatter(logging.Formatter(format))
+        self.logger = multiprocessing.get_logger()
+        self.logger.addHandler(logHandler)
+        self.logger.setLevel(logging.DEBUG)
+        
+        self.queues = queues
+        self._shutdown = False
+        self.hostname = os.uname()[1]
+        self.server = server
+        self.password = password
+        
+        #Worker.__init__(self, queues=queues, server="localhost:6379", password=None)
+        #
+    
     def prune_dead_workers(self):
         pass
     
+    def schedule_shutdown(self, signum, frame):
+        self._shutdown = True
+    
+    def register_signal_handlers(self):
+        signal.signal(signal.SIGTERM, self.schedule_shutdown)
+        signal.signal(signal.SIGINT, self.schedule_shutdown)
+        signal.signal(signal.SIGQUIT, self.schedule_shutdown)
+    
+    def register_minion(self):
+        pass
+    
+    def startup(self):
+        self.register_signal_handlers()
+        self.prune_dead_workers()
+        self.register_minion()
+    
+    def __str__(self):
+        return '%s:%s:%s' % (self.hostname, self.pid, ','.join(self.queues))
+    
+    def reserve(self):
+        for q in self.queues:
+            self.logger.debug('checking queue: %s' % q)
+            job = Job.reserve(q, self.resq, self.__str__())
+            if job:
+                self.logger.info('Found job on %s' % q)
+                return job
+    
+    def process(self, job):
+        if not job:
+            return
+        try:
+            self.working_on(job)
+            return job.perform()
+        except Exception, e:
+            exceptionType, exceptionValue, exceptionTraceback = sys.exc_info()
+            self.logger.error("%s failed: %s" % (job, e))
+            job.fail(exceptionTraceback)
+            self.failed()
+        else:
+            self.logger.info('completed job')
+            self.logger.debug('job details: %s' % job)
+        finally:
+            self.done_working()
+    
+    def working_on(self, job):
+        self.logger.debug('marking as working on')
+        data = {
+            'queue': job._queue,
+            'run_at': int(time.mktime(datetime.datetime.now().timetuple())),
+            'payload': job._payload
+        }
+        data = json.dumps(data)
+        self.resq.redis["resque:minion:%s" % str(self)] = data
+        self.logger.debug("minion:%s" % str(self))
+        #self.logger.debug(self.resq.redis["resque:minion:%s" % str(self)])
+    
+    def failed(self):
+        pass
+    
+    def done_working(self):
+        self.logger.info('done working')
+        #self.processed()
+        self.resq.redis.delete("resque:minion:%s" % str(self))
+    
+    def unregister_worker(self):
+        pass
+    
     def work(self, interval=5):
+        
         self.startup()
         while True:
             if self._shutdown:
-                logging.info('shutdown scheduled')
+                self.logger.info('shutdown scheduled')
                 break
             job = self.reserve()
             if job:
@@ -47,6 +120,13 @@ class Minion(multiprocessing.Process, Worker):
         self.unregister_worker()
     
     def run(self):
+        
+        if isinstance(self.server,basestring):
+            self.resq = ResQ(server=self.server, password=self.password)
+        elif isinstance(self.server, ResQ):
+            self.resq = self.server
+        else:
+            raise Exception("Bad server argument")
         self.work()
         #while True:
         #    job = self.q.get()
@@ -69,14 +149,18 @@ class Khan(object):
         self.pid = os.getpid()
         self.validate_queues()
         self._workers = OrderedDict()
-        if isinstance(server,basestring):
-            self.resq = ResQ(server=server, password=password)
-        elif isinstance(server, ResQ):
-            self.resq = server
-        else:
-            raise Exception("Bad server argument")
+        self.server = server
+        self.password = password
+        
         #self._workers = list()
     
+    def setup_resq(self):
+        if isinstance(self.server,basestring):
+            self.resq = ResQ(server=self.server, password=self.password)
+        elif isinstance(self.server, ResQ):
+            self.resq = self.server
+        else:
+            raise Exception("Bad server argument")
     def validate_queues(self):
         "Checks if a worker is given atleast one queue to work on."
         if not self.queues:
@@ -114,18 +198,20 @@ class Khan(object):
         if not self._shutdown:
             logging.debug('Checking commands')
             command_key = 'resque:khan:%s' % self
-            command = self.resq.redis.lpop(command_key)
-            logging.debug('COMMAND FOUND:', command)
+            
+            command = self.resq.redis.lpop('resque:khan:%s' % str(self))
+            logging.debug('COMMAND FOUND: %s ' % command)
             if command:
+                import pdb;pdb.set_trace()
                 self.process_command(command)
                 self._check_commands()
     
     def process_command(self, command):
-        print 'Processing Command'
+        logging.info('Processing Command')
         #available commands, shutdown, add 1, remove 1
-        command = self._command_map.get(command, None)
-        if command:
-            fn = getattr(self, command)
+        command_item = self._command_map.get(command, None)
+        if command_item:
+            fn = getattr(self, command_item)
             if fn:
                 fn()
     
@@ -138,8 +224,6 @@ class Khan(object):
         #parent_conn, child_conn = multiprocessing.Pipe()
         m = Minion(self.queues, self.server, self.password)
         #m.start()
-        self._workers[m.pid] = m
-        logging.info('minion added at %s' % m.pid)
         return m
         #self._workers.append(m)
     
@@ -160,21 +244,23 @@ class Khan(object):
     
     def register_worker(self):
         logging.debug('registering khan')
-        self.resq.redis.sadd('resque:khans',str(self))
+        #self.resq.redis.sadd('resque:khans',str(self))
         #self.resq._redis.add("worker:#{self}:started", Time.now.to_s)
-        self.started = datetime.datetime.now()
+        #self.started = datetime.datetime.now()
     
     def unregister_worker(self):
         logging.debug('unregistering khan')
         self.resq.redis.srem('resque:khans',str(self))
         self.started = None
     
-    def work(self, interval=5):
+    def work(self, interval=2):
         self.startup()
         for i in range(self.pool_size):
             m = self._add_minion()
             m.start()
-        
+            self._workers[m.pid] = m
+            logging.info('minion added at %s' % m.pid)
+        self.setup_resq()
         while True:
             self._check_commands()
             if self._shutdown:

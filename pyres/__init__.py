@@ -258,7 +258,9 @@ class ResQ(object):
 
     @classmethod
     def decode(cls, item):
-        if item:
+        print item
+        if isinstance(item, basestring):
+            
             ret = json.loads(item)
             return ret
         return None
