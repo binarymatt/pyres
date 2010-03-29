@@ -8,7 +8,7 @@ import time, os, signal
 import datetime
 import logging
 
-from pyres import ResQ
+from pyres import ResQ, Stat
 from pyres.exceptions import NoQueueError
 from pyres.utils import OrderedDict
 from pyres.job import Job
@@ -32,9 +32,6 @@ class Minion(multiprocessing.Process):
         self.server = server
         self.password = password
         
-        #Worker.__init__(self, queues=queues, server="localhost:6379", password=None)
-        #
-    
     def prune_dead_workers(self):
         pass
     
@@ -47,7 +44,8 @@ class Minion(multiprocessing.Process):
         signal.signal(signal.SIGQUIT, self.schedule_shutdown)
     
     def register_minion(self):
-        pass
+        self.resq.redis.sadd('resque:minions',str(self))
+        self.started = datetime.datetime.now()
     
     def startup(self):
         self.register_signal_handlers()
@@ -95,15 +93,20 @@ class Minion(multiprocessing.Process):
         #self.logger.debug(self.resq.redis["resque:minion:%s" % str(self)])
     
     def failed(self):
-        pass
+        Stat("failed", self.resq).incr()
+    
+    def processed(self):
+        total_processed = Stat("processed", self.resq)
+        total_processed.incr()
     
     def done_working(self):
         self.logger.info('done working')
-        #self.processed()
+        self.processed()
         self.resq.redis.delete("resque:minion:%s" % str(self))
     
-    def unregister_worker(self):
-        pass
+    def unregister_minion(self):
+        self.resq.redis.srem('resque:minions',str(self))
+        self.started = None
     
     def work(self, interval=5):
         
@@ -117,7 +120,7 @@ class Minion(multiprocessing.Process):
                 self.process(job)
             else:
                 time.sleep(interval)
-        self.unregister_worker()
+        self.unregister_minion()
     
     def run(self):
         
