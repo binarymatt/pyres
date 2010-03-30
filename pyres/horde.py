@@ -164,6 +164,7 @@ class Khan(object):
             self.resq = self.server
         else:
             raise Exception("Bad server argument")
+    
     def validate_queues(self):
         "Checks if a worker is given atleast one queue to work on."
         if not self.queues:
@@ -171,7 +172,6 @@ class Khan(object):
     
     def startup(self):
         self.register_signal_handlers()
-        self.register_worker()
     
     def register_signal_handlers(self):
         signal.signal(signal.SIGTERM, self.schedule_shutdown)
@@ -194,6 +194,9 @@ class Khan(object):
         self.add_minion()
     
     def register_khan(self):
+        if not hasattr(self, 'resq'):
+            self.setup_resq()
+        
         self.resq.redis.sadd('resque:khans',str(self))
         self.started = datetime.datetime.now()
     
@@ -245,13 +248,7 @@ class Khan(object):
         m.terminate()
         return m
     
-    def register_worker(self):
-        logging.debug('registering khan')
-        #self.resq.redis.sadd('resque:khans',str(self))
-        #self.resq._redis.add("worker:#{self}:started", Time.now.to_s)
-        #self.started = datetime.datetime.now()
-    
-    def unregister_worker(self):
+    def unregister_khan(self):
         logging.debug('unregistering khan')
         self.resq.redis.srem('resque:khans',str(self))
         self.started = None
@@ -264,6 +261,7 @@ class Khan(object):
             self._workers[m.pid] = m
             logging.info('minion added at %s' % m.pid)
         self.setup_resq()
+        self.register_khan()
         while True:
             self._check_commands()
             if self._shutdown:
@@ -273,7 +271,7 @@ class Khan(object):
             #get job
             else:
                 time.sleep(interval)
-        self.unregister_worker()
+        self.unregister_khan()
     
     def __str__(self):
         hostname = os.uname()[1]
