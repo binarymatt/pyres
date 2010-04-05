@@ -154,7 +154,6 @@ class Khan(object):
         self._workers = OrderedDict()
         self.server = server
         self.password = password
-        
         #self._workers = list()
     
     def setup_resq(self):
@@ -196,15 +195,12 @@ class Khan(object):
     def register_khan(self):
         if not hasattr(self, 'resq'):
             self.setup_resq()
-        
         self.resq.redis.sadd('resque:khans',str(self))
         self.started = datetime.datetime.now()
     
     def _check_commands(self):
         if not self._shutdown:
             logging.debug('Checking commands')
-            command_key = 'resque:khan:%s' % self
-            
             command = self.resq.redis.lpop('resque:khan:%s' % str(self))
             logging.debug('COMMAND FOUND: %s ' % command)
             if command:
@@ -223,15 +219,17 @@ class Khan(object):
     
     def add_minion(self):
         m = self._add_minion()
-        m.start()
+        self.resq.redis.srem('resque:khans',str(self))
+        self.pool_size += 1
+        self.resq.redis.sadd('resque:khans',str(self))
     
     def _add_minion(self):
         logging.info('Adding minion')
-        #parent_conn, child_conn = multiprocessing.Pipe()
         m = Minion(self.queues, self.server, self.password)
-        #m.start()
+        m.start()
+        self._workers[m.pid] = m
+        logging.info('minion added at: %s' % m.pid)
         return m
-        #self._workers.append(m)
     
     def _shutdown_minions(self):
         """
@@ -246,6 +244,9 @@ class Khan(object):
         #    m = self._workers.pop(pid)
         pid, m = self._workers.popitem(False)
         m.terminate()
+        self.resq.redis.srem('resque:khans',str(self))
+        self.pool_size -= 1
+        self.resq.redis.sadd('resque:khans',str(self))
         return m
     
     def unregister_khan(self):
@@ -253,13 +254,13 @@ class Khan(object):
         self.resq.redis.srem('resque:khans',str(self))
         self.started = None
     
+    def setup_minions(self):
+        for i in range(self.pool_size):
+            self._add_minion()
+
     def work(self, interval=2):
         self.startup()
-        for i in range(self.pool_size):
-            m = self._add_minion()
-            m.start()
-            self._workers[m.pid] = m
-            logging.info('minion added at %s' % m.pid)
+        self.setup_minions()
         self.setup_resq()
         self.register_khan()
         while True:
@@ -275,7 +276,7 @@ class Khan(object):
     
     def __str__(self):
         hostname = os.uname()[1]
-        return '%s:%s' % (hostname, self.pid)
+        return '%s:%s:%s' % (hostname, self.pid, self.pool_size)
         
     @classmethod
     def run(cls, pool_size=5, queues=[], server='localhost:6379'):
