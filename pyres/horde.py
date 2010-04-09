@@ -7,30 +7,46 @@ except:
 import time, os, signal
 import datetime
 import logging
-
+import logging.handlers
 from pyres import ResQ, Stat
 from pyres.exceptions import NoQueueError
 from pyres.utils import OrderedDict
 from pyres.job import Job
 import pyres.json_parser as json
 
+def setup_logging(namespace='', log_level=logging.INFO, log_file=None):
+    
+    logger = multiprocessing.get_logger()
+    #logger = multiprocessing.log_to_stderr()
+    logger.setLevel(log_level)
+    format = '%(asctime)s %(levelname)s '+namespace+': %(message)s'
+    if log_file:
+        handler = logging.handlers.RotatingFileHandler(log_file, maxBytes=104857600, backupCount=5)
+    else:
+        handler = logging.StreamHandler()
+    handler.setFormatter(logging.Formatter((format)))
+    logger.addHandler(handler)
+    return logger
+
 class Minion(multiprocessing.Process):
-    def __init__(self, queues, server, password):
-        #super(Minion,self).__init__(name='Minion')
+    def __init__(self, queues, server, password, log_level=logging.INFO, log_file=None):
         multiprocessing.Process.__init__(self, name='Minion')
         
-        format = '%(asctime)s %(levelname)s %(filename)s-%(lineno)d: %(message)s'
-        logHandler = logging.StreamHandler()
-        logHandler.setFormatter(logging.Formatter(format))
-        self.logger = multiprocessing.get_logger()
-        self.logger.addHandler(logHandler)
-        self.logger.setLevel(logging.DEBUG)
+        #format = '%(asctime)s %(levelname)s %(filename)s-%(lineno)d: %(message)s'
+        #logHandler = logging.StreamHandler()
+        #logHandler.setFormatter(logging.Formatter(format))
+        #self.logger = multiprocessing.get_logger()
+        #self.logger.addHandler(logHandler)
+        #self.logger.setLevel(logging.DEBUG)
         
         self.queues = queues
         self._shutdown = False
         self.hostname = os.uname()[1]
         self.server = server
         self.password = password
+        
+        self.log_level = log_level
+        self.log_file = log_file
         
     def prune_dead_workers(self):
         pass
@@ -68,15 +84,15 @@ class Minion(multiprocessing.Process):
             return
         try:
             self.working_on(job)
-            return job.perform()
+            job.perform()
         except Exception, e:
             exceptionType, exceptionValue, exceptionTraceback = sys.exc_info()
             self.logger.error("%s failed: %s" % (job, e))
             job.fail(exceptionTraceback)
             self.failed()
         else:
-            self.logger.info('completed job')
-            self.logger.debug('job details: %s' % job)
+            self.logger.debug("Hells yeah")
+            self.logger.info('completed job: %s' % job)
         finally:
             self.done_working()
     
@@ -100,7 +116,7 @@ class Minion(multiprocessing.Process):
         total_processed.incr()
     
     def done_working(self):
-        self.logger.info('done working')
+        self.logger.debug('done working')
         self.processed()
         self.resq.redis.delete("resque:minion:%s" % str(self))
     
@@ -130,6 +146,8 @@ class Minion(multiprocessing.Process):
             self.resq = self.server
         else:
             raise Exception("Bad server argument")
+        namespace = 'minion:%s' % self.pid
+        self.logger = setup_logging(namespace, self.log_level, self.log_file)
         self.work()
         #while True:
         #    job = self.q.get()
@@ -142,7 +160,7 @@ class Khan(object):
         'REMOVE': '_remove_minion',
         'SHUTDOWN': '_schedule_shutdown'
     }
-    def __init__(self, pool_size=5, queues=[], server='localhost:6379', password=None):
+    def __init__(self, pool_size=5, queues=[], server='localhost:6379', password=None, logging_level=logging.INFO, log_file=None):
         #super(Khan,self).__init__(queues=queues,server=server,password=password)
         self._shutdown = False
         self.pool_size = int(pool_size)
@@ -154,6 +172,9 @@ class Khan(object):
         self._workers = OrderedDict()
         self.server = server
         self.password = password
+        self.logging_level = logging_level
+        self.log_file = log_file
+        self.logger = setup_logging('khan', self.logging_level, self.log_file)
         #self._workers = list()
     
     def setup_resq(self):
@@ -171,6 +192,7 @@ class Khan(object):
     
     def startup(self):
         self.register_signal_handlers()
+        
     
     def register_signal_handlers(self):
         signal.signal(signal.SIGTERM, self.schedule_shutdown)
@@ -183,7 +205,7 @@ class Khan(object):
         self.schedule_shutdown(None, None)
     
     def schedule_shutdown(self, signum, frame):
-        logging.info('Khan Shutdown scheduled')
+        self.logger.info('Khan Shutdown scheduled')
         self._shutdown = True
     
     def kill_child(self, signum, frame):
@@ -200,16 +222,16 @@ class Khan(object):
     
     def _check_commands(self):
         if not self._shutdown:
-            logging.debug('Checking commands')
+            self.logger.debug('Checking commands')
             command = self.resq.redis.lpop('resque:khan:%s' % str(self))
-            logging.debug('COMMAND FOUND: %s ' % command)
+            self.logger.debug('COMMAND FOUND: %s ' % command)
             if command:
                 import pdb;pdb.set_trace()
                 self.process_command(command)
                 self._check_commands()
     
     def process_command(self, command):
-        logging.info('Processing Command')
+        self.logger.info('Processing Command')
         #available commands, shutdown, add 1, remove 1
         command_item = self._command_map.get(command, None)
         if command_item:
@@ -224,11 +246,11 @@ class Khan(object):
         self.resq.redis.sadd('resque:khans',str(self))
     
     def _add_minion(self):
-        logging.info('Adding minion')
-        m = Minion(self.queues, self.server, self.password)
+        self.logger.info('Adding minion')
+        m = Minion(self.queues, self.server, self.password, log_level=self.logging_level)
         m.start()
         self._workers[m.pid] = m
-        logging.info('minion added at: %s' % m.pid)
+        self.logger.info('minion added at: %s' % m.pid)
         return m
     
     def _shutdown_minions(self):
@@ -250,7 +272,7 @@ class Khan(object):
         return m
     
     def unregister_khan(self):
-        logging.debug('unregistering khan')
+        self.logger.debug('unregistering khan')
         self.resq.redis.srem('resque:khans',str(self))
         self.started = None
     
@@ -279,8 +301,8 @@ class Khan(object):
         return '%s:%s:%s' % (hostname, self.pid, self.pool_size)
         
     @classmethod
-    def run(cls, pool_size=5, queues=[], server='localhost:6379'):
-        worker = cls(pool_size=pool_size, queues=queues, server=server)
+    def run(cls, pool_size=5, queues=[], server='localhost:6379', logging_level=logging.INFO):
+        worker = cls(pool_size=pool_size, queues=queues, server=server, logging_level=logging_level)
         worker.work()
 
 #if __name__ == "__main__":
