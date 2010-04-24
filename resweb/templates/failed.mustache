@@ -34,6 +34,19 @@ $(document).ready(function(){
           <a href="#" class="backtrace">{{error}}</a>
           <pre style='display:none'>{{traceback}}</pre>          
         </dd>
+		<dt>
+		  Payload Actions
+		</dt>
+		<dd>
+			<form action="/failed/retry/" method="post" accept-charset="utf-8">
+				<p><input type="hidden" name="failed_job" value="{{redis_value}}" id="failed_job" />
+				<p><input type="submit" value="Requeue" /></p>
+			</form>
+			<form action="/failed/delete/" method="post" accept-charset="utf-8">
+				<p><input type="hidden" name="failed_job" value="{{redis_value}}" id="failed_job" />
+				<p><input type="submit" value="Delete" /></p>
+			</form>
+		</dd>
       </dl>
       <div class='r'>
       </div>

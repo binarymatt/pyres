@@ -42,6 +42,33 @@ def failed(request):
     start = request.GET.get('start',0)
     start = int(start)
     return str(Failed(HOST, start).render())
+    
+@post('/failed/retry/')
+def failed_retry(request):
+    from base64 import b64decode
+    from pyres import failure
+    try:
+        import json
+    except ImportError:
+        import simplejson as json
+    failed_job = request.POST['failed_job']
+    job = b64decode(failed_job)
+    decoded = ResQ.decode(job)
+    failure.retry(HOST, decoded['queue'], job)
+    raise Redirect('/failed/')
+    
+@post('/failed/delete/')
+def failed_delete(request):
+    from base64 import b64decode
+    from pyres import failure
+    try:
+        import json
+    except ImportError:
+        import simplejson as json
+    failed_job = request.POST['failed_job']
+    job = b64decode(failed_job)
+    failure.delete(HOST, job)
+    raise Redirect('/failed/')
 
 @get('/workers/(?P<worker_id>\w.+)/')
 def worker(request, worker_id):
@@ -77,7 +104,6 @@ def delayed_timestamp(request, timestamp):
 
 @get('/media/(?P<filename>.+)')
 def my_media(request, filename):
-    print filename
     #return serve_static_file(request, filename)
     #my_media.content_type = content_type(filename)
     
