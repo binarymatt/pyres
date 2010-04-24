@@ -1,4 +1,4 @@
-__version__ = '0.7.5.1'
+__version__ = '0.8'
 
 from redis import Redis
 import pyres.json_parser as json
@@ -258,7 +258,7 @@ class ResQ(object):
 
     @classmethod
     def decode(cls, item):
-        if item:
+        if isinstance(item, basestring):
             ret = json.loads(item)
             return ret
         return None

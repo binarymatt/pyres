@@ -15,7 +15,7 @@ class BasicMulti(object):
     queue = 'basic'
     @staticmethod
     def perform(name, age):
-        print 'name: %s, age: %s'
+        print 'name: %s, age: %s' % (name, age)
     
 
 class ReturnAllArgsJob(object):
