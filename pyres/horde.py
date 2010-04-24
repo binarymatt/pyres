@@ -13,6 +13,11 @@ from pyres.exceptions import NoQueueError
 from pyres.utils import OrderedDict
 from pyres.job import Job
 import pyres.json_parser as json
+try:
+    from setproctitle import setproctitle
+except:
+    def setproctitle(name):
+        pass
 
 def setup_logging(namespace='', log_level=logging.INFO, log_file=None):
     
@@ -52,6 +57,8 @@ class Minion(multiprocessing.Process):
         pass
     
     def schedule_shutdown(self, signum, frame):
+        print signum,
+        print 'inside shutdown'
         self._shutdown = True
     
     def register_signal_handlers(self):
@@ -97,6 +104,7 @@ class Minion(multiprocessing.Process):
             self.done_working()
     
     def working_on(self, job):
+        setproctitle('pyres_minion:%s: working on job: %s' % (os.getppid(), job._payload))
         self.logger.debug('marking as working on')
         data = {
             'queue': job._queue,
@@ -128,6 +136,8 @@ class Minion(multiprocessing.Process):
         
         self.startup()
         while True:
+            setproctitle('pyres_minion:%s: waiting for job on: %s' % (os.getppid(),self.queues))
+            self.logger.info('waiting on job')
             if self._shutdown:
                 self.logger.info('shutdown scheduled')
                 break
@@ -139,7 +149,7 @@ class Minion(multiprocessing.Process):
         self.unregister_minion()
     
     def run(self):
-        
+        setproctitle('pyres_minion:%s: Starting' % (os.getppid(),))
         if isinstance(self.server,basestring):
             self.resq = ResQ(server=self.server, password=self.password)
         elif isinstance(self.server, ResQ):
@@ -257,6 +267,7 @@ class Khan(object):
         """
         send the SIGNINT signal to each worker in the pool.
         """
+        setproctitle('pyres_manager: Waiting on children to shutdown.')
         for minion in self._workers.values():
             minion.terminate()
             minion.join()
@@ -281,10 +292,12 @@ class Khan(object):
             self._add_minion()
 
     def work(self, interval=2):
+        setproctitle('pyres_manager: Starting')
         self.startup()
         self.setup_minions()
         self.setup_resq()
         self.register_khan()
+        setproctitle('pyres_manager: running')
         while True:
             self._check_commands()
             if self._shutdown:

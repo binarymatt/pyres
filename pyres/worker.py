@@ -122,7 +122,7 @@ class Worker(object):
         Finally, the ``process`` method actually processes the job by eventually calling the Job instance's ``perform`` method.
         
         """
-        setproctitle('pyres: Starting')
+        setproctitle('pyres_worker-%s: Starting' % __version__)
         self.startup()
         while True:
             if self._shutdown:
@@ -134,7 +134,7 @@ class Worker(object):
                 logging.debug('job details: %s' % job)
                 self.child = os.fork()
                 if self.child:
-                    setproctitle("pyres-%s: Forked %s at %s" % (__version__, self.child, datetime.datetime.now()))
+                    setproctitle("pyres_worker%s: Forked %s at %s" % (__version__, self.child, datetime.datetime.now()))
                     logging.info('Forked %s at %s' % (self.child, datetime.datetime.now()))
                     try:
                         os.waitpid(self.child, 0)
@@ -145,7 +145,7 @@ class Worker(object):
                     #os.wait()
                     logging.debug('done waiting')
                 else:
-                    setproctitle("pyres-%s: Processing %s since %s" % (__version__, job._queue, datetime.datetime.now()))
+                    setproctitle("pyres_worker-%s: Processing %s since %s" % (__version__, job._queue, datetime.datetime.now()))
                     logging.info('Processing %s since %s' % (job._queue, datetime.datetime.now()))
                     self.process(job)
                     os._exit(0)
@@ -154,7 +154,7 @@ class Worker(object):
                 if interval == 0:
                     break
                 #procline @paused ? "Paused" : "Waiting for #{@queues.join(',')}"
-                setproctitle("pyres-%s: Waiting for %s " % (__version__, ','.join(self.queues)))
+                setproctitle("pyres_worker-%s: Waiting for %s " % (__version__, ','.join(self.queues)))
                 time.sleep(interval)
         self.unregister_worker()
     
