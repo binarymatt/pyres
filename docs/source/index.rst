@@ -17,6 +17,7 @@ Contents:
 	class
 	tests
 	failures
+	horde
 
 
 Indices and tables

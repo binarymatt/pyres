@@ -1,3 +1,8 @@
+## 0.8 (2010-04-24)
+* added the pyres_manager and the horde module. This allows a more prefork like model for processing jobs.
+* setproctitle usage. Allows better process titles when viewing via ps
+* ability to delete and requeue failed items
+
 ## 0.7.5.1 (2010-03-18)
 * fixed the pyres_scheduler script
 * changed download link to remove v from version number
