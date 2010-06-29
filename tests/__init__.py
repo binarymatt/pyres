@@ -8,7 +8,6 @@ class Basic(object):
     @staticmethod
     def perform(name):
         s = "name:%s" % name
-        print s
         return s
 
 class BasicMulti(object):
