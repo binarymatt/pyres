@@ -17,6 +17,7 @@ def main():
     parser.add_option("-i", '--interval', dest='interval', default=None, help='the default time interval to sleep between runs')    
     parser.add_option('-l', '--log-level', dest='log_level', default='info', help='log level.  Valid values are "debug", "info", "warning", "error", "critical", in decreasing order of verbosity. Defaults to "info" if parameter not specified.')
     parser.add_option("--pool", type="int", dest="pool_size", default=1, help="Number of minions to spawn under the manager.")
+    parser.add_option('-f', dest='logfile', help='If present, a logfile will be used.')
     (options,args) = parser.parse_args()
 
     if len(args) != 1:
@@ -32,7 +33,7 @@ def main():
 
     queues = args[0].split(',')
     server = '%s:%s' % (options.host,options.port)
-    Khan.run(pool_size=options.pool_size, queues=queues, server=server, logging_level=log_level)
+    Khan.run(pool_size=options.pool_size, queues=queues, server=server, logging_level=log_level, log_file=options.logfile)
 
 if __name__ == "__main__":
     main()

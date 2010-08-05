@@ -4,6 +4,7 @@ import logging
 
 from optparse import OptionParser
 from pyres.worker import Worker
+from pyres import setup_logging
 
 
 
@@ -16,6 +17,7 @@ def main():
     parser.add_option("--port",dest="port",type="int", default=6379)
     parser.add_option("-i", '--interval', dest='interval', default=None, help='the default time interval to sleep between runs')    
     parser.add_option('-l', '--log-level', dest='log_level', default='info', help='log level.  Valid values are "debug", "info", "warning", "error", "critical", in decreasing order of verbosity. Defaults to "info" if parameter not specified.')
+    parser.add_option('-f', dest='logfile', help='If present, a logfile will be used.')
     (options,args) = parser.parse_args()
 
     if len(args) != 1:
@@ -23,8 +25,8 @@ def main():
         parser.error("Argument must be a comma seperated list of queues")
 
     log_level = getattr(logging, options.log_level.upper(), 'INFO')
-    logging.basicConfig(level=log_level, format="%(asctime)s: %(levelname)s: %(message)s")
-
+    #logging.basicConfig(level=log_level, format="%(asctime)s: %(levelname)s: %(message)s")
+    setup_logging(log_level=log_level, filename=options.logfile)
     interval = options.interval
     if interval is not None: 
         interval = float(interval)

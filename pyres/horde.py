@@ -34,7 +34,7 @@ def setup_logging(namespace='', log_level=logging.INFO, log_file=None):
     return logger
 
 class Minion(multiprocessing.Process):
-    def __init__(self, queues, server, password, log_level=logging.INFO, log_file=None):
+    def __init__(self, queues, server, password, log_level=logging.INFO, log_path=None):
         multiprocessing.Process.__init__(self, name='Minion')
         
         #format = '%(asctime)s %(levelname)s %(filename)s-%(lineno)d: %(message)s'
@@ -51,14 +51,13 @@ class Minion(multiprocessing.Process):
         self.password = password
         
         self.log_level = log_level
-        self.log_file = log_file
+        self.log_path = log_path
+        self.log_file = None
         
     def prune_dead_workers(self):
         pass
     
     def schedule_shutdown(self, signum, frame):
-        print signum,
-        print 'inside shutdown'
         self._shutdown = True
     
     def register_signal_handlers(self):
@@ -148,16 +147,25 @@ class Minion(multiprocessing.Process):
                 time.sleep(interval)
         self.unregister_minion()
     
+    def clear_logger(self):
+        for handler in self.logger.handlers:
+            self.logger.removeHandler(handler)
+    
     def run(self):
         setproctitle('pyres_minion:%s: Starting' % (os.getppid(),))
+        if self.log_path:
+            self.log_file = os.path.join(self.log_path, 'minion-%s.log' % self.pid)
+        namespace = 'minion:%s' % self.pid
+        self.logger = setup_logging(namespace, self.log_level, self.log_file)
+        #self.clear_logger()
         if isinstance(self.server,basestring):
             self.resq = ResQ(server=self.server, password=self.password)
         elif isinstance(self.server, ResQ):
             self.resq = self.server
         else:
             raise Exception("Bad server argument")
-        namespace = 'minion:%s' % self.pid
-        self.logger = setup_logging(namespace, self.log_level, self.log_file)
+        
+        
         self.work()
         #while True:
         #    job = self.q.get()
@@ -184,10 +192,11 @@ class Khan(object):
         self.password = password
         self.logging_level = logging_level
         self.log_file = log_file
-        self.logger = setup_logging('khan', self.logging_level, self.log_file)
+        
         #self._workers = list()
     
     def setup_resq(self):
+        self.logger.info('Connecting to redis server - %s' % self.server)
         if isinstance(self.server,basestring):
             self.resq = ResQ(server=self.server, password=self.password)
         elif isinstance(self.server, ResQ):
@@ -236,7 +245,6 @@ class Khan(object):
             command = self.resq.redis.lpop('resque:khan:%s' % str(self))
             self.logger.debug('COMMAND FOUND: %s ' % command)
             if command:
-                import pdb;pdb.set_trace()
                 self.process_command(command)
                 self._check_commands()
     
@@ -250,17 +258,23 @@ class Khan(object):
                 fn()
     
     def add_minion(self):
-        m = self._add_minion()
+        self._add_minion()
         self.resq.redis.srem('resque:khans',str(self))
         self.pool_size += 1
         self.resq.redis.sadd('resque:khans',str(self))
     
     def _add_minion(self):
-        self.logger.info('Adding minion')
-        m = Minion(self.queues, self.server, self.password, log_level=self.logging_level)
+        if hasattr(self,'logger'):
+            self.logger.info('Adding minion')
+        if self.log_file:
+            log_path = os.path.dirname(self.log_file)
+        else:
+            log_path = None
+        m = Minion(self.queues, self.server, self.password, log_level=self.logging_level, log_path=log_path)
         m.start()
         self._workers[m.pid] = m
-        self.logger.info('minion added at: %s' % m.pid)
+        if hasattr(self,'logger'):
+            self.logger.info('minion added at: %s' % m.pid)
         return m
     
     def _shutdown_minions(self):
@@ -295,9 +309,13 @@ class Khan(object):
         setproctitle('pyres_manager: Starting')
         self.startup()
         self.setup_minions()
+        self.logger = setup_logging('khan', self.logging_level, self.log_file)
+        self.logger.info('Running as pid: %s' % self.pid)
+        self.logger.info('Added %s child processes' % self.pool_size)
+        self.logger.info('Setting up pyres connection')
         self.setup_resq()
         self.register_khan()
-        setproctitle('pyres_manager: running - %s' % self.queues)
+        setproctitle('pyres_manager: running %s' % self.queues)
         while True:
             self._check_commands()
             if self._shutdown:
@@ -314,8 +332,8 @@ class Khan(object):
         return '%s:%s:%s' % (hostname, self.pid, self.pool_size)
         
     @classmethod
-    def run(cls, pool_size=5, queues=[], server='localhost:6379', logging_level=logging.INFO):
-        worker = cls(pool_size=pool_size, queues=queues, server=server, logging_level=logging_level)
+    def run(cls, pool_size=5, queues=[], server='localhost:6379', logging_level=logging.INFO, log_file=None):
+        worker = cls(pool_size=pool_size, queues=queues, server=server, logging_level=logging_level, log_file=log_file)
         worker.work()
 
 #if __name__ == "__main__":

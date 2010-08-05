@@ -4,8 +4,26 @@ from redis import Redis
 import pyres.json_parser as json
 
 import time, datetime
-
+import sys
 import logging
+
+def setup_logging(log_level=logging.INFO, filename=None, stream=sys.stderr):
+    if log_level == logging.NOTSET:
+        return
+    logger = logging.getLogger()
+    logger.setLevel(log_level)
+    if filename:
+        try:
+            from logging.handlers import WatchedFileHandler
+            handler = WatchedFileHandler(filename)
+        except:
+            from logging.handlers import RotatingFileHandler
+            handler = RotatingFileHandler(filename,maxBytes=52428800, backupCount=7)
+    else:
+        handler = logging.StreamHandler(strm=stream)
+    handler.setFormatter(logging.Formatter(
+        '%(asctime)s %(levelname)-8s %(message)s', '%Y-%m-%d %H:%M:%S'))
+    logger.addHandler(handler)
 
 def my_import(name):
     """Helper function for walking import calls when searching for classes by string names."""
