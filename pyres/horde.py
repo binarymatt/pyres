@@ -297,7 +297,7 @@ class Khan(object):
         self.setup_minions()
         self.setup_resq()
         self.register_khan()
-        setproctitle('pyres_manager: running')
+        setproctitle('pyres_manager: running - %s' % self.queues)
         while True:
             self._check_commands()
             if self._shutdown:
