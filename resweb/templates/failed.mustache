@@ -6,8 +6,20 @@ $(document).ready(function(){
         return false;
     });
 });
+function retry_all(){
+    if(confirm('Are you sure you want to retry all?')){
+        window.location.href = '/failed/retry_all/';
+    }
+}
+function delete_all(){
+    if(confirm('Are you sure you want to delete all?')){
+        window.location.href = '/failed/delete_all';
+    }
+
+}
 </script>
 <h1>Failed Jobs</h1>
+<div class="buttons"><button onclick='retry_all()'>retry all</button> <button onclick='delete_all()'>delete all</button></div>
 <p class='sub'>Showing {{start}} to {{end}} of <b>{{size}}</b> jobs</p>
 <ul class='pagination'>
 {{#pagination}}

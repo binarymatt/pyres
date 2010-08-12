@@ -15,6 +15,7 @@ from views import (
     Delayed,
     DelayedTimestamp
 )
+from base64 import b64decode
 
 HOST = ResQ("localhost:6379")
 MY_ROOT = os.path.join(os.path.dirname(__file__), 'media')
@@ -45,8 +46,6 @@ def failed(request):
     
 @post('/failed/retry/')
 def failed_retry(request):
-    from base64 import b64decode
-    from pyres import failure
     try:
         import json
     except ImportError:
@@ -59,8 +58,6 @@ def failed_retry(request):
     
 @post('/failed/delete/')
 def failed_delete(request):
-    from base64 import b64decode
-    from pyres import failure
     try:
         import json
     except ImportError:
@@ -68,6 +65,22 @@ def failed_delete(request):
     failed_job = request.POST['failed_job']
     job = b64decode(failed_job)
     failure.delete(HOST, job)
+    raise Redirect('/failed/')
+
+@get('/failed/delete_all/')
+def delete_all_failed(request):
+     #move resque:failed to resque:failed-staging
+     HOST.redis.rename('resque:failed','resque:failed-staging')
+     HOST.redis.delete('resque:failed-staging')
+     raise Redirect('/failed/')
+
+
+@get('/failed/retry_all')
+def retry_failed(request, number=5000):
+    failures = failure.all(HOST, 0, number)
+    for f in failures:
+        j = b64decode(f['redis_value'])
+        failure.retry(HOST, f['queue'], j)
     raise Redirect('/failed/')
 
 @get('/workers/(?P<worker_id>\w.+)/')
