@@ -2,3 +2,5 @@
 build/
 .coverage
 *.egg-info
+logs/
+dist/
