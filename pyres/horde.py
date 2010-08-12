@@ -196,7 +196,8 @@ class Khan(object):
         #self._workers = list()
     
     def setup_resq(self):
-        self.logger.info('Connecting to redis server - %s' % self.server)
+        if hasattr(self,'logger'):
+            self.logger.info('Connecting to redis server - %s' % self.server)
         if isinstance(self.server,basestring):
             self.resq = ResQ(server=self.server, password=self.password)
         elif isinstance(self.server, ResQ):
@@ -297,7 +298,8 @@ class Khan(object):
         return m
     
     def unregister_khan(self):
-        self.logger.debug('unregistering khan')
+        if hasattr(self,'logger'):
+            self.logger.debug('unregistering khan')
         self.resq.redis.srem('resque:khans',str(self))
         self.started = None
     
@@ -305,11 +307,15 @@ class Khan(object):
         for i in range(self.pool_size):
             self._add_minion()
 
+    def _setup_logging(self):
+        self.logger = setup_logging('khan', self.logging_level, self.log_file)
+    
     def work(self, interval=2):
         setproctitle('pyres_manager: Starting')
         self.startup()
         self.setup_minions()
-        self.logger = setup_logging('khan', self.logging_level, self.log_file)
+        #self.logger = setup_logging('khan', self.logging_level, self.log_file)
+        self._setup_logging()
         self.logger.info('Running as pid: %s' % self.pid)
         self.logger.info('Added %s child processes' % self.pool_size)
         self.logger.info('Setting up pyres connection')
