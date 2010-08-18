@@ -14,7 +14,7 @@ class ResWeb(pystache.View):
         self.resq = host
     
     def media_folder(self):
-        return '/media/'
+        return '/static/'
     
     def close(self):
         self.resq.close()
