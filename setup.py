@@ -1,5 +1,5 @@
 from setuptools import setup, find_packages
-    
+
 version='0.9'
 setup(
     name='pyres',
@@ -15,14 +15,14 @@ setup(
     include_package_data=True,
     package_data={'resweb': ['templates/*.mustache','media/*']},
     scripts=[
-        'scripts/pyres_worker', 
-        'scripts/pyres_web', 
+        'scripts/pyres_worker',
+        'scripts/pyres_web',
         'scripts/pyres_scheduler',
         'scripts/pyres_manager'],
     install_requires=[
         'simplejson>=2.0.9',
         'itty>=0.6.2',
-        'redis==1.34.1',
+        'redis>=1.34.1',
         'pystache>=0.1.0',
         'setproctitle==1.0'
     ],
