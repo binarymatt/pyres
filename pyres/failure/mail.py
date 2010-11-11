@@ -6,6 +6,26 @@ from email.mime.text import MIMEText
 from base import BaseBackend
 
 class MailBackend(BaseBackend):
+    """Extends ``BaseBackend`` to provide support for emailing failures.
+    Intended to be used with the MultipleBackend:
+
+    from pyres import failure
+
+    from pyres.failure.mail import MailBackend
+    from pyres.failure.multiple import MultipleBackend
+    from pyres.failure.redis import RedisBackend
+
+    class EmailFailure(MailBackend):
+        from_user = 'My Email User <mailuser@mydomain.tld>'
+        recipients = ['Me <me@mydomain.tld>']
+
+        smtp_host = 'mail.mydomain.tld'
+        smtp_user = 'mailuser'
+        smtp_password = 'm41lp455w0rd'
+
+    failure.backend = MultipleBackend
+    failure.backend.classes = [RedisBackend, EmailFailure]
+    """
     subject = 'Pyres Failure on {queue}'
 
     recipients = []
