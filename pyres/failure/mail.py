@@ -16,15 +16,26 @@ class MailBackend(BaseBackend):
     from pyres.failure.redis import RedisBackend
 
     class EmailFailure(MailBackend):
+        subject = 'Pyres Failure on {queue}'
         from_user = 'My Email User <mailuser@mydomain.tld>'
         recipients = ['Me <me@mydomain.tld>']
 
         smtp_host = 'mail.mydomain.tld'
+        smtp_port = 25
+        smtp_tls = True
+
         smtp_user = 'mailuser'
         smtp_password = 'm41lp455w0rd'
 
     failure.backend = MultipleBackend
     failure.backend.classes = [RedisBackend, EmailFailure]
+
+
+    Additional notes:
+        - The following tokens are available in subject: queue, worker, exception
+
+        - Override the create_message method to provide an alternate body. It
+        should return one of the message types from email.mime.*
     """
     subject = 'Pyres Failure on {queue}'
 
