@@ -18,8 +18,8 @@ class MultipleBackend(BaseBackend):
         def save(self, resq):
             print('Custom backend')
 
-            failure.backend = MultipleBackend
-            failure.backend.classes = [RedisBackend, CustomBackend]
+    failure.backend = MultipleBackend
+    failure.backend.classes = [RedisBackend, CustomBackend]
     """
     classes = []
 
