@@ -1,4 +1,4 @@
-__version__ = '0.9'
+__version__ = '0.9.1'
 
 from redis import Redis
 import pyres.json_parser as json
@@ -244,8 +244,12 @@ class ResQ(object):
         return self.list_range('resque:delayed:%s' % timestamp, start, count)
         
     def delayed_queue_schedule_size(self):
-        return self.redis.zcard('resque:delayed_queue_schedule')
-    
+        size = 0
+        length = self.redis.zcard('resque:delayed_queue_schedule')
+        for i in self.redis.zrange('resque:delayed_queue_schedule',0,length):
+            size += self.delayed_timestamp_size(i)
+        return size
+        
     def delayed_timestamp_size(self, timestamp):
         #key = int(time.mktime(timestamp.timetuple()))
         return self.redis.llen("resque:delayed:%s" % timestamp)

@@ -1,3 +1,13 @@
+## 0.9.1 (2010-10-15)
+* fixing issues #45, #46.
+	* #45 - resweb not working in chrome
+	* #46 - delayed_queue_schedule_size() returns incorrect value
+* updated version requirement for redis-py
+* added Failure docs from Alex._
+
+## 0.9 (2010-08-05)
+* added better logging to the project
+
 ## 0.8 (2010-04-24)
 * added the pyres_manager and the horde module. This allows a more prefork like model for processing jobs.
 * setproctitle usage. Allows better process titles when viewing via ps
