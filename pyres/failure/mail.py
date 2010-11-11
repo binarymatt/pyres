@@ -68,7 +68,7 @@ class MailBackend(BaseBackend):
                                    exception=self._exception)
 
     def create_message(self):
-        """Returns a message body to send in this email."""
+        """Returns a message body to send in this email. Should be from email.mime.*"""
 
         body = dedent("""\
         Received exception {exception} on {queue} from worker {worker}:
