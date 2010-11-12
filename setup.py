@@ -15,11 +15,13 @@ setup(
     download_url='http://cloud.github.com/downloads/binarydud/pyres/pyres-%s.tar.gz' % version,
     include_package_data=True,
     package_data={'resweb': ['templates/*.mustache','media/*']},
-    scripts=[
-        'scripts/pyres_worker',
-        'scripts/pyres_web',
-        'scripts/pyres_scheduler',
-        'scripts/pyres_manager'],
+    entry_points = """\
+    [console_scripts]
+    pyres_manager=pyres.scripts:pyres_manager
+    pyres_scheduler=pyres.scripts:pyres_scheduler
+    pyres_web=pyres.scripts:pyres_web
+    pyres_worker=pyres.scripts:pyres_worker
+    """,
     install_requires=[
         'simplejson>=2.0.9',
         'itty>=0.6.2',
