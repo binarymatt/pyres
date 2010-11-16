@@ -21,7 +21,7 @@ def setup_logging(log_level=logging.INFO, filename=None, stream=sys.stderr):
             handler = RotatingFileHandler(filename,maxBytes=52428800,
                                           backupCount=7)
     else:
-        handler = logging.StreamHandler(strm=stream)
+        handler = logging.StreamHandler(stream)
     handler.setFormatter(logging.Formatter(
         '%(asctime)s %(levelname)-8s %(message)s', '%Y-%m-%d %H:%M:%S'))
     logger.addHandler(handler)
