@@ -1,14 +1,3 @@
-#########################################################################
-#
-# Copyright (c) 2010 Polar Mobile Group Inc. All Rights Reserved.
-#
-# This software is confidential and proprietary intellectual property
-# of Polar Mobile Group Inc. ("Confidential Information"). You shall not
-# disclose such Confidential Information and shall use it only in
-# accordance with the terms of the license agreement you entered into
-# with Polar Mobile Group Inc.
-#
-#########################################################################
 import logging
 
 from optparse import OptionParser
