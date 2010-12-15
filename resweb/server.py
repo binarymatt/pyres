@@ -3,14 +3,14 @@ from itty import *
 from pyres import ResQ
 from pyres import failure
 from views import (
-    Overview, 
-    Queues, 
-    Queue, 
-    Workers, 
-    Working, 
-    Failed, 
-    Stats, 
-    Stat, 
+    Overview,
+    Queues,
+    Queue,
+    Workers,
+    Working,
+    Failed,
+    Stats,
+    Stat,
     Worker,
     Delayed,
     DelayedTimestamp
@@ -43,7 +43,7 @@ def failed(request):
     start = request.GET.get('start',0)
     start = int(start)
     return str(Failed(HOST, start).render())
-    
+
 @post('/failed/retry/')
 def failed_retry(request):
     try:
@@ -55,7 +55,7 @@ def failed_retry(request):
     decoded = ResQ.decode(job)
     failure.retry(HOST, decoded['queue'], job)
     raise Redirect('/failed/')
-    
+
 @post('/failed/delete/')
 def failed_delete(request):
     try:
@@ -119,7 +119,7 @@ def delayed_timestamp(request, timestamp):
 def my_media(request, filename):
     #return serve_static_file(request, filename)
     #my_media.content_type = content_type(filename)
-    
+
     return serve_static_file(request, filename, root=MY_ROOT)
     #output = static_file(filename, root=MY_ROOT)
     #return Response(output, content_type=content_type(filename))
