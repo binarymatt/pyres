@@ -1,14 +1,13 @@
 from datetime import datetime
+
 try:
     #import simplejson as json
     import json
 except ImportError:
     import simplejson as json
 
-
 DATE_FORMAT = '%Y-%m-%dT%H:%M:%S'
 DATE_PREFIX = '@D:'
-
 
 class CustomJSONEncoder(json.JSONEncoder):
 
