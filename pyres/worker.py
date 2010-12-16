@@ -193,10 +193,10 @@ class Worker(object):
         finally:
             self.done_working()
 
-    def reserve(self):
+    def reserve(self, timeout=10):
         for q in self.queues:
             logger.debug('checking queue %s' % q)
-            job = Job.reserve(q, self.resq, self.__str__())
+            job = Job.reserve(q, self.resq, self.__str__(), timeout=timeout)
             if job:
                 logger.info('Found job on %s' % q)
                 return job

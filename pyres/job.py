@@ -77,11 +77,11 @@ class Job(object):
         return False
 
     @classmethod
-    def reserve(cls, queue, res, worker=None):
+    def reserve(cls, queue, res, worker=None, timeout=10):
         """Reserve a job on the queue. This marks this job so that other workers
         will not pick it up.
 
         """
-        payload = res.blpop(queue, timeout=10)
+        payload = res.pop(queue, timeout=timeout)
         if payload:
             return cls(queue, payload, res, worker)
