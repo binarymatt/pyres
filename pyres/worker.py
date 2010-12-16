@@ -135,7 +135,7 @@ class Worker(object):
                 logger.info('shutdown scheduled')
                 break
 
-            job = self.reserve()
+            job = self.reserve(interval)
 
             if job:
                 logger.info('picked up job')
@@ -173,7 +173,7 @@ class Worker(object):
                 #procline @paused ? "Paused" : "Waiting for #{@queues.join(',')}"
                 setproctitle("pyres_worker-%s: Waiting for %s " %
                              (__version__, ','.join(self.queues)))
-                time.sleep(interval)
+                #time.sleep(interval)
         self.unregister_worker()
 
     def process(self, job=None):
