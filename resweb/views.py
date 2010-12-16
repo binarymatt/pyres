@@ -101,8 +101,8 @@ class Overview(ResWeb):
                 'pid':pid,
                 'w':str(w)
             }
-            item['queue'] = w.job()['queue']
-            if data.has_key('queue'):
+            item['queue'] = w.job().get('queue')
+            if 'queue' in data:
                 item['data'] = True
                 item['code'] = data['payload']['class']
                 item['runat'] = str(datetime.datetime.fromtimestamp(float(data['run_at'])))
@@ -152,7 +152,7 @@ class Workers(ResWeb):
                     'q':str(q)
                 })
             item['queues'] = qs
-            if data.has_key('queue'):
+            if 'queue' in data:
                 item['data'] = True
                 item['code'] = data['payload']['class']
                 item['runat'] = str(datetime.datetime.fromtimestamp(float(data['run_at'])))
@@ -215,20 +215,16 @@ class Failed(ResWeb):
         return str(failure.count(self.resq) or 0)
 
     def failed_jobs(self):
-        from base64 import b64encode
-        try:
-            import json
-        except ImportError:
-            import simplejson as json
         jobs = []
         for job in failure.all(self.resq, self._start, self._start + 20):
             item = job
             item['failed_at'] = str(datetime.datetime.fromtimestamp(float(job['failed_at'])))
             item['worker_url'] = '/workers/%s/' % job['worker']
-            item['payload_args'] = str(job['payload']['args'])
+            item['payload_args'] = str(job['payload']['args'])[:1024]
             item['payload_class'] = job['payload']['class']
             item['traceback'] = job['backtrace']
             jobs.append(item)
+
         return jobs
 
     def pagination(self):
@@ -377,21 +373,26 @@ class Worker(ResWeb):
                 'q':str(q)
             })
         return qs
+
     def processed(self):
         return str(self._worker.get_processed())
 
     def failed(self):
         return str(self._worker.get_failed())
+
     def data(self):
         data = self._worker.processing()
-        return data.has_key('queue')
+        return 'queue' in data
+
     def nodata(self):
         return not self.data()
+
     def code(self):
         data = self._worker.processing()
         if self.data():
             return str(data['payload']['class'])
         return ''
+
     def runat(self):
         data = self._worker.processing()
         if self.data():
