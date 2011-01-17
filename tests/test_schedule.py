@@ -22,11 +22,13 @@ class ScheduleTests(PyResTests):
     def test_delayed_queue_schedule_size(self):
         d = datetime.datetime.now() + datetime.timedelta(days=1)
         d2 = d + datetime.timedelta(days=1)
+        d3 = d
         key = int(time.mktime(d.timetuple()))
         key2 = int(time.mktime(d2.timetuple()))
         self.resq.enqueue_at(d, Basic,"test1")
         self.resq.enqueue_at(d2, Basic,"test1")
-        assert self.resq.delayed_queue_schedule_size() == 2
+        self.resq.enqueue_at(d3, Basic,"test1")
+        assert self.resq.delayed_queue_schedule_size() == 3
     
     def test_delayed_timestamp_size(self):
         d = datetime.datetime.now() + datetime.timedelta(days=1)
