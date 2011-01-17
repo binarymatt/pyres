@@ -1,16 +1,16 @@
 import os
-from itty import *
+from itty import Redirect, get, post, serve_static_file, run_itty
 from pyres import ResQ
 from pyres import failure
 from views import (
-    Overview, 
-    Queues, 
-    Queue, 
-    Workers, 
-    Working, 
-    Failed, 
-    Stats, 
-    Stat, 
+    Overview,
+    Queues,
+    Queue,
+    Workers,
+    Working,
+    Failed,
+    Stats,
+    Stat,
     Worker,
     Delayed,
     DelayedTimestamp
@@ -23,45 +23,37 @@ MY_ROOT = os.path.join(os.path.dirname(__file__), 'media')
 
 @get("/")
 def index(request):
-    return str(Overview(HOST).render())
+    return Overview(HOST).render().encode('utf-8')
 
 @get("/working/")
 def working(request):
-    return str(Working(HOST).render())
+    return Working(HOST).render().encode('utf-8')
 
 @get("/queues/")
 def queues(request):
-    return str(Queues(HOST).render())
+    return Queues(HOST).render().encode('utf-8')
 
 @get('/queues/(?P<queue_id>\w.+)/')
 def queue(request, queue_id):
     start = int(request.GET.get('start',0))
-    return str(Queue(HOST, queue_id, start).render())
+    return Queue(HOST, queue_id, start).render().encode('utf-8')
 
 @get('/failed/')
 def failed(request):
     start = request.GET.get('start',0)
     start = int(start)
-    return str(Failed(HOST, start).render())
-    
+    return Failed(HOST, start).render().encode('utf-8')
+
 @post('/failed/retry/')
 def failed_retry(request):
-    try:
-        import json
-    except ImportError:
-        import simplejson as json
     failed_job = request.POST['failed_job']
     job = b64decode(failed_job)
     decoded = ResQ.decode(job)
     failure.retry(HOST, decoded['queue'], job)
     raise Redirect('/failed/')
-    
+
 @post('/failed/delete/')
 def failed_delete(request):
-    try:
-        import json
-    except ImportError:
-        import simplejson as json
     failed_job = request.POST['failed_job']
     job = b64decode(failed_job)
     failure.delete(HOST, job)
@@ -85,11 +77,11 @@ def retry_failed(request, number=5000):
 
 @get('/workers/(?P<worker_id>\w.+)/')
 def worker(request, worker_id):
-    return str(Worker(HOST, worker_id).render())
+    return Worker(HOST, worker_id).render().encode('utf-8')
 
 @get('/workers/')
 def workers(request):
-    return str(Workers(HOST).render())
+    return Workers(HOST).render().encode('utf-8')
 
 @get('/stats/')
 def stats(request):
@@ -97,33 +89,35 @@ def stats(request):
 
 @get('/stats/(?P<key>\w+)/')
 def stats(request, key):
-    return str(Stats(HOST, key).render())
+    return Stats(HOST, key).render().encode('utf-8')
 
 @get('/stat/(?P<stat_id>\w.+)')
 def stat(request, stat_id):
-    return str(Stat(HOST, stat_id).render())
+    return Stat(HOST, stat_id).render().encode('utf-8')
 
 @get('/delayed/')
 def delayed(request):
     start = request.GET.get('start',0)
     start = int(start)
-    return str(Delayed(HOST, start).render())
+    return Delayed(HOST, start).render().encode('utf-8')
 
 @get('/delayed/(?P<timestamp>\w.+)')
 def delayed_timestamp(request, timestamp):
     start = request.GET.get('start',0)
     start = int(start)
-    return str(DelayedTimestamp(HOST, timestamp, start).render())
+    return DelayedTimestamp(HOST, timestamp, start).render().encode('utf-8')
 
 @get('/media/(?P<filename>.+)')
 def my_media(request, filename):
     #return serve_static_file(request, filename)
     #my_media.content_type = content_type(filename)
-    
+
     return serve_static_file(request, filename, root=MY_ROOT)
     #output = static_file(filename, root=MY_ROOT)
     #return Response(output, content_type=content_type(filename))
     #return static_file(request, filename=filename, root=my_root)
+
+
 
 if __name__ == "__main__":
     run_itty()
