@@ -3,6 +3,7 @@ from pyres import ResQ, safe_str_to_class
 from pyres import failure
 from pyres.failure.redis import RedisBackend
 
+
 class Job(object):
     """Every job on the ResQ is an instance of the *Job* class.
 
@@ -21,6 +22,9 @@ class Job(object):
                       done by that worker. Default is "None".
 
     """
+
+    safe_str_to_class = staticmethod(safe_str_to_class)
+    
     def __init__(self, queue, payload, resq, worker=None):
         self._queue = queue
         self._payload = payload
@@ -39,9 +43,11 @@ class Job(object):
         """This method converts payload into args and calls the ``perform``
         method on the payload class.
 
+        #@ add entry_point loading
+
         """
         payload_class_str = self._payload["class"]
-        payload_class = safe_str_to_class(payload_class_str)
+        payload_class = self.safe_str_to_class(payload_class_str)
         payload_class.resq = self.resq
         args = self._payload.get("args")
 
