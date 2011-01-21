@@ -84,7 +84,7 @@ def pyres_web():
 def pyres_worker():
     usage = "usage: %prog [options] arg1"
     parser = OptionParser(usage=usage)
-    #parser.add_option("-q", dest="queue_list")
+
     parser.add_option("--host", dest="host", default="localhost")
     parser.add_option("--port",dest="port",type="int", default=6379)
     parser.add_option("-i", '--interval', dest='interval', default=None, help='the default time interval to sleep between runs')
@@ -97,7 +97,6 @@ def pyres_worker():
         parser.error("Argument must be a comma seperated list of queues")
 
     log_level = getattr(logging, options.log_level.upper(), 'INFO')
-    #logging.basicConfig(level=log_level, format="%(asctime)s: %(levelname)s: %(message)s")
     setup_logging(log_level=log_level, filename=options.logfile)
     interval = options.interval
     if interval is not None:
