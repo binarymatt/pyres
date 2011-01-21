@@ -9,11 +9,7 @@ from pyres.exceptions import NoQueueError
 from pyres.job import Job
 from pyres import ResQ, Stat, __version__
 
-try:
-    from setproctitle import setproctitle
-except:
-    def setproctitle(name):
-        pass
+
 
 logger = logging.getLogger(__name__)
 
@@ -25,6 +21,9 @@ class Worker(object):
        >>> Worker.run([queue1, queue2], server="localhost:6379")
 
     """
+    
+    job_class = Job
+    
     def __init__(self, queues=(), server="localhost:6379", password=None):
         self.queues = queues
         self.validate_queues()
@@ -140,7 +139,7 @@ class Worker(object):
             if job:
                 logger.info('picked up job')
                 logger.debug('job details: %s' % job)
-                self.child = os.fork()
+                self.child = os.fork() 
                 if self.child:
                     setproctitle("pyres_worker%s: Forked %s at %s" %
                                  (__version__,
@@ -176,11 +175,15 @@ class Worker(object):
                 #time.sleep(interval)
         self.unregister_worker()
 
+    def before_process(self, job):
+        return job
+
     def process(self, job=None):
         if not job:
             job = self.reserve()
         try:
             self.working_on(job)
+            job = self.before_process(job)
             return job.perform()
         except Exception, e:
             exceptionType, exceptionValue, exceptionTraceback = sys.exc_info()
@@ -196,7 +199,7 @@ class Worker(object):
     def reserve(self, timeout=10):
         for q in self.queues:
             logger.debug('checking queue %s' % q)
-            job = Job.reserve(q, self.resq, self.__str__(), timeout=timeout)
+            job = self.job_class.reserve(q, self.resq, self.__str__(), timeout=timeout)
             if job:
                 logger.info('Found job on %s' % q)
                 return job
@@ -304,6 +307,13 @@ class Worker(object):
     @classmethod
     def exists(cls, worker_id, resq):
         return resq.redis.sismember('resque:workers', worker_id)
+
+
+try:
+    from setproctitle import setproctitle
+except ImportError:
+    def setproctitle(name):
+        pass
 
 
 if __name__ == "__main__":
