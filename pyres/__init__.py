@@ -108,6 +108,8 @@ class ResQ(object):
     def pop(self, queue, timeout=10):
         ret = self.redis.blpop("resque:queue:%s" % queue, timeout=timeout)
         if ret:
+            if isinstance(ret, tuple):
+                q, ret = ret
             return ResQ.decode(ret)
         return ret
 
