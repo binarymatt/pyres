@@ -137,8 +137,9 @@ class Worker(object):
             job = self.reserve(interval)
 
             if job:
-                logger.info('picked up job')
+                logger.debug('picked up job')
                 logger.debug('job details: %s' % job)
+                self.before_fork(job)
                 self.child = os.fork() 
                 if self.child:
                     setproctitle("pyres_worker%s: Forked %s at %s" %
@@ -163,6 +164,7 @@ class Worker(object):
                                   datetime.datetime.now()))
                     logger.info('Processing %s since %s' %
                                  (job._queue, datetime.datetime.now()))
+                    self.after_fork(job)
                     self.process(job)
                     os._exit(0)
                 self.child = None
@@ -174,6 +176,20 @@ class Worker(object):
                              (__version__, ','.join(self.queues)))
                 #time.sleep(interval)
         self.unregister_worker()
+
+    def before_fork(self, job):
+        """
+        hook for making changes immediately before forking to process
+        a job
+        """
+        pass
+
+    def after_fork(self, job):
+        """
+        hook for making changes immediately after forking to process a
+        job
+        """
+        pass
 
     def before_process(self, job):
         return job
