@@ -1,0 +1,5 @@
+2011-03-01  whit  <whit@surveymonkey.com>
+
+	* Added hooks for the worker to allow worker subclasses to insert
+  	  code before and after forking
+
