@@ -101,7 +101,7 @@ class Overview(ResWeb):
                 'pid':pid,
                 'w':str(w)
             }
-            item['queue'] = w.job()['queue']
+            item['queue'] = w.job().get('queue')
             if data.has_key('queue'):
                 item['data'] = True
                 item['code'] = data['payload']['class']
