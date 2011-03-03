@@ -187,7 +187,7 @@ class Worker(object):
         logging.debug('marking as working on')
         data = {
             'queue': job._queue,
-            'run_at': int(time.mktime(datetime.datetime.now().timetuple())),
+            'run_at': str(int(time.mktime(datetime.datetime.now().timetuple()))),
             'payload': job._payload
         }
         data = json.dumps(data)
