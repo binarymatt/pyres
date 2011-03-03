@@ -4,7 +4,7 @@ from pyres import ResQ
 
 class RedisBackend(BaseBackend):
     """Extends the ``BaseBackend`` to provide a Redis backend for failed jobs."""
-    
+
     def save(self, resq=None):
         """Saves the failed Job into a "failed" Redis queue preserving all its original enqueud info."""
         if not resq:
@@ -20,7 +20,7 @@ class RedisBackend(BaseBackend):
             data['worker'] = self._worker
         data = ResQ.encode(data)
         resq.redis.rpush('resque:failed', data)
-    
+
     @classmethod
     def count(cls, resq):
         return int(resq.redis.llen('resque:failed'))
@@ -39,4 +39,4 @@ class RedisBackend(BaseBackend):
     @classmethod
     def clear(cls, resq):
         return resq.redis.delete('resque:failed')
-    
+
