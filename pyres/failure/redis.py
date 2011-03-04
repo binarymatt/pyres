@@ -1,4 +1,4 @@
-import datetime, time
+import datetime
 from base import BaseBackend
 from pyres import ResQ
 
@@ -10,7 +10,7 @@ class RedisBackend(BaseBackend):
         if not resq:
             resq = ResQ()
         data = {
-            'failed_at' : int(time.mktime(datetime.datetime.now().timetuple())),
+            'failed_at' : datetime.datetime.now().strftime('%Y/%m/%d %H:%M:%S'),
             'payload'   : self._payload,
             'error'     : self._parse_message(self._exception),
             'backtrace' : self._parse_traceback(self._traceback),
