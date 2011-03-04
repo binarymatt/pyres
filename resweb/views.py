@@ -220,6 +220,7 @@ class Failed(ResWeb):
             import json
         except ImportError:
             import simplejson as json
+
         jobs = []
         for job in failure.all(self.resq, self._start, self._start + 20):
             backtrace = job['backtrace']
@@ -228,7 +229,7 @@ class Failed(ResWeb):
                 backtrace = '\n'.join(backtrace)
 
             item = job
-            item['failed_at'] = str(datetime.datetime.fromtimestamp(float(job['failed_at'])))
+            item['failed_at'] = job['failed_at']
             item['worker_url'] = '/workers/%s/' % job['worker']
             item['payload_args'] = str(job['payload']['args'])
             item['payload_class'] = job['payload']['class']
