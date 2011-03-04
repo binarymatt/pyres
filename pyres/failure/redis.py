@@ -12,6 +12,7 @@ class RedisBackend(BaseBackend):
         data = {
             'failed_at' : datetime.datetime.now().strftime('%Y/%m/%d %H:%M:%S'),
             'payload'   : self._payload,
+            'exception' : self._exception.__class__.__name__,
             'error'     : self._parse_message(self._exception),
             'backtrace' : self._parse_traceback(self._traceback),
             'queue'     : self._queue
