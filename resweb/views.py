@@ -55,7 +55,7 @@ class Overview(ResWeb):
 
     def queues(self):
         queues = []
-        for q in self.resq.queues():
+        for q in sorted(self.resq.queues()):
             queues.append({
                 'queue': q,
                 'size': str(self.resq.size(q)),
