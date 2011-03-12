@@ -37,8 +37,7 @@ class Job(object):
         on the payload class.
 
         """
-        payload_class_str = self._payload["class"]
-        payload_class = safe_str_to_class(payload_class_str)
+        payload_class = self.job_class()
         payload_class.resq = self.resq
         args = self._payload.get("args", None)
         try:
@@ -70,6 +69,11 @@ class Job(object):
                         **{'first_attempt':first_attempt})
                 return True
         return False
+
+    def job_class(self):
+        payload_class_str = self._payload["class"]
+        payload_class = safe_str_to_class(payload_class_str)
+        return payload_class
 
     @classmethod
     def reserve(cls, queue, res, worker=None):

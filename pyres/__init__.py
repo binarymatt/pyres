@@ -96,7 +96,7 @@ def _load_extensions(package_name='pyresext'):
     _after_forks = map(_load_after_fork, _modules)
     return _before_jobs, _after_jobs, _before_forks, _after_forks
 
-_before_jobs, _after_jobs, _before_forks, _after_forks = _load_extensions()
+#_before_jobs, _after_jobs, _before_forks, _after_forks = _load_extensions()
 
 class ResQ(object):
     """The ResQ class defines the Redis server object to which we will

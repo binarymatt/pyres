@@ -1,6 +1,7 @@
 from pyres.exceptions import NoQueueError
 from pyres.job import Job
 from pyres import ResQ, Stat, __version__
+from pyres.ext import run_before_job, run_after_job, run_before_fork, run_after_fork
 import logging
 import signal
 import datetime, time
@@ -132,6 +133,7 @@ class Worker(object):
             if job:
                 logging.info('picked up job')
                 logging.debug('job details: %s' % job)
+                run_before_fork(job)
                 self.child = os.fork()
                 if self.child:
                     setproctitle("pyres_worker%s: Forked %s at %s" % (__version__, self.child, datetime.datetime.now()))
@@ -145,6 +147,7 @@ class Worker(object):
                     #os.wait()
                     logging.debug('done waiting')
                 else:
+                    run_after_fork(job)
                     setproctitle("pyres_worker-%s: Processing %s since %s" % (__version__, job._queue, datetime.datetime.now()))
                     logging.info('Processing %s since %s' % (job._queue, datetime.datetime.now()))
                     self.process(job)
@@ -163,6 +166,7 @@ class Worker(object):
             job = self.reserve()
         try:
             self.working_on(job)
+            run_before_job(job)
             return job.perform()
         except Exception, e:
             exceptionType, exceptionValue, exceptionTraceback = sys.exc_info()
@@ -173,6 +177,7 @@ class Worker(object):
             logging.info('completed job')
             logging.debug('job details: %s' % job)
         finally:
+            run_after_job(job)
             self.done_working()
     
     def reserve(self):
