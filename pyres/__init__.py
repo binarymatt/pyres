@@ -105,9 +105,11 @@ class ResQ(object):
         self.watch_queue(queue)
         self.redis.rpush("resque:queue:%s" % queue, ResQ.encode(item))
 
-    def pop(self, queue):
-        ret = self.redis.lpop("resque:queue:%s" % queue)
+    def pop(self, queue, timeout=10):
+        ret = self.redis.blpop("resque:queue:%s" % queue, timeout=timeout)
         if ret:
+            if isinstance(ret, tuple):
+                q, ret = ret
             return ResQ.decode(ret)
         return ret
 
