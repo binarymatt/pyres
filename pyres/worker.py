@@ -112,18 +112,16 @@ class Worker(object):
         return '%s:%s:%s' % (self.hostname, self.pid, ','.join(self.queues))
 
     def work(self, interval=5):
-        """Invoked by ``run`` method. ``work`` listens on a list of queues and
-        sleeps for ``interval`` time.
+        """Invoked by ``run`` method. ``work`` listens on a list of queues and sleeps
+        for ``interval`` time.
 
-        ``interval`` -- Number of seconds the worker will wait until processing
-        the next job. Default is "5".
+        ``interval`` -- Number of seconds the worker will wait until processing the next job. Default is "5".
 
         Whenever a worker finds a job on the queue it first calls ``reserve`` on
-        that job to make sure another worker won't run it, then *forks* itself
-        to work on that job.
+        that job to make sure another worker won't run it, then *forks* itself to
+        work on that job.
 
-        Finally, the ``process`` method actually processes the job by eventually
-        calling the Job instance's ``perform`` method.
+        Finally, the ``process`` method actually processes the job by eventually calling the Job instance's ``perform`` method.
 
         """
         setproctitle('pyres_worker-%s: Starting' % __version__)
@@ -224,7 +222,7 @@ class Worker(object):
         logger.debug('marking as working on')
         data = {
             'queue': job._queue,
-            'run_at': int(time.mktime(datetime.datetime.now().timetuple())),
+            'run_at': str(int(time.mktime(datetime.datetime.now().timetuple()))),
             'payload': job._payload
         }
         data = json.dumps(data)
@@ -290,8 +288,7 @@ class Worker(object):
         elif isinstance(host, ResQ):
             resq = host
 
-        return [Worker.find(w,resq)
-                for w in resq.redis.smembers('resque:workers') or []]
+        return [Worker.find(w,resq) for w in resq.redis.smembers('resque:workers') or []]
 
     @classmethod
     def working(cls, host):

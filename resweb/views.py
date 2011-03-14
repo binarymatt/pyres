@@ -55,7 +55,7 @@ class Overview(ResWeb):
 
     def queues(self):
         queues = []
-        for q in self.resq.queues():
+        for q in sorted(self.resq.queues()):
             queues.append({
                 'queue': q,
                 'size': str(self.resq.size(q)),
@@ -217,12 +217,17 @@ class Failed(ResWeb):
     def failed_jobs(self):
         jobs = []
         for job in failure.all(self.resq, self._start, self._start + 20):
+            backtrace = job['backtrace']
+
+            if isinstance(backtrace, list):
+                backtrace = '\n'.join(backtrace)
+
             item = job
-            item['failed_at'] = str(datetime.datetime.fromtimestamp(float(job['failed_at'])))
+            item['failed_at'] = job['failed_at']
             item['worker_url'] = '/workers/%s/' % job['worker']
             item['payload_args'] = str(job['payload']['args'])[:1024]
             item['payload_class'] = job['payload']['class']
-            item['traceback'] = job['backtrace']
+            item['traceback'] = backtrace
             jobs.append(item)
 
         return jobs
