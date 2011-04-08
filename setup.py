@@ -12,7 +12,7 @@ setup(
     license='MIT',
     url='http://github.com/binarydud/pyres',
     packages=find_packages(exclude=['ez_setup', 'examples', 'tests']),
-    download_url='http://cloud.github.com/downloads/binarydud/pyres/pyres-%s.tar.gz' % version,
+    download_url='http://pypi.python.org/packages/source/p/pyres/pyres-%s.tar.gz' % version,
     include_package_data=True,
     package_data={'resweb': ['templates/*.mustache','media/*']},
     entry_points = """\
