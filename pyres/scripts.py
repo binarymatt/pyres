@@ -100,7 +100,7 @@ def pyres_worker():
     setup_logging(log_level=log_level, filename=options.logfile)
     interval = options.interval
     if interval is not None:
-        interval = float(interval)
+        interval = int(interval)
 
     queues = args[0].split(',')
     server = '%s:%s' % (options.host,options.port)
