@@ -148,7 +148,7 @@ class ResQ(object):
                 self.host = server.host
                 self.port = server.port
             else:
-                connection = server.connection_pool.get_connection()
+                connection = server.connection_pool.get_connection('_')
                 self.host = connection.host
                 self.port = connection.port
             self.dsn = '%s:%s' % (self.host, self.port)
