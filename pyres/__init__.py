@@ -141,8 +141,17 @@ class ResQ(object):
             self.dsn = server
             host, port = server.split(':')
             self._redis = Redis(host=host, port=int(port))
+            self.host = host
+            self.port = int(port)
         elif isinstance(server, Redis):
-            self.dsn = '%s:%s' % (server.host,server.port)
+            if hasattr(server, "host"):
+                self.host = server.host
+                self.port = server.port
+            else:
+                connection = server.connection_pool.get_connection()
+                self.host = connection.host
+                self.port = connection.port
+            self.dsn = '%s:%s' % (self.host, self.port)
             self._redis = server
         else:
             raise Exception("I don't know what to do with %s" % str(server))
@@ -194,7 +203,7 @@ class ResQ(object):
             'workers'   : len(self.workers()),
             #'working'   : len(self.working()),
             'failed'    : Stat('failed',self).get(),
-            'servers'   : ['%s:%s' % (self.redis.host, self.redis.port)]
+            'servers'   : ['%s:%s' % (self.host, self.port)]
         }
 
     def keys(self):
