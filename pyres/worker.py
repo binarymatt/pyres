@@ -201,7 +201,7 @@ class Worker(object):
             return job.perform()
         except Exception, e:
             exceptionType, exceptionValue, exceptionTraceback = sys.exc_info()
-            logger.error("%s failed: %s" % (job, e))
+            logger.exception("%s failed: %s" % (job, e))
             job.fail(exceptionTraceback)
             self.failed()
         else:
