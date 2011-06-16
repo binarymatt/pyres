@@ -1,6 +1,6 @@
 from setuptools import setup, find_packages
 
-version='1.0.1'
+version='1.1'
 
 setup(
     name='pyres',
@@ -27,7 +27,7 @@ setup(
         'itty>=0.6.2',
         'redis>=1.34.1',
         'pystache>=0.1.0',
-        'setproctitle==1.0'
+        'setproctitle>=1.0'
     ],
     classifiers = [
             'Development Status :: 4 - Beta',
