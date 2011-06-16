@@ -20,7 +20,7 @@ class ResWeb(pystache.View):
         self.resq.close()
 
     def address(self):
-        return '%s:%s' % (self.resq.redis.host,self.resq.redis.port)
+        return '%s:%s' % (self.resq.host,self.resq.port)
 
     def version(self):
         return str(__version__)
@@ -263,7 +263,7 @@ class Stats(ResWeb):
         if self.key_id == 'resque':
             return 'Pyres'
         elif self.key_id == 'redis':
-            return '%s:%s' % (self.resq.redis.host,self.resq.redis.port)
+            return '%s:%s' % (self.resq.host,self.resq.port)
         elif self.key_id == 'keys':
             return 'Keys owned by Pyres'
         else:
