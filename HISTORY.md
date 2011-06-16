@@ -1,3 +1,8 @@
+##1.1 (2011-06-16)
+* api change based on redis-py
+* setproctitle requirements fix
+* change exception logging in worker
+
 ##1.0.1 (2011-04-12)
 * fixed bug with tempaltes and media in resweb
 * call to redis-py disconnect was failing, switched to connection.disconnect
