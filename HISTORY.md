@@ -1,3 +1,8 @@
+##1.0.1 (2011-04-12)
+* fixed bug with tempaltes and media in resweb
+* call to redis-py disconnect was failing, switched to connection.disconnect
+* interval cast to int for pyres_worker script command
+
 ## 0.9.1 (2010-10-15)
 * fixing issues #45, #46.
 	* #45 - resweb not working in chrome

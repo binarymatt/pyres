@@ -1,4 +1,4 @@
-__version__ = '1.0'
+__version__ = '1.0.1'
 
 from redis import Redis
 import pyres.json_parser as json
@@ -226,7 +226,7 @@ class ResQ(object):
         """Close the underlying redis connection.
 
         """
-        self.redis.disconnect()
+        self.redis.connection.disconnect()
 
     def enqueue_at(self, datetime, klass, *args, **kwargs):
         class_name = '%s.%s' % (klass.__module__, klass.__name__)

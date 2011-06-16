@@ -100,3 +100,6 @@ class ResQTests(PyResTests):
         assert len(self.resq.queues()) == 2
         assert 'test' not in self.resq.queues()
         assert 'basic' in self.resq.queues()
+
+    def test_close(self):
+        self.resq.close()
