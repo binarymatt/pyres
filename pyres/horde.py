@@ -5,7 +5,7 @@ except:
     sys.exit("multiprocessing was not available")
 
 import time, os, signal
-import datetime
+from datetime import datetime
 import logging
 import logging.handlers
 from pyres import ResQ, Stat
@@ -67,7 +67,7 @@ class Minion(multiprocessing.Process):
     
     def register_minion(self):
         self.resq.redis.sadd('resque:minions',str(self))
-        self.started = datetime.datetime.now()
+        self.started = datetime.utcnow()
     
     def startup(self):
         self.register_signal_handlers()
@@ -107,7 +107,7 @@ class Minion(multiprocessing.Process):
         self.logger.debug('marking as working on')
         data = {
             'queue': job._queue,
-            'run_at': int(time.mktime(datetime.datetime.now().timetuple())),
+            'run_at': int(time.time()),
             'payload': job._payload
         }
         data = json.dumps(data)
@@ -238,7 +238,7 @@ class Khan(object):
         if not hasattr(self, 'resq'):
             self.setup_resq()
         self.resq.redis.sadd('resque:khans',str(self))
-        self.started = datetime.datetime.now()
+        self.started = datetime.utcnow()
     
     def _check_commands(self):
         if not self._shutdown:

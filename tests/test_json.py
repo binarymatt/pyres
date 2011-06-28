@@ -10,13 +10,13 @@ class JSONTests(PyResTests):
         assert decoded['dt'] == dt
 
     def test_dates_in_lists(self):
-        dates = [datetime.now() for i in range(50)]
+        dates = [datetime.utcnow() for i in range(50)]
         decoded = json.loads(json.dumps(dates))
         for value in dates:
             assert isinstance(value, datetime)
 
     def test_dates_in_dict(self):
-        dates = dict((i, datetime.now()) for i in range(50))
+        dates = dict((i, datetime.utcnow()) for i in range(50))
         decoded = json.loads(json.dumps(dates))
         for i, value in dates.items():
             assert isinstance(i, int)

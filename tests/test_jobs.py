@@ -25,7 +25,7 @@ class JobTests(PyResTests):
         assert self.redis.llen('resque:failed') == 1
 
     def test_date_arg_type(self):
-        dt = datetime.now().replace(microsecond=0)
+        dt = datetime.utcnow().replace(microsecond=0)
         self.resq.enqueue(ReturnAllArgsJob, dt)
         job = Job.reserve('basic',self.resq)
         result = job.perform()

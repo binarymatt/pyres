@@ -1,6 +1,8 @@
 import logging
 import signal
-import datetime, time
+from datetime import datetime
+import calendar
+import time
 import os, sys
 import json_parser as json
 import commands
@@ -46,22 +48,17 @@ class Worker(object):
 
     def register_worker(self):
         self.resq.redis.sadd('resque:workers', str(self))
-        #self.resq._redis.add("worker:#{self}:started", Time.now.to_s)
-        self.started = datetime.datetime.now()
+        self.started = datetime.utcnow()
 
     def _set_started(self, dt):
         if dt:
-            key = int(time.mktime(dt.timetuple()))
+            key = int(calendar.timegm(dt.utctimetuple()))
             self.resq.redis.set("resque:worker:%s:started" % self, key)
         else:
             self.resq.redis.delete("resque:worker:%s:started" % self)
 
     def _get_started(self):
-        datestring = self.resq.redis.get("resque:worker:%s:started" % self)
-        #ds = None
-        #if datestring:
-        #    ds = datetime.datetime.strptime(datestring, '%Y-%m-%d %H:%M:%S')
-        return datestring
+        return self.resq.redis.get("resque:worker:%s:started" % self)
 
     started = property(_get_started, _set_started)
 
@@ -143,9 +140,9 @@ class Worker(object):
                     setproctitle("pyres_worker%s: Forked %s at %s" %
                                  (__version__,
                                   self.child,
-                                  datetime.datetime.now()))
+                                  datetime.utcnow()))
                     logger.info('Forked %s at %s' % (self.child,
-                                                      datetime.datetime.now()))
+                                                      datetime.utcnow()))
 
                     try:
                         os.waitpid(self.child, 0)
@@ -159,9 +156,9 @@ class Worker(object):
                 else:
                     setproctitle("pyres_worker-%s: Processing %s since %s" %
                                  (__version__, job._queue,
-                                  datetime.datetime.now()))
+                                  datetime.utcnow()))
                     logger.info('Processing %s since %s' %
-                                 (job._queue, datetime.datetime.now()))
+                                 (job._queue, datetime.utcnow()))
                     self.after_fork(job)
                     self.process(job)
                     os._exit(0)
@@ -222,7 +219,7 @@ class Worker(object):
         logger.debug('marking as working on')
         data = {
             'queue': job._queue,
-            'run_at': str(int(time.mktime(datetime.datetime.now().timetuple()))),
+            'run_at': str(int(time.time())),
             'payload': job._payload
         }
         data = json.dumps(data)

@@ -3,7 +3,8 @@ __version__ = '1.1'
 from redis import Redis
 import pyres.json_parser as json
 
-import time, datetime
+from datetime import datetime
+import calendar
 import sys
 import logging
 
@@ -238,9 +239,12 @@ class ResQ(object):
         self.redis.connection.disconnect()
 
     def enqueue_at(self, datetime, klass, *args, **kwargs):
+        """
+        datetime: if it is a naive datetime, it's regarded in UTC; otherwise, it will be converted to a naive datetime in UTC
+        """
+        datetime = self._to_naive_utc_datetime(datetime)
         class_name = '%s.%s' % (klass.__module__, klass.__name__)
-        logging.info("enqueued '%s' job for execution at %s" % (class_name,
-                                                                datetime))
+        logging.info("enqueued '%s' job for execution at %s" % (class_name, datetime))
         if args:
             logging.debug("job arguments are: %s" % str(args))
         payload = {'class':class_name, 'queue': klass.queue, 'args':args}
@@ -249,7 +253,7 @@ class ResQ(object):
         self.delayed_push(datetime, payload)
 
     def delayed_push(self, datetime, item):
-        key = int(time.mktime(datetime.timetuple()))
+        key = int(calendar.timegm(datetime.utctimetuple()))
         self.redis.rpush('resque:delayed:%s' % key, ResQ.encode(item))
         self.redis.zadd('resque:delayed_queue_schedule', key, key)
 
@@ -268,11 +272,10 @@ class ResQ(object):
         return size
 
     def delayed_timestamp_size(self, timestamp):
-        #key = int(time.mktime(timestamp.timetuple()))
         return self.redis.llen("resque:delayed:%s" % timestamp)
 
     def next_delayed_timestamp(self):
-        key = int(time.mktime(ResQ._current_time().timetuple()))
+        key = int(calendar.timegm(ResQ._utcnow().utctimetuple()))
         array = self.redis.zrangebyscore('resque:delayed_queue_schedule',
                                          '-inf', key)
         timestamp = None
@@ -281,7 +284,6 @@ class ResQ(object):
         return timestamp
 
     def next_item_for_timestamp(self, timestamp):
-        #key = int(time.mktime(timestamp.timetuple()))
         key = "resque:delayed:%s" % timestamp
         ret = self.redis.lpop(key)
         item = None
@@ -312,8 +314,14 @@ class ResQ(object):
             _self.push(queue, {'class':class_name,'args':args})
 
     @staticmethod
-    def _current_time():
-        return datetime.datetime.now()
+    def _utcnow():
+        return datetime.utcnow()
+
+    @staticmethod
+    def _to_naive_utc_datetime(datetime):
+        # naive datetime is regarded as UTC datetime
+        timestamp = calendar.timegm(datetime.utctimetuple())
+        return datetime.utcfromtimestamp(timestamp)
 
 
 class Stat(object):

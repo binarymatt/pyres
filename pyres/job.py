@@ -72,7 +72,7 @@ class Job(object):
         retry_timeout = getattr(payload_class, 'retry_timeout', 0)
 
         if retry_every:
-            now = ResQ._current_time()
+            now = ResQ._utcnow()
             first_attempt = self._payload.get("first_attempt", now)
             retry_until = first_attempt + timedelta(seconds=retry_timeout)
             retry_at = now + timedelta(seconds=retry_every)
