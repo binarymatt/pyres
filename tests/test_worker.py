@@ -4,8 +4,8 @@ from pyres.job import Job
 from pyres.scheduler import Scheduler
 from pyres.worker import Worker
 import os
-import time
 import datetime
+import calendar
 
 
 class WorkerTests(PyResTests):
@@ -140,13 +140,12 @@ class WorkerTests(PyResTests):
         assert worker != workers[0]
     
     def test_started(self):
-        import datetime
         worker = Worker(['basic'])
-        dt = datetime.datetime.now()
+        dt = datetime.datetime.utcnow()
         worker.started = dt
         name = "%s:%s:%s" % (os.uname()[1],os.getpid(),'basic')
-        assert self.redis.get('resque:worker:%s:started' % name) == str(int(time.mktime(dt.timetuple())))
-        assert worker.started == str(int(time.mktime(dt.timetuple())))
+        assert self.redis.get('resque:worker:%s:started' % name) == str(int(calendar.timegm(dt.utctimetuple())))
+        assert worker.started == str(int(calendar.timegm(dt.utctimetuple())))
         worker.started = None
         assert not self.redis.exists('resque:worker:%s:started' % name)
     
@@ -179,8 +178,8 @@ class WorkerTests(PyResTests):
         assert self.redis.scard('resque:workers') == 3
 
     def test_retry_on_exception(self):
-        now = datetime.datetime.now()
-        self.set_current_time(now)
+        now = datetime.datetime.utcnow()
+        self.set_utcnow(now)
         worker = Worker(['basic'])
         scheduler = Scheduler()
 
@@ -191,20 +190,20 @@ class WorkerTests(PyResTests):
         assert worker.get_failed() == 0
 
         # check it retries the first time
-        self.set_current_time(now + datetime.timedelta(seconds=5))
+        self.set_utcnow(now + datetime.timedelta(seconds=5))
         scheduler.handle_delayed_items()
         assert None == worker.process()
         assert worker.get_failed() == 0
 
         # check it runs fine when it's stopped crashing
-        self.set_current_time(now + datetime.timedelta(seconds=60))
+        self.set_utcnow(now + datetime.timedelta(seconds=60))
         scheduler.handle_delayed_items()
         assert True == worker.process()
         assert worker.get_failed() == 0
 
     def test_retries_give_up_eventually(self):
-        now = datetime.datetime.now()
-        self.set_current_time(now)
+        now = datetime.datetime.utcnow()
+        self.set_utcnow(now)
         worker = Worker(['basic'])
         scheduler = Scheduler()
 
@@ -215,16 +214,16 @@ class WorkerTests(PyResTests):
         assert worker.get_failed() == 0
 
         # check it retries the first time
-        self.set_current_time(now + datetime.timedelta(seconds=5))
+        self.set_utcnow(now + datetime.timedelta(seconds=5))
         scheduler.handle_delayed_items()
         assert None == worker.process()
         assert worker.get_failed() == 0
 
         # check it fails when we've been trying too long
-        self.set_current_time(now + datetime.timedelta(seconds=20))
+        self.set_utcnow(now + datetime.timedelta(seconds=20))
         scheduler.handle_delayed_items()
         assert None == worker.process()
         assert worker.get_failed() == 1
 
-    def set_current_time(self, time):
-        ResQ._current_time = staticmethod(lambda: time)
+    def set_utcnow(self, now):
+        ResQ._utcnow = staticmethod(lambda: now)

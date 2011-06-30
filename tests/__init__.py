@@ -1,5 +1,4 @@
 import unittest
-import os
 from pyres import ResQ, str_to_class
 
 class Basic(object):
@@ -32,7 +31,7 @@ class RetryOnExceptionJob(object):
 
     @staticmethod
     def perform(fail_until):
-        if ResQ._current_time() < fail_until:
+        if ResQ._utcnow() < fail_until:
             raise Exception("Don't blame me!  I'm supposed to fail!")
         else:
             return True

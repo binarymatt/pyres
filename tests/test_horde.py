@@ -1,4 +1,4 @@
-from tests import PyResTests, Basic, TestProcess
+from tests import PyResTests
 from pyres import horde
 import os
 

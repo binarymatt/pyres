@@ -4,7 +4,7 @@ from pyres import __version__
 from pyres.worker import Worker as Wrkr
 from pyres import failure
 import os
-import datetime
+from datetime import datetime
 
 TEMPLATE_PATH = os.path.join(os.path.dirname(__file__), 'templates')
 class ResWeb(pystache.View):
@@ -105,7 +105,7 @@ class Overview(ResWeb):
             if 'queue' in data:
                 item['data'] = True
                 item['code'] = data['payload']['class']
-                item['runat'] = str(datetime.datetime.fromtimestamp(float(data['run_at'])))
+                item['runat'] = str(datetime.utcfromtimestamp(float(data['run_at'])))
             else:
                 item['data'] = False
             item['nodata'] = not item['data']
@@ -155,7 +155,7 @@ class Workers(ResWeb):
             if 'queue' in data:
                 item['data'] = True
                 item['code'] = data['payload']['class']
-                item['runat'] = str(datetime.datetime.fromtimestamp(float(data['run_at'])))
+                item['runat'] = str(datetime.utcfromtimestamp(float(data['run_at'])))
             else:
                 item['data'] = False
             item['nodata'] = not item['data']
@@ -401,7 +401,7 @@ class Worker(ResWeb):
     def runat(self):
         data = self._worker.processing()
         if self.data():
-            return str(datetime.datetime.fromtimestamp(float(data['run_at'])))
+            return str(datetime.utcfromtimestamp(float(data['run_at'])))
         return ''
 
         """
@@ -445,7 +445,7 @@ class Delayed(ResWeb):
     def jobs(self):
         jobs = []
         for timestamp in self.resq.delayed_queue_peek(self.start(), self.end()):
-            t = datetime.datetime.fromtimestamp(float(timestamp))
+            t = datetime.utcfromtimestamp(float(timestamp))
             item = dict(timestamp=str(timestamp))
             item['size'] = str(self.resq.delayed_timestamp_size(timestamp))
 
@@ -467,7 +467,7 @@ class DelayedTimestamp(ResWeb):
         super(DelayedTimestamp, self).__init__(host)
 
     def formated_timestamp(self):
-        return str(datetime.datetime.fromtimestamp(float(self._timestamp)))
+        return str(datetime.utcfromtimestamp(float(self._timestamp)))
 
     def start(self):
         return str(self._start)

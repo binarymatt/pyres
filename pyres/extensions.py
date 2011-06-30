@@ -1,5 +1,5 @@
 import os
-import datetime
+from datetime import datetime
 import time
 import signal
 
@@ -28,11 +28,11 @@ class JuniorWorker(Worker):
 
                 if self.child:
                     print 'Forked %s at %s' % (self.child,
-                                               datetime.datetime.now())
+                                               datetime.utcnow())
                     os.waitpid(self.child, 0)
                 else:
                     print 'Processing %s since %s' % (job._queue,
-                                                      datetime.datetime.now())
+                                                      datetime.utcnow())
                     self.process(job)
                     os._exit(0)
                 self.child = None

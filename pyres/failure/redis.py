@@ -1,4 +1,4 @@
-import datetime, time
+from datetime import datetime
 from base64 import b64encode
 
 from base import BaseBackend
@@ -12,7 +12,7 @@ class RedisBackend(BaseBackend):
         if not resq:
             resq = ResQ()
         data = {
-            'failed_at' : datetime.datetime.now().strftime('%Y/%m/%d %H:%M:%S'),
+            'failed_at' : datetime.utcnow().strftime('%Y/%m/%d %H:%M:%S'),
             'payload'   : self._payload,
             'exception' : self._exception.__class__.__name__,
             'error'     : self._parse_message(self._exception),
