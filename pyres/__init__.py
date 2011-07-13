@@ -3,6 +3,7 @@ __version__ = '1.1'
 from redis import Redis
 import pyres.json_parser as json
 
+import os
 import time, datetime
 import sys
 import logging
@@ -25,6 +26,15 @@ def setup_logging(log_level=logging.INFO, filename=None, stream=sys.stderr):
     handler.setFormatter(logging.Formatter(
         '%(asctime)s %(levelname)-8s %(message)s', '%Y-%m-%d %H:%M:%S'))
     logger.addHandler(handler)
+
+def setup_pidfile(path):
+    if not path:
+        return
+    dirname = os.path.dirname(path)
+    if not os.path.exists(dirname):
+        os.makedirs(dirname)
+    with open(path, 'w') as f:
+        f.write(str(os.getpid()))
 
 def my_import(name):
     """Helper function for walking import calls when searching for classes by
