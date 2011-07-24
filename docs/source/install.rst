@@ -12,6 +12,7 @@ Those requirements are currently:
 	itty==0.6.4
 	redis==1.34.1 
 	pystache==0.2.0
+	python-dateutil==1.5
 	
 If you'd rather install from the git repository, that's easy too::
 

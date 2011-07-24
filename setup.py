@@ -27,7 +27,8 @@ setup(
         'itty>=0.6.2',
         'redis>=1.34.1',
         'pystache>=0.1.0',
-        'setproctitle>=1.0'
+        'setproctitle>=1.0',
+        'python-dateutil==1.5'
     ],
     classifiers = [
             'Development Status :: 4 - Beta',
