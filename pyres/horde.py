@@ -219,7 +219,7 @@ class Khan(object):
         signal.signal(signal.SIGINT, self.schedule_shutdown)
         signal.signal(signal.SIGQUIT, self.schedule_shutdown)
         signal.signal(signal.SIGUSR1, self.kill_child)
-        signal.signal(signal.SIGUSR1, self.add_child)
+        signal.signal(signal.SIGUSR2, self.add_child)
     
     def _schedule_shutdown(self):
         self.schedule_shutdown(None, None)
