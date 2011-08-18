@@ -8,12 +8,34 @@ import time, datetime
 import sys
 import logging
 
-def setup_logging(log_level=logging.INFO, filename=None, stream=sys.stderr):
-    if log_level == logging.NOTSET:
-        return
-    logger = logging.getLogger()
-    logger.setLevel(log_level)
-    if filename:
+def special_log_file(filename):
+    if filename in ("stderr", "stdout"):
+        return True
+    if filename.startswith("syslog"):
+        return True
+    return False
+
+def get_logging_handler(filename):
+    if not filename:
+        filename = "stderr"
+    if filename == "stderr":
+        handler = logging.StreamHandler(sys.stderr)
+    elif filename == "stdout":
+        handler = logging.StreamHandler(sys.stdout)
+    elif filename.startswith("syslog"): # "syslog:local0"
+        from logging.handlers import SysLogHandler
+        facility_name = filename[7:] or 'user'
+        facility = SysLogHandler.facility_names[facility_name]
+
+        if os.path.exists("/dev/log"):
+            syslog_path = "/dev/log"
+        elif os.path.exists("/var/run/syslog"):
+            syslog_path = "/var/run/syslog"
+        else:
+            raise Exception("Unable to figure out the syslog socket path")
+
+        handler = SysLogHandler(syslog_path, facility)
+    else:
         try:
             from logging.handlers import WatchedFileHandler
             handler = WatchedFileHandler(filename)
@@ -21,8 +43,14 @@ def setup_logging(log_level=logging.INFO, filename=None, stream=sys.stderr):
             from logging.handlers import RotatingFileHandler
             handler = RotatingFileHandler(filename,maxBytes=52428800,
                                           backupCount=7)
-    else:
-        handler = logging.StreamHandler(stream)
+    return handler
+
+def setup_logging(log_level=logging.INFO, filename=None):
+    if log_level == logging.NOTSET:
+        return
+    logger = logging.getLogger()
+    logger.setLevel(log_level)
+    handler = get_logging_handler(filename)
     handler.setFormatter(logging.Formatter(
         '%(asctime)s %(levelname)-8s %(message)s', '%Y-%m-%d %H:%M:%S'))
     logger.addHandler(handler)

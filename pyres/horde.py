@@ -8,7 +8,7 @@ import time, os, signal
 import datetime
 import logging
 import logging.handlers
-from pyres import ResQ, Stat
+from pyres import ResQ, Stat, get_logging_handler, special_log_file
 from pyres.exceptions import NoQueueError
 from pyres.utils import OrderedDict
 from pyres.job import Job
@@ -25,10 +25,7 @@ def setup_logging(namespace='', log_level=logging.INFO, log_file=None):
     #logger = multiprocessing.log_to_stderr()
     logger.setLevel(log_level)
     format = '%(asctime)s %(levelname)s '+namespace+': %(message)s'
-    if log_file:
-        handler = logging.handlers.RotatingFileHandler(log_file, maxBytes=104857600, backupCount=5)
-    else:
-        handler = logging.StreamHandler()
+    handler = get_logging_handler(log_file)
     handler.setFormatter(logging.Formatter((format)))
     logger.addHandler(handler)
     return logger
@@ -154,7 +151,10 @@ class Minion(multiprocessing.Process):
     def run(self):
         setproctitle('pyres_minion:%s: Starting' % (os.getppid(),))
         if self.log_path:
-            self.log_file = os.path.join(self.log_path, 'minion-%s.log' % self.pid)
+            if special_log_file(self.log_path):
+                self.log_file = self.log_path
+            else:
+                self.log_file = os.path.join(self.log_path, 'minion-%s.log' % self.pid)
         namespace = 'minion:%s' % self.pid
         self.logger = setup_logging(namespace, self.log_level, self.log_file)
         #self.clear_logger()
@@ -268,7 +268,10 @@ class Khan(object):
         if hasattr(self,'logger'):
             self.logger.info('Adding minion')
         if self.log_file:
-            log_path = os.path.dirname(self.log_file)
+            if special_log_file(self.log_file):
+                log_path = self.log_file
+            else:
+                log_path = os.path.dirname(self.log_file)
         else:
             log_path = None
         m = Minion(self.queues, self.server, self.password, log_level=self.logging_level, log_path=log_path)

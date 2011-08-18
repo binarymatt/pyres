@@ -20,7 +20,7 @@ def pyres_manager():
     parser.add_option("-i", '--interval', dest='interval', default=None, help='the default time interval to sleep between runs')
     parser.add_option('-l', '--log-level', dest='log_level', default='info', help='log level.  Valid values are "debug", "info", "warning", "error", "critical", in decreasing order of verbosity. Defaults to "info" if parameter not specified.')
     parser.add_option("--pool", type="int", dest="pool_size", default=1, help="Number of minions to spawn under the manager.")
-    parser.add_option('-f', dest='logfile', help='If present, a logfile will be used.')
+    parser.add_option('-f', dest='logfile', help='If present, a logfile will be used.  "stderr", "stdout", and "syslog" are all special values.')
     parser.add_option('-p', dest='pidfile', help='If present, a pidfile will be used.')
     (options,args) = parser.parse_args()
 
@@ -49,7 +49,7 @@ def pyres_scheduler():
     parser.add_option("--host", dest="host", default="localhost")
     parser.add_option("--port",dest="port",type="int", default=6379)
     parser.add_option('-l', '--log-level', dest='log_level', default='info', help='log level.  Valid values are "debug", "info", "warning", "error", "critical", in decreasing order of verbosity. Defaults to "info" if parameter not specified.')
-    parser.add_option('-f', dest='logfile', help='If present, a logfile will be used.')
+    parser.add_option('-f', dest='logfile', help='If present, a logfile will be used.  "stderr", "stdout", and "syslog" are all special values.')
     parser.add_option('-p', dest='pidfile', help='If present, a pidfile will be used.')
     (options,args) = parser.parse_args()
     log_level = getattr(logging, options.log_level.upper(),'INFO')
@@ -94,7 +94,7 @@ def pyres_worker():
     parser.add_option("--port",dest="port",type="int", default=6379)
     parser.add_option("-i", '--interval', dest='interval', default=None, help='the default time interval to sleep between runs')
     parser.add_option('-l', '--log-level', dest='log_level', default='info', help='log level.  Valid values are "debug", "info", "warning", "error", "critical", in decreasing order of verbosity. Defaults to "info" if parameter not specified.')
-    parser.add_option('-f', dest='logfile', help='If present, a logfile will be used.')
+    parser.add_option('-f', dest='logfile', help='If present, a logfile will be used.  "stderr", "stdout", and "syslog" are all special values.')
     parser.add_option('-p', dest='pidfile', help='If present, a pidfile will be used.')
     (options,args) = parser.parse_args()
 
