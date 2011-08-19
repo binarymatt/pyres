@@ -54,7 +54,7 @@ def pyres_scheduler():
     (options,args) = parser.parse_args()
     log_level = getattr(logging, options.log_level.upper(),'INFO')
     #logging.basicConfig(level=log_level, format="%(module)s: %(asctime)s: %(levelname)s: %(message)s")
-    setup_logging(log_level=log_level, filename=options.logfile)
+    setup_logging(procname="pyres_scheduler", log_level=log_level, filename=options.logfile)
     setup_pidfile(options.pidfile)
     server = '%s:%s' % (options.host, options.port)
     Scheduler.run(server)
@@ -103,7 +103,7 @@ def pyres_worker():
         parser.error("Argument must be a comma seperated list of queues")
 
     log_level = getattr(logging, options.log_level.upper(), 'INFO')
-    setup_logging(log_level=log_level, filename=options.logfile)
+    setup_logging(procname="pyres_worker", log_level=log_level, filename=options.logfile)
     setup_pidfile(options.pidfile)
 
     interval = options.interval

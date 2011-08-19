@@ -15,7 +15,13 @@ def special_log_file(filename):
         return True
     return False
 
-def get_logging_handler(filename):
+def get_logging_handler(filename, procname, namespace=None):
+    if namespace:
+        message_format = namespace + ': %(message)s'
+    else:
+        message_format = '%(message)s'
+    format = '%(asctime)s %(levelname)-8s ' + message_format
+
     if not filename:
         filename = "stderr"
     if filename == "stderr":
@@ -35,6 +41,7 @@ def get_logging_handler(filename):
             raise Exception("Unable to figure out the syslog socket path")
 
         handler = SysLogHandler(syslog_path, facility)
+        format = procname + "[%(process)d]: " + message_format
     else:
         try:
             from logging.handlers import WatchedFileHandler
@@ -43,16 +50,15 @@ def get_logging_handler(filename):
             from logging.handlers import RotatingFileHandler
             handler = RotatingFileHandler(filename,maxBytes=52428800,
                                           backupCount=7)
+    handler.setFormatter(logging.Formatter(format, '%Y-%m-%d %H:%M:%S'))
     return handler
 
-def setup_logging(log_level=logging.INFO, filename=None):
+def setup_logging(procname, log_level=logging.INFO, filename=None):
     if log_level == logging.NOTSET:
         return
     logger = logging.getLogger()
     logger.setLevel(log_level)
-    handler = get_logging_handler(filename)
-    handler.setFormatter(logging.Formatter(
-        '%(asctime)s %(levelname)-8s %(message)s', '%Y-%m-%d %H:%M:%S'))
+    handler = get_logging_handler(filename, procname)
     logger.addHandler(handler)
 
 def setup_pidfile(path):
