@@ -279,7 +279,7 @@ class ResQ(object):
         """Close the underlying redis connection.
 
         """
-        self.redis.connection.disconnect()
+        self.redis.connection_pool.get_connection('_').disconnect()
 
     def enqueue_at(self, datetime, klass, *args, **kwargs):
         class_name = '%s.%s' % (klass.__module__, klass.__name__)
