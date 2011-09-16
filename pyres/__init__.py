@@ -42,6 +42,11 @@ def get_logging_handler(filename, procname, namespace=None):
 
         handler = SysLogHandler(syslog_path, facility)
         format = procname + "[%(process)d]: " + message_format
+    elif filename.startswith("gelf"): # "gelf:hostname:port"
+        import graypy
+
+        hostname, port = filename[5:].split(":")
+        handler = graypy.GELFHandler(hostname, int(port))
     else:
         try:
             from logging.handlers import WatchedFileHandler
