@@ -65,7 +65,7 @@ def setup_pidfile(path):
     if not path:
         return
     dirname = os.path.dirname(path)
-    if not os.path.exists(dirname):
+    if dirname and not os.path.exists(dirname):
         os.makedirs(dirname)
     with open(path, 'w') as f:
         f.write(str(os.getpid()))
