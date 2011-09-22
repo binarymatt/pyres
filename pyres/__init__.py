@@ -20,7 +20,7 @@ def get_logging_handler(filename, procname, namespace=None):
         message_format = namespace + ': %(message)s'
     else:
         message_format = '%(message)s'
-    format = '%(asctime)s %(levelname)-8s ' + message_format
+    format = '%(asctime)s %(name)s %(levelname)-8s ' + message_format
 
     if not filename:
         filename = "stderr"
@@ -62,6 +62,7 @@ def setup_logging(procname, log_level=logging.INFO, filename=None):
     if log_level == logging.NOTSET:
         return
     logger = logging.getLogger()
+    logger.name = procname
     logger.setLevel(log_level)
     handler = get_logging_handler(filename, procname)
     logger.addHandler(handler)
