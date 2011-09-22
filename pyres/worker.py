@@ -11,8 +11,6 @@ from pyres import ResQ, Stat, __version__
 
 
 
-logger = logging.getLogger(__name__)
-
 class Worker(object):
     """Defines a worker. The ``pyres_worker`` script instantiates this Worker
     class and passes a comma-separated list of queues to listen on.::
@@ -80,7 +78,7 @@ class Worker(object):
                 continue
             if pid in known_workers:
                 continue
-            logger.warning("pruning dead worker: %s" % worker)
+            logging.warning("pruning dead worker: %s" % worker)
             worker.unregister_worker()
 
     def startup(self):
@@ -103,7 +101,7 @@ class Worker(object):
 
     def kill_child(self, signum, frame):
         if self.child:
-            logger.info("Killing child at %s" % self.child)
+            logging.info("Killing child at %s" % self.child)
             os.kill(self.child, signal.SIGKILL)
 
     def __str__(self):
@@ -134,21 +132,21 @@ class Worker(object):
 
         while True:
             if self._shutdown:
-                logger.info('shutdown scheduled')
+                logging.info('shutdown scheduled')
                 break
 
             job = self.reserve(interval)
 
             if job:
-                logger.debug('picked up job')
-                logger.debug('job details: %s' % job)
+                logging.debug('picked up job')
+                logging.debug('job details: %s' % job)
                 self.before_fork(job)
                 self.child = os.fork() 
                 if self.child:
                     self._setproctitle("Forked %s at %s" %
                                        (self.child,
                                         datetime.datetime.now()))
-                    logger.info('Forked %s at %s' % (self.child,
+                    logging.info('Forked %s at %s' % (self.child,
                                                       datetime.datetime.now()))
 
                     try:
@@ -159,12 +157,12 @@ class Worker(object):
                         if ose.errno != errno.EINTR:
                             raise ose
                     #os.wait()
-                    logger.debug('done waiting')
+                    logging.debug('done waiting')
                 else:
                     self._setproctitle("Processing %s since %s" %
                                        (job._queue,
                                         datetime.datetime.now()))
-                    logger.info('Processing %s since %s' %
+                    logging.info('Processing %s since %s' %
                                  (job._queue, datetime.datetime.now()))
                     self.after_fork(job)
                     self.process(job)
@@ -204,25 +202,25 @@ class Worker(object):
             return job.perform()
         except Exception, e:
             exceptionType, exceptionValue, exceptionTraceback = sys.exc_info()
-            logger.exception("%s failed: %s" % (job, e))
+            logging.exception("%s failed: %s" % (job, e))
             job.fail(exceptionTraceback)
             self.failed()
         else:
-            logger.info('completed job')
-            logger.debug('job details: %s' % job)
+            logging.info('completed job')
+            logging.debug('job details: %s' % job)
         finally:
             self.done_working()
 
     def reserve(self, timeout=10):
         for q in self.queues:
-            logger.debug('checking queue %s' % q)
+            logging.debug('checking queue %s' % q)
             job = self.job_class.reserve(q, self.resq, self.__str__(), timeout=timeout)
             if job:
-                logger.info('Found job on %s' % q)
+                logging.info('Found job on %s' % q)
                 return job
 
     def working_on(self, job):
-        logger.debug('marking as working on')
+        logging.debug('marking as working on')
         data = {
             'queue': job._queue,
             'run_at': str(int(time.mktime(datetime.datetime.now().timetuple()))),
@@ -230,11 +228,11 @@ class Worker(object):
         }
         data = json.dumps(data)
         self.resq.redis["resque:worker:%s" % str(self)] = data
-        logger.debug("worker:%s" % str(self))
-        logger.debug(self.resq.redis["resque:worker:%s" % str(self)])
+        logging.debug("worker:%s" % str(self))
+        logging.debug(self.resq.redis["resque:worker:%s" % str(self)])
 
     def done_working(self):
-        logger.info('done working')
+        logging.info('done working')
         self.processed()
         self.resq.redis.delete("resque:worker:%s" % str(self))
 
