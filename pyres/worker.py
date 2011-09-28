@@ -4,6 +4,7 @@ import datetime, time
 import os, sys
 import json_parser as json
 import commands
+import random
 
 from pyres.exceptions import NoQueueError
 from pyres.job import Job
@@ -167,6 +168,12 @@ class Worker(object):
                     logger.info('Processing %s since %s' %
                                  (job._queue, datetime.datetime.now()))
                     self.after_fork(job)
+
+                    # re-seed the Python PRNG after forking, otherwise
+                    # all job process will share the same sequence of
+                    # random numbers
+                    random.seed()
+
                     self.process(job)
                     os._exit(0)
                 self.child = None
