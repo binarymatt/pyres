@@ -30,13 +30,14 @@ queue with that comment data. Let's take a django model in this case.
             comment.save()
 
 You can convert your existing class to be compatible with pyres. All you need 
-to do is add a :attr:`queue` attribute and define a :meth:`perform` method on the class. 
+to do is add a :attr:`queue` attribute and define a :meth:`perform` method
+on the class.
 
 To insert a job into the queue you need to do something like this::
 
     >>> from pyres import ResQ
-    >>> r = Resq()
-    >>> r.enqueue(Spam, 23)   # Passing the comment id 23
+    >>> r = ResQ()
+    >>> r.enqueue(Comment, 23)   # Passing the comment id 23
 
 This puts a job into the queue **Spam**. Now we need to fire off our workers. 
 In the **scripts** folder there is an executable::
