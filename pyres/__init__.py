@@ -149,13 +149,16 @@ class ResQ(object):
         self.watch_queue(queue)
         self.redis.rpush("resque:queue:%s" % queue, ResQ.encode(item))
 
-    def pop(self, queue, timeout=10):
-        ret = self.redis.blpop("resque:queue:%s" % queue, timeout=timeout)
+    def pop(self, queues, timeout=10):
+        if isinstance(queues, basestring):
+            queues = [queues]
+        ret = self.redis.blpop(["resque:queue:%s" % q for q in queues],
+                               timeout=timeout)
         if ret:
-            if isinstance(ret, tuple):
-                q, ret = ret
-            return ResQ.decode(ret)
-        return ret
+            key, ret = ret
+            return key[13:], ResQ.decode(ret)  # trim "resque:queue:"
+        else:
+            return None, None
 
     def size(self, queue):
         return int(self.redis.llen("resque:queue:%s" % queue))
@@ -254,9 +257,9 @@ class ResQ(object):
         return [key.replace('resque:','')
                 for key in self.redis.keys('resque:*')]
 
-    def reserve(self, queue):
+    def reserve(self, queues):
         from pyres.job import Job
-        return Job.reserve(queue, self)
+        return Job.reserve(queues, self)
 
     def __str__(self):
         return "PyRes Client connected to %s" % self.redis.server
