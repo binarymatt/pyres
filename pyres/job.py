@@ -83,11 +83,13 @@ class Job(object):
         return False
 
     @classmethod
-    def reserve(cls, queue, res, worker=None, timeout=10):
-        """Reserve a job on the queue. This marks this job so that other workers
-        will not pick it up.
+    def reserve(cls, queues, res, worker=None, timeout=10):
+        """Reserve a job on one of the queues. This marks this job so
+        that other workers will not pick it up.
 
         """
-        payload = res.pop(queue, timeout=timeout)
+        if isinstance(queues, basestring):
+            queues = [queues]
+        queue, payload = res.pop(queues, timeout=timeout)
         if payload:
             return cls(queue, payload, res, worker)

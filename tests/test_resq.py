@@ -22,10 +22,27 @@ class ResQTests(PyResTests):
         self.resq.push('pushq','content-newqueue')
         self.resq.push('pushq','content2-newqueue')
         assert self.redis.llen('resque:queue:pushq') == 2
-        assert self.resq.pop('pushq') == 'content-newqueue'
+        assert self.resq.pop('pushq') == ('pushq', 'content-newqueue')
         assert self.redis.llen('resque:queue:pushq') == 1
-        assert self.resq.pop('pushq') == 'content2-newqueue'
+        assert self.resq.pop(['pushq']) == ('pushq', 'content2-newqueue')
         assert self.redis.llen('resque:queue:pushq') == 0
+
+    def test_pop_two_queues(self):
+        self.resq.push('pushq1', 'content-q1-1')
+        self.resq.push('pushq1', 'content-q1-2')
+        self.resq.push('pushq2', 'content-q2-1')
+        assert self.redis.llen('resque:queue:pushq1') == 2
+        assert self.redis.llen('resque:queue:pushq2') == 1
+        assert self.resq.pop(['pushq1', 'pushq2']) == ('pushq1', 'content-q1-1')
+        assert self.redis.llen('resque:queue:pushq1') == 1
+        assert self.redis.llen('resque:queue:pushq2') == 1
+        assert self.resq.pop(['pushq2', 'pushq1']) == ('pushq2', 'content-q2-1')
+        assert self.redis.llen('resque:queue:pushq1') == 1
+        assert self.redis.llen('resque:queue:pushq2') == 0
+        assert self.resq.pop(['pushq2', 'pushq1']) == ('pushq1', 'content-q1-2')
+        assert self.redis.llen('resque:queue:pushq1') == 0
+        assert self.redis.llen('resque:queue:pushq2') == 0
+        assert self.resq.pop(['pushq1', 'pushq2'], timeout=1) == (None, None)
     
     def test_peek(self):
         self.resq.enqueue(Basic,"test1")
