@@ -73,12 +73,11 @@ class Minion(multiprocessing.Process):
         return '%s:%s:%s' % (self.hostname, self.pid, ','.join(self.queues))
     
     def reserve(self):
-        for q in self.queues:
-            self.logger.debug('checking queue: %s' % q)
-            job = Job.reserve(q, self.resq, self.__str__())
-            if job:
-                self.logger.info('Found job on %s' % q)
-                return job
+        self.logger.debug('checking queues: %s' % self.queues)
+        job = Job.reserve(self.queues, self.resq, self.__str__())
+        if job:
+            self.logger.info('Found job on %s' % job._queue)
+            return job
     
     def process(self, job):
         if not job:
