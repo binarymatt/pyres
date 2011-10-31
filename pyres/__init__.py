@@ -213,7 +213,7 @@ class ResQ(object):
         if queue:
             class_name = '%s.%s' % (klass.__module__, klass.__name__)
             self.push(queue, {'class':class_name,'args':args})
-            logging.info("enqueued '%s' job" % class_name)
+            logging.info("enqueued '%s' job on queue %s" % (class_name, queue))
             if args:
                 logging.debug("job arguments: %s" % str(args))
             else:
@@ -226,7 +226,7 @@ class ResQ(object):
         if 'first_attempt' in kwargs:
             payload['first_attempt'] = kwargs['first_attempt']
         self.push(queue, payload)
-        logging.info("enqueued '%s' job" % klass_as_string)
+        logging.info("enqueued '%s' job on queue %s" % (klass_as_string, queue))
         if args:
             logging.debug("job arguments: %s" % str(args))
         else:
@@ -286,8 +286,8 @@ class ResQ(object):
 
     def enqueue_at(self, datetime, klass, *args, **kwargs):
         class_name = '%s.%s' % (klass.__module__, klass.__name__)
-        logging.info("enqueued '%s' job for execution at %s" % (class_name,
-                                                                datetime))
+        logging.info("scheduled '%s' job on queue %s for execution at %s" %
+                     (class_name, klass.queue, datetime))
         if args:
             logging.debug("job arguments are: %s" % str(args))
         payload = {'class':class_name, 'queue': klass.queue, 'args':args}
