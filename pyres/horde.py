@@ -24,7 +24,7 @@ def setup_logging(procname, namespace='', log_level=logging.INFO, log_file=None)
     logger = multiprocessing.get_logger()
     #logger = multiprocessing.log_to_stderr()
     logger.setLevel(log_level)
-    handler = get_logging_handler(procname, log_file, namespace)
+    handler = get_logging_handler(log_file, procname, namespace)
     logger.addHandler(handler)
     return logger
 
