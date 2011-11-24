@@ -33,7 +33,7 @@ def working(request):
 def queues(request):
     return Queues(HOST).render().encode('utf-8')
 
-@get('/queues/(?P<queue_id>\w.+)/')
+@get('/queues/(?P<queue_id>\w.*)/')
 def queue(request, queue_id):
     start = int(request.GET.get('start',0))
     return Queue(HOST, queue_id, start).render().encode('utf-8')
