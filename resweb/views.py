@@ -105,7 +105,10 @@ class Overview(ResWeb):
             if 'queue' in data:
                 item['data'] = True
                 item['code'] = data['payload']['class']
-                item['runat'] = str(datetime.datetime.fromtimestamp(float(data['run_at'])))
+                try:
+                    item['runat'] = str(datetime.datetime.fromtimestamp(float(data['run_at'])))
+                except ValueError:
+                    item['runat'] = data['run_at']
             else:
                 item['data'] = False
             item['nodata'] = not item['data']
@@ -155,7 +158,10 @@ class Workers(ResWeb):
             if 'queue' in data:
                 item['data'] = True
                 item['code'] = data['payload']['class']
-                item['runat'] = str(datetime.datetime.fromtimestamp(float(data['run_at'])))
+                try:
+                    item['runat'] = str(datetime.datetime.fromtimestamp(float(data['run_at'])))
+                except ValueError:
+                    item['runat'] = data['run_at']
             else:
                 item['data'] = False
             item['nodata'] = not item['data']
@@ -225,8 +231,8 @@ class Failed(ResWeb):
             item = job
             item['failed_at'] = job['failed_at']
             item['worker_url'] = '/workers/%s/' % job['worker']
-            item['payload_args'] = str(job['payload']['args'])[:1024]
-            item['payload_class'] = job['payload']['class']
+            item['payload_args'] = str(job['payload']['args'])[:1024] if isinstance(job['payload'], dict) else ''
+            item['payload_class'] = job['payload']['class'] if isinstance(job['payload'], dict) else ''
             item['traceback'] = backtrace
             jobs.append(item)
 
@@ -401,7 +407,10 @@ class Worker(ResWeb):
     def runat(self):
         data = self._worker.processing()
         if self.data():
-            return str(datetime.datetime.fromtimestamp(float(data['run_at'])))
+            try:
+                return str(datetime.datetime.fromtimestamp(float(data['run_at'])))
+            except ValueError:
+                return data['run_at']
         return ''
 
         """
