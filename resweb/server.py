@@ -1,5 +1,5 @@
 import os
-from itty import Redirect, get, post, serve_static_file, run_itty
+from itty import Redirect, get, post, serve_static_file, run_itty, handle_request
 from pyres import ResQ
 from pyres import failure
 from views import (
@@ -118,6 +118,9 @@ def my_media(request, filename):
     #return static_file(request, filename=filename, root=my_root)
 
 
+# The hook to make it run in a mod_wsgi environment.
+def application(environ, start_response):
+    return handle_request(environ, start_response)
 
 if __name__ == "__main__":
     run_itty()
