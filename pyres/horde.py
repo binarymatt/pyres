@@ -22,6 +22,7 @@ except:
 def setup_logging(procname, namespace='', log_level=logging.INFO, log_file=None):
     
     logger = multiprocessing.get_logger()
+    logger.name = procname
     #logger = multiprocessing.log_to_stderr()
     logger.setLevel(log_level)
     handler = get_logging_handler(log_file, procname, namespace)
@@ -153,7 +154,7 @@ class Minion(multiprocessing.Process):
             else:
                 self.log_file = os.path.join(self.log_path, 'minion-%s.log' % self.pid)
         namespace = 'minion:%s' % self.pid
-        self.logger = setup_logging('minion', namespace, self.log_level, self.log_file)
+        self.logger = setup_logging("pyres_manager", namespace, self.log_level, self.log_file)
         #self.clear_logger()
         if isinstance(self.server,basestring):
             self.resq = ResQ(server=self.server, password=self.password)
@@ -308,7 +309,7 @@ class Khan(object):
             self._add_minion()
 
     def _setup_logging(self):
-        self.logger = setup_logging('khan', 'khan', self.logging_level, self.log_file)
+        self.logger = setup_logging('pyres_manager', 'khan', self.logging_level, self.log_file)
     
     def work(self, interval=2):
         setproctitle('pyres_manager: Starting')
