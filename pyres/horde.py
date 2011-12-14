@@ -147,7 +147,7 @@ class Minion(multiprocessing.Process):
     
     def run(self):
         setproctitle('pyres_minion:%s: Starting' % (os.getppid(),))
-        if self.log_path:
+        if self.log_path is not None:
             if special_log_file(self.log_path):
                 self.log_file = self.log_path
             else:
