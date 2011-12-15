@@ -8,6 +8,7 @@ import time, os, signal
 import datetime
 import logging
 import logging.handlers
+import random
 from pyres import ResQ, Stat, get_logging_handler, special_log_file
 from pyres.exceptions import NoQueueError
 from pyres.utils import OrderedDict
@@ -49,7 +50,9 @@ class Minion(multiprocessing.Process):
         self.log_level = log_level
         self.log_path = log_path
         self.log_file = None
-        
+
+        self.child = None
+
     def prune_dead_workers(self):
         pass
     
@@ -137,9 +140,32 @@ class Minion(multiprocessing.Process):
                 break
             job = self.reserve()
             if job:
-                self.process(job)
-            else:
-                time.sleep(interval)
+                self.child = os.fork()
+                if self.child:
+                    self.logger.info("Forked pid %s at %s" %
+                                     (self.child, datetime.datetime.now()))
+                    try:
+                        os.waitpid(self.child, 0)
+                    except OSError as ose:
+                        import errno
+
+                        if ose.errno != errno.EINTR:
+                            raise
+                    self.logger.debug("done waiting for %s to complete" %
+                                      (self.child,))
+                else:
+                    setproctitle("Processing %s since %s" %
+                                 (job._queue, datetime.datetime.now()))
+
+                    # re-seed the Python PRNG after forking, otherwise
+                    # all job process will share the same sequence of
+                    # random numbers
+                    random.seed()
+
+                    self.process(job)
+                    os._exit(0)
+                self.child = None
+
         self.unregister_minion()
     
     def clear_logger(self):
