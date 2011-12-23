@@ -217,7 +217,38 @@ class Khan(object):
         signal.signal(signal.SIGQUIT, self.schedule_shutdown)
         signal.signal(signal.SIGUSR1, self.kill_child)
         signal.signal(signal.SIGUSR2, self.add_child)
-    
+        signal.signal(signal.SIGINFO, self.current_state)
+
+    def current_state(self):
+        tmap = {}
+        main_thread = None
+        import traceback
+        from cStringIO import StringIO
+        # get a map of threads by their ID so we can print their names
+        # during the traceback dump
+        for t in threading.enumerate():
+            if getattr(t, "ident", None):
+                tmap[t.ident] = t
+            else:
+                main_thread = t
+
+        out = StringIO()
+        sep = "=" * 49 + "\n"
+        for tid, frame in sys._current_frames().iteritems():
+            thread = tmap.get(tid, main_thread)
+            if not thread:
+                # skip old junk (left-overs from a fork)
+                continue
+            out.write("%s\n" % (thread.getName(), ))
+            out.write(sep)
+            traceback.print_stack(frame, file=out)
+            out.write(sep)
+            out.write("LOCAL VARIABLES\n")
+            out.write(sep)
+            pprint(frame.f_locals, stream=out)
+            out.write("\n\n")
+        self.logger.info(out.getvalue())
+
     def _schedule_shutdown(self):
         self.schedule_shutdown(None, None)
     
