@@ -130,6 +130,7 @@ class Worker(object):
 
         """
         self._setproctitle("Starting")
+        logger.info("starting")
         self.startup()
 
         while True:
@@ -260,7 +261,7 @@ class Worker(object):
                     self._handle_job_exception(job)
 
             if not job_failed:
-                logger.info('completed job')
+                logger.debug('completed job')
                 logger.debug('job details: %s' % job)
         finally:
             self.done_working(job)
@@ -291,7 +292,7 @@ class Worker(object):
         logger.debug(self.resq.redis["resque:worker:%s" % str(self)])
 
     def done_working(self, job):
-        logger.info('done working on %s', job)
+        logger.debug('done working on %s', job)
         self.processed()
         self.resq.redis.delete("resque:worker:%s" % str(self))
 

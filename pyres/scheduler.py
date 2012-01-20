@@ -66,7 +66,7 @@ class Scheduler(object):
     def handle_delayed_items(self):
         for timestamp in self.next_timestamp():
             _setproctitle('Handling timestamp %s' % timestamp)
-            logger.info('handling timestamp: %s' % timestamp)
+            logger.debug('handling timestamp: %s' % timestamp)
             for item in self.next_item(timestamp):
                 logger.debug('queueing item %s' % item)
                 klass = item['class']
