@@ -94,7 +94,8 @@ class Overview(ResWeb):
         workers = []
         for w in self.resq.working():
             data = w.processing()
-            host,pid,queues = str(w).split(':')
+            host = w.hostname
+            pid = w.pid
             item = {
                 'state':w.state(),
                 'host': host,
@@ -139,7 +140,8 @@ class Workers(ResWeb):
         workers = []
         for w in self.all():
             data = w.processing()
-            host,pid,queues = str(w).split(':')
+            host = w.hostname
+            pid = w.pid
             item = {
                 'state':w.state(),
                 'host': host,
@@ -147,7 +149,7 @@ class Workers(ResWeb):
                 'w':str(w)
             }
             qs = []
-            for q in queues.split(','):
+            for q in w.queues:
                 qs.append({
                     'q':str(q)
                 })

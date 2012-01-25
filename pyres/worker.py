@@ -25,13 +25,25 @@ class Worker(object):
     
     job_class = Job
     
-    def __init__(self, queues=(), server="localhost:6379", password=None):
+    def __init__(self, queues=(), server="localhost:6379", 
+                 password=None, pid=None, hostname=None):
+        '''Creates a Worker instance.  Client code will usually not
+        have to set pid or hostname. These are available mostly for
+        the ability to set pid and hostname by methods such as 'all'
+
+        '''
         self.queues = queues
         self.validate_queues()
         self._shutdown = False
         self.child = None
-        self.pid = os.getpid()
-        self.hostname = os.uname()[1]
+        if pid is None:
+            self.pid = os.getpid()
+        else:
+            self.pid = pid
+        if hostname is None:
+            self.hostname = os.uname()[1]
+        else:
+            self.hostname = hostname
 
         if isinstance(server, basestring):
             self.resq = ResQ(server=server, password=password)
@@ -47,7 +59,7 @@ class Worker(object):
 
     def register_worker(self):
         self.resq.redis.sadd('resque:workers', str(self))
-        #self.resq._redis.add("worker:#{self}:started", Time.now.to_s)
+        self.resq.redis.sadd('resque:worker:%s:queues' % str(self), *self.queues)
         self.started = datetime.datetime.now()
 
     def _set_started(self, dt):
@@ -68,6 +80,7 @@ class Worker(object):
 
     def unregister_worker(self):
         self.resq.redis.srem('resque:workers', str(self))
+        self.resq.redis.delete('resque:worker:%s:queues' % str(self))
         self.started = None
         Stat("processed:%s" % self, self.resq).clear()
         Stat("failed:%s" % self, self.resq).clear()
@@ -76,11 +89,13 @@ class Worker(object):
         all_workers = Worker.all(self.resq)
         known_workers = self.worker_pids()
         for worker in all_workers:
-            host, pid, queues = worker.id.split(':')
+            host = worker.hostname
+            pid =  worker.pid
             if host != self.hostname:
                 continue
             if pid in known_workers:
                 continue
+            print self.hostname, worker.hostname, worker
             logger.warning("pruning dead worker: %s" % worker)
             worker.unregister_worker()
 
@@ -292,12 +307,12 @@ class Worker(object):
 
     @classmethod
     def all(cls, host="localhost:6379"):
-        if isinstance(host,basestring):
+        if isinstance(host, basestring):
             resq = ResQ(host)
         elif isinstance(host, ResQ):
             resq = host
 
-        return [Worker.find(w,resq) for w in resq.redis.smembers('resque:workers') or []]
+        return [Worker.find(w, resq) for w in resq.redis.smembers('resque:workers') or []]
 
     @classmethod
     def working(cls, host):
@@ -319,8 +334,10 @@ class Worker(object):
     @classmethod
     def find(cls, worker_id, resq):
         if Worker.exists(worker_id, resq):
-            queues = worker_id.split(':')[-1].split(',')
-            worker = cls(queues,resq)
+            queues = resq.redis.smembers('resque:worker:%s:queues' % worker_id)
+            bits = worker_id.split(':')
+            worker = cls(queues, resq, pid=bits[1],
+                         hostname=bits[0])
             worker.id = worker_id
             return worker
         else:
