@@ -335,9 +335,9 @@ class Worker(object):
     def find(cls, worker_id, resq):
         if Worker.exists(worker_id, resq):
             queues = resq.redis.smembers('resque:worker:%s:queues' % worker_id)
-            bits = worker_id.split(':')
-            worker = cls(queues, resq, pid=bits[1],
-                         hostname=bits[0])
+            fields = worker_id.split(':')
+            worker = cls(queues, resq, pid=fields[1],
+                         hostname=fields[0])
             worker.id = worker_id
             return worker
         else:
