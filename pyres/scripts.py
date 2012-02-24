@@ -74,6 +74,9 @@ def pyres_web():
     parser.add_option("--dsn",
                       dest="dsn",
                       help="Redis server to display")
+    parser.add_option("--auth",
+                      dest="auth",
+                      help="Redis user:pass")
     parser.add_option("--server",
                       dest="server",
                       help="Server for itty to run under.",
@@ -82,7 +85,14 @@ def pyres_web():
 
     if options.dsn:
         from pyres import ResQ
-        resweb_server.HOST = ResQ(options.dsn)
+        if options.auth is not None:
+            from redis import Redis
+            rhost, rport = options.dsn.split(':')
+            ruser, rpass = options.auth.split(':')
+            redis = Redis(host=rhost, port=int(rport), db=ruser, password=rpass)
+            resweb_server.HOST = ResQ(redis)
+        else:
+            resweb_server.HOST = ResQ(options.dsn)
     run_itty(host=options.host, port=options.port, server=options.server)
 
 
