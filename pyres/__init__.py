@@ -56,7 +56,7 @@ def get_logging_handler(filename, procname, namespace=None):
 def setup_logging(procname, log_level=logging.INFO, filename=None):
     if log_level == logging.NOTSET:
         return
-    logger = logging.getLogger()
+    logger = logging.getLogger(__name__)
     logger.setLevel(log_level)
     handler = get_logging_handler(filename, procname)
     logger.addHandler(handler)
