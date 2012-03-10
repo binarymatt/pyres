@@ -33,8 +33,3 @@ The archive can be found at <http://librelist.com/browser/>.
 * Bugs: <http://github.com/binarydud/pyres/issues>
 * List: <pyres@librelist.com>
 
-## TODO
-
-Stabalize the api.
-
-Add a pre-fork worker module
