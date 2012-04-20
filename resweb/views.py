@@ -7,11 +7,15 @@ import os
 import datetime
 
 TEMPLATE_PATH = os.path.join(os.path.dirname(__file__), 'templates')
-class ResWeb(pystache.View):
+class ResWeb(pystache.TemplateSpec):
     template_path = TEMPLATE_PATH
+    renderer = pystache.Renderer(search_dirs = template_path)
+
     def __init__(self, host):
-        super(ResWeb, self).__init__()
         self.resq = host
+
+    def render(self):
+        return self.renderer.render(self)
 
     def media_folder(self):
         return '/media/'
@@ -122,6 +126,7 @@ class Overview(ResWeb):
             return False
         else:
             return True
+
 class Queues(Overview):
     template_name = 'queue_full'
 
