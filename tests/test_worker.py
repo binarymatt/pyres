@@ -164,15 +164,26 @@ class WorkerTests(PyResTests):
     def test_prune_dead_workers(self):
         worker = Worker(['basic']) # we haven't registered this worker, so the assertion below holds
         assert self.redis.scard('resque:workers') == 0
-        self.redis.sadd('resque:workers',"%s:%s:%s" % (os.uname()[1],'1','basic'))
-        self.redis.sadd('resque:workers',"%s:%s:%s" % (os.uname()[1],'2','basic'))
-        self.redis.sadd('resque:workers',"%s:%s:%s" % (os.uname()[1],'3','basic'))
+        def makeworker(number, host=None):
+            '''If no host is specified, use this process.
+            '''
+            if host is None:
+                host = os.uname()[1]
+
+            worker_id = ("%s:%s:%s" % 
+                            (host, str(number), 'basic'))
+            self.redis.sadd('resque:workers', worker_id)
+            self.redis.sadd('resque:worker:{}:queues'.format(worker_id), 'basic')
+
+        makeworker(1)
+        makeworker(2)
+        makeworker(3)
         assert self.redis.scard('resque:workers') == 3
         worker.prune_dead_workers()
         assert self.redis.scard('resque:workers') == 0
-        self.redis.sadd('resque:workers',"%s:%s:%s" % ('host-that-does-not-exist','1','basic'))
-        self.redis.sadd('resque:workers',"%s:%s:%s" % ('host-that-does-not-exist','2','basic'))
-        self.redis.sadd('resque:workers',"%s:%s:%s" % ('host-that-does-not-exist','3','basic'))
+        makeworker(1, 'host-that-does-not-exist')
+        makeworker(2, 'host-that-does-not-exist')
+        makeworker(3, 'host-that-does-not-exist')
         worker.prune_dead_workers()
         # the assertion below should hold, because the workers we registered above are on a
         # different host, and thus should not be pruned by this process
