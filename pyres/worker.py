@@ -153,13 +153,26 @@ class Worker(object):
                                                       datetime.datetime.now()))
 
                     try:
-                        os.waitpid(self.child, 0)
+                        start = datetime.datetime.now()
+                        result = (0, 0)
+                        timed_out = False
+
+                        # waits for the result or times out
+                        while result == (0, 0) and not timed_out:
+                            result = os.waitpid(self.child, os.WNOHANG)
+                            now = datetime.datetime.now()
+
+                            if self.timeout and ((now - start).seconds > self.timeout):
+                                os.kill(self.child, signal.SIGKILL)
+                                os.waitpid(-1, os.WNOHANG)
+                                timed_out = True
+
                     except OSError as ose:
                         import errno
 
                         if ose.errno != errno.EINTR:
                             raise ose
-                    #os.wait()
+
                     logger.debug('done waiting')
                 else:
                     self._setproctitle("Processing %s since %s" %
@@ -283,8 +296,9 @@ class Worker(object):
                                        grep pyres_worker").split("\n"))
 
     @classmethod
-    def run(cls, queues, server="localhost:6379", interval=None):
+    def run(cls, queues, server="localhost:6379", interval=None, timeout=None):
         worker = cls(queues=queues, server=server)
+        worker.timeout = timeout
         if interval is not None:
             worker.work(interval)
         else:
