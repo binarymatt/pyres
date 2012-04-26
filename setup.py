@@ -26,7 +26,7 @@ setup(
         'simplejson>=2.0.9',
         'itty>=0.6.2',
         'redis>=1.34.1',
-        'pystache>=0.1.0',
+        'pystache==0.4.1',
         'setproctitle>=1.0'
     ],
     classifiers = [
