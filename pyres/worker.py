@@ -154,7 +154,6 @@ class Worker(object):
 
                     try:
                         start = datetime.datetime.now()
-                        result = (0, 0)
 
                         # waits for the result or times out
                         while True:
