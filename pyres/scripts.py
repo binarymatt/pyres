@@ -106,6 +106,7 @@ def pyres_worker():
     parser.add_option('-l', '--log-level', dest='log_level', default='info', help='log level.  Valid values are "debug", "info", "warning", "error", "critical", in decreasing order of verbosity. Defaults to "info" if parameter not specified.')
     parser.add_option('-f', dest='logfile', help='If present, a logfile will be used.  "stderr", "stdout", and "syslog" are all special values.')
     parser.add_option('-p', dest='pidfile', help='If present, a pidfile will be used.')
+    parser.add_option("-t", '--timeout', dest='timeout', default=None, help='the timeout in seconds for this worker')
     (options,args) = parser.parse_args()
 
     if len(args) != 1:
@@ -120,6 +121,8 @@ def pyres_worker():
     if interval is not None:
         interval = int(interval)
 
+    timeout = options.timeout is None and options.timeout or int(options.timeout)
+
     queues = args[0].split(',')
     server = '%s:%s' % (options.host,options.port)
-    Worker.run(queues, server, interval)
+    Worker.run(queues, server, interval, timeout=timeout)

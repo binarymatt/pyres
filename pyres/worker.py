@@ -6,7 +6,7 @@ import json_parser as json
 import commands
 import random
 
-from pyres.exceptions import NoQueueError
+from pyres.exceptions import NoQueueError, TimeoutError
 from pyres.job import Job
 from pyres import ResQ, Stat, __version__
 
@@ -25,13 +25,14 @@ class Worker(object):
     
     job_class = Job
     
-    def __init__(self, queues=(), server="localhost:6379", password=None):
+    def __init__(self, queues=(), server="localhost:6379", password=None, timeout=None):
         self.queues = queues
         self.validate_queues()
         self._shutdown = False
         self.child = None
         self.pid = os.getpid()
         self.hostname = os.uname()[1]
+        self.timeout = timeout
 
         if isinstance(server, basestring):
             self.resq = ResQ(server=server, password=password)
@@ -153,13 +154,34 @@ class Worker(object):
                                                       datetime.datetime.now()))
 
                     try:
-                        os.waitpid(self.child, 0)
+                        start = datetime.datetime.now()
+
+                        # waits for the result or times out
+                        while True:
+                            result = os.waitpid(self.child, os.WNOHANG)
+                            if result != (0, 0):
+                                break
+                            time.sleep(0.5)
+
+                            now = datetime.datetime.now()
+                            if self.timeout and ((now - start).seconds > self.timeout):
+                                os.kill(self.child, signal.SIGKILL)
+                                os.waitpid(-1, os.WNOHANG)
+                                raise TimeoutError("Timed out after %d seconds" % self.timeout)
+
                     except OSError as ose:
                         import errno
 
                         if ose.errno != errno.EINTR:
                             raise ose
-                    #os.wait()
+
+                    except TimeoutError as e:
+                        exceptionType, exceptionValue, exceptionTraceback = sys.exc_info()
+                        logger.exception("%s timed out: %s" % (job, e))
+                        job.fail(exceptionTraceback)
+                        self.failed()
+                        self.done_working()
+
                     logger.debug('done waiting')
                 else:
                     self._setproctitle("Processing %s since %s" %
@@ -283,8 +305,8 @@ class Worker(object):
                                        grep pyres_worker").split("\n"))
 
     @classmethod
-    def run(cls, queues, server="localhost:6379", interval=None):
-        worker = cls(queues=queues, server=server)
+    def run(cls, queues, server="localhost:6379", interval=None, timeout=None):
+        worker = cls(queues=queues, server=server, timeout=timeout)
         if interval is not None:
             worker.work(interval)
         else:

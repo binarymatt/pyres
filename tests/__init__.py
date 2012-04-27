@@ -37,6 +37,14 @@ class RetryOnExceptionJob(object):
         else:
             return True
 
+class TimeoutJob(object):
+    queue = 'basic'
+
+    @staticmethod
+    def perform(wait_for):
+        import time
+        time.sleep(wait_for)
+        return "Done Sleeping"
 
 class TestProcess(object):
     queue = 'high'
