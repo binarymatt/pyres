@@ -1,4 +1,4 @@
-from tests import PyResTests, Basic, TestProcess, ErrorObject, RetryOnExceptionJob
+from tests import PyResTests, Basic, TestProcess, ErrorObject, RetryOnExceptionJob, TimeoutJob
 from pyres import ResQ
 from pyres.job import Job
 from pyres.scheduler import Scheduler
@@ -201,6 +201,23 @@ class WorkerTests(PyResTests):
         scheduler.handle_delayed_items()
         assert True == worker.process()
         assert worker.get_failed() == 0
+
+    def test_kills_stale_workers_after_timeout(self):
+        import signal
+        timeout = 1
+
+        worker = Worker(['basic'], timeout=timeout)
+        self.resq.enqueue(TimeoutJob, timeout + 1)
+
+        child = os.fork()
+        if child:
+            assert worker.get_failed() == 0
+            time.sleep(timeout + 2)
+            os.kill(child, signal.SIGKILL)
+            os.waitpid(-1, os.WNOHANG)
+            assert worker.get_failed() == 1
+        else:
+            worker.work()
 
     def test_retries_give_up_eventually(self):
         now = datetime.datetime.now()
