@@ -25,13 +25,14 @@ class Worker(object):
     
     job_class = Job
     
-    def __init__(self, queues=(), server="localhost:6379", password=None):
+    def __init__(self, queues=(), server="localhost:6379", password=None, timeout=None):
         self.queues = queues
         self.validate_queues()
         self._shutdown = False
         self.child = None
         self.pid = os.getpid()
         self.hostname = os.uname()[1]
+        self.timeout = timeout
 
         if isinstance(server, basestring):
             self.resq = ResQ(server=server, password=password)
@@ -305,8 +306,7 @@ class Worker(object):
 
     @classmethod
     def run(cls, queues, server="localhost:6379", interval=None, timeout=None):
-        worker = cls(queues=queues, server=server)
-        worker.timeout = timeout
+        worker = cls(queues=queues, server=server, timeout=timeout)
         if interval is not None:
             worker.work(interval)
         else:
