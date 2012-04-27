@@ -6,7 +6,7 @@ import json_parser as json
 import commands
 import random
 
-from pyres.exceptions import NoQueueError
+from pyres.exceptions import NoQueueError, TimeoutError
 from pyres.job import Job
 from pyres import ResQ, Stat, __version__
 
@@ -155,23 +155,32 @@ class Worker(object):
                     try:
                         start = datetime.datetime.now()
                         result = (0, 0)
-                        timed_out = False
 
                         # waits for the result or times out
-                        while result == (0, 0) and not timed_out:
+                        while True:
                             result = os.waitpid(self.child, os.WNOHANG)
-                            now = datetime.datetime.now()
+                            if result != (0, 0):
+                                break
+                            time.sleep(0.5)
 
+                            now = datetime.datetime.now()
                             if self.timeout and ((now - start).seconds > self.timeout):
                                 os.kill(self.child, signal.SIGKILL)
                                 os.waitpid(-1, os.WNOHANG)
-                                timed_out = True
+                                raise TimeoutError("Timed out after %d seconds" % self.timeout)
 
                     except OSError as ose:
                         import errno
 
                         if ose.errno != errno.EINTR:
                             raise ose
+
+                    except TimeoutError as e:
+                        exceptionType, exceptionValue, exceptionTraceback = sys.exc_info()
+                        logger.exception("%s timed out: %s" % (job, e))
+                        job.fail(exceptionTraceback)
+                        self.failed()
+                        self.done_working()
 
                     logger.debug('done waiting')
                 else:
