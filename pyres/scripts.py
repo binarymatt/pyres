@@ -121,7 +121,7 @@ def pyres_worker():
     if interval is not None:
         interval = int(interval)
 
-    timeout = options.timeout is None and options.timeout or int(options.timeout)
+    timeout = options.timeout and int(options.timeout)
 
     queues = args[0].split(',')
     server = '%s:%s' % (options.host,options.port)
