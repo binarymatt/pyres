@@ -1,4 +1,5 @@
-from datetime import datetime
+from datetime import datetime, date, time
+from dateutil.parser import parse
 
 try:
     #import simplejson as json
@@ -6,45 +7,40 @@ try:
 except ImportError:
     import simplejson as json
 
-DATE_FORMAT = '%Y-%m-%dT%H:%M:%S'
-DATE_PREFIX = '@D:'
+SUPPORTED_TYPES = {datetime, date, time}
+assert len(SUPPORTED_TYPES) == len({c.__name__ for c in SUPPORTED_TYPES})
+SUPPORTED_TYPES_NAME2CLASS = {c.__name__: c for c in SUPPORTED_TYPES}
 
 class CustomJSONEncoder(json.JSONEncoder):
-
-    def default(self, o):
-        if isinstance(o, datetime):
-            return o.strftime(DATE_PREFIX + DATE_FORMAT)
-        return json.JSONEncoder.default(self, o)
+    def default(self, obj):
+        type_ = type(obj)
+        if type_ in SUPPORTED_TYPES:
+            if type_ in {datetime, date, time}:
+                return {'__type__': type_.__name__, '__value__': obj.isoformat()}
+        return json.JSONEncoder.default(self, obj)
 
 
 class CustomJSONDecoder(json.JSONDecoder):
+    def __init__(self, **kw):
+        json.JSONDecoder.__init__(self, object_hook=self.dict_to_object, **kw)
 
-    def decode(self, json_string):
-        decoded = json.loads(json_string)
-        return self.convert(decoded)
-
-    def convert(self, value):
-        if isinstance(value, basestring) and value.startswith(DATE_PREFIX):
-            try:
-                return datetime.strptime(value[len(DATE_PREFIX):], DATE_FORMAT)
-            except ValueError:
-                return value
-        elif isinstance(value, dict):
-            for k, v in value.iteritems():
-                new = self.convert(v)
-                if new != v:
-                    value[k] = new
-        elif isinstance(value, list):
-            for k, v in enumerate(value):
-                new = self.convert(v)
-                if new != v:
-                    value[k] = new
-        return value
+    def dict_to_object(self, d):
+        type_ = SUPPORTED_TYPES_NAME2CLASS.get(d.get('__type__'))
+        if type_ in SUPPORTED_TYPES:
+            if type_ in {datetime, date, time}:
+                dt = parse(d.get('__value__'))
+                if type_ is datetime:
+                    return dt
+                elif type_ is date:
+                    return dt.date()
+                else:
+                    return dt.timetz()
+        return d
 
 
-def dumps(values):
-    return json.dumps(values, cls=CustomJSONEncoder)
+def dumps(obj):
+    return json.dumps(obj, cls=CustomJSONEncoder)
 
 
-def loads(string):
-    return json.loads(string, cls=CustomJSONDecoder)
+def loads(s):
+    return json.loads(s, cls=CustomJSONDecoder)
