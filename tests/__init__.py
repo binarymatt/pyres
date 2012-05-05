@@ -65,6 +65,14 @@ class PrematureExitJob(object):
         sys.exit(exit_code)
         return "Never got here"
 
+class PrematureHardExitJob(object):
+    queue = 'basic'
+
+    @staticmethod
+    def perform(exit_code):
+        os._exit(exit_code)
+        return "Never got here"
+
 class TestProcess(object):
     queue = 'high'
 
