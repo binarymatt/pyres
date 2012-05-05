@@ -56,6 +56,15 @@ class CrashJob(object):
         ctypes.string_at(1)
         return "Never got here"
 
+class PrematureExitJob(object):
+    queue = 'basic'
+
+    @staticmethod
+    def perform(exit_code):
+        import sys
+        sys.exit(exit_code)
+        return "Never got here"
+
 class TestProcess(object):
     queue = 'high'
 

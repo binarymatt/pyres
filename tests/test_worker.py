@@ -1,4 +1,4 @@
-from tests import PyResTests, Basic, TestProcess, ErrorObject, RetryOnExceptionJob, TimeoutJob, CrashJob
+from tests import PyResTests, Basic, TestProcess, ErrorObject, RetryOnExceptionJob, TimeoutJob, CrashJob, PrematureExitJob
 from pyres import ResQ
 from pyres.job import Job
 from pyres.scheduler import Scheduler
@@ -223,6 +223,30 @@ class WorkerTests(PyResTests):
 
         assert worker.job() == {}
         assert worker.get_failed() == 1
+
+    def test_detect_non_0_sys_exit_as_failure(self):
+        worker = Worker(['basic'])
+        self.resq.enqueue(PrematureExitJob, 9)
+
+        assert worker.job() == {}
+        assert worker.get_failed() == 0
+
+        worker.fork_worker(worker.reserve())
+
+        assert worker.job() == {}
+        assert worker.get_failed() == 1
+
+    def test_detect_code_0_sys_exit_as_success(self):
+        worker = Worker(['basic'])
+        self.resq.enqueue(PrematureExitJob, 0)
+
+        assert worker.job() == {}
+        assert worker.get_failed() == 0
+
+        worker.fork_worker(worker.reserve())
+
+        assert worker.job() == {}
+        assert worker.get_failed() == 0
 
     def test_retries_give_up_eventually(self):
         now = datetime.datetime.now()
