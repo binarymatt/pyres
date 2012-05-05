@@ -128,8 +128,6 @@ class Worker(object):
         that job to make sure another worker won't run it, then *forks* itself to
         work on that job.
 
-        Finally, the ``process`` method actually processes the job by eventually calling the Job instance's ``perform`` method.
-
         """
         self._setproctitle("Starting")
         self.startup()
@@ -142,63 +140,7 @@ class Worker(object):
             job = self.reserve(interval)
 
             if job:
-                logger.debug('picked up job')
-                logger.debug('job details: %s' % job)
-                self.before_fork(job)
-                self.child = os.fork() 
-                if self.child:
-                    self._setproctitle("Forked %s at %s" %
-                                       (self.child,
-                                        datetime.datetime.now()))
-                    logger.info('Forked %s at %s' % (self.child,
-                                                      datetime.datetime.now()))
-
-                    try:
-                        start = datetime.datetime.now()
-
-                        # waits for the result or times out
-                        while True:
-                            result = os.waitpid(self.child, os.WNOHANG)
-                            if result != (0, 0):
-                                break
-                            time.sleep(0.5)
-
-                            now = datetime.datetime.now()
-                            if self.timeout and ((now - start).seconds > self.timeout):
-                                os.kill(self.child, signal.SIGKILL)
-                                os.waitpid(-1, os.WNOHANG)
-                                raise TimeoutError("Timed out after %d seconds" % self.timeout)
-
-                    except OSError as ose:
-                        import errno
-
-                        if ose.errno != errno.EINTR:
-                            raise ose
-
-                    except TimeoutError as e:
-                        exceptionType, exceptionValue, exceptionTraceback = sys.exc_info()
-                        logger.exception("%s timed out: %s" % (job, e))
-                        job.fail(exceptionTraceback)
-                        self.failed()
-                        self.done_working()
-
-                    logger.debug('done waiting')
-                else:
-                    self._setproctitle("Processing %s since %s" %
-                                       (job._queue,
-                                        datetime.datetime.now()))
-                    logger.info('Processing %s since %s' %
-                                 (job._queue, datetime.datetime.now()))
-                    self.after_fork(job)
-
-                    # re-seed the Python PRNG after forking, otherwise
-                    # all job process will share the same sequence of
-                    # random numbers
-                    random.seed()
-
-                    self.process(job)
-                    os._exit(0)
-                self.child = None
+                self.fork_worker(job)
             else:
                 if interval == 0:
                     break
@@ -206,6 +148,73 @@ class Worker(object):
                 self._setproctitle("Waiting")
                 #time.sleep(interval)
         self.unregister_worker()
+
+    def fork_worker(self, job):
+        """Invoked by ``work`` method. ``fork_worker`` does the actual forking to create the child
+        process that will process the job. It's also responsible for monitoring the child process
+        and handling hangs and crashes.
+
+        Finally, the ``process`` method actually processes the job by eventually calling the Job
+        instance's ``perform`` method.
+
+        """
+        logger.debug('picked up job')
+        logger.debug('job details: %s' % job)
+        self.before_fork(job)
+        self.child = os.fork()
+        if self.child:
+            self._setproctitle("Forked %s at %s" %
+                               (self.child,
+                                datetime.datetime.now()))
+            logger.info('Forked %s at %s' % (self.child,
+                                              datetime.datetime.now()))
+
+            try:
+                start = datetime.datetime.now()
+
+                # waits for the result or times out
+                while True:
+                    result = os.waitpid(self.child, os.WNOHANG)
+                    if result != (0, 0):
+                        break
+                    time.sleep(0.5)
+
+                    now = datetime.datetime.now()
+                    if self.timeout and ((now - start).seconds > self.timeout):
+                        os.kill(self.child, signal.SIGKILL)
+                        os.waitpid(-1, os.WNOHANG)
+                        raise TimeoutError("Timed out after %d seconds" % self.timeout)
+
+            except OSError as ose:
+                import errno
+
+                if ose.errno != errno.EINTR:
+                    raise ose
+
+            except TimeoutError as e:
+                exceptionType, exceptionValue, exceptionTraceback = sys.exc_info()
+                logger.exception("%s timed out: %s" % (job, e))
+                job.fail(exceptionTraceback)
+                self.failed()
+                self.done_working()
+
+            logger.debug('done waiting')
+        else:
+            self._setproctitle("Processing %s since %s" %
+                               (job._queue,
+                                datetime.datetime.now()))
+            logger.info('Processing %s since %s' %
+                         (job._queue, datetime.datetime.now()))
+            self.after_fork(job)
+
+            # re-seed the Python PRNG after forking, otherwise
+            # all job process will share the same sequence of
+            # random numbers
+            random.seed()
+
+            self.process(job)
+            os._exit(0)
+        self.child = None
 
     def before_fork(self, job):
         """
