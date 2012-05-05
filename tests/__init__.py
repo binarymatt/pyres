@@ -46,6 +46,16 @@ class TimeoutJob(object):
         time.sleep(wait_for)
         return "Done Sleeping"
 
+class CrashJob(object):
+    queue = 'basic'
+
+    @staticmethod
+    def perform():
+        # Dangerous, this will cause a hard crash of the python process
+        import ctypes
+        ctypes.string_at(1)
+        return "Never got here"
+
 class TestProcess(object):
     queue = 'high'
 
