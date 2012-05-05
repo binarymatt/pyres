@@ -6,7 +6,7 @@ import json_parser as json
 import commands
 import random
 
-from pyres.exceptions import NoQueueError, TimeoutError
+from pyres.exceptions import NoQueueError, JobError, TimeoutError, CrashError
 from pyres.job import Job
 from pyres import ResQ, Stat, __version__
 
@@ -174,9 +174,17 @@ class Worker(object):
 
                 # waits for the result or times out
                 while True:
-                    result = os.waitpid(self.child, os.WNOHANG)
-                    if result != (0, 0):
-                        break
+                    pid, status = os.waitpid(self.child, os.WNOHANG)
+                    if pid != 0:
+                        if os.WIFEXITED(status) and os.WEXITSTATUS(status) == 0:
+                            break
+                        if os.WIFSTOPPED(status):
+                            logger.warning("Process stopped by signal %d" % os.WSTOPSIG(status))
+                        else:
+                            if os.WIFSIGNALED(status):
+                                raise CrashError("Unexpected exit by signal %d" % os.WTERMSIG(status))
+                            raise CrashError("Unexpected exit status %d" % os.WEXITSTATUS(status))
+
                     time.sleep(0.5)
 
                     now = datetime.datetime.now()
@@ -190,13 +198,13 @@ class Worker(object):
 
                 if ose.errno != errno.EINTR:
                     raise ose
-
-            except TimeoutError as e:
-                exceptionType, exceptionValue, exceptionTraceback = sys.exc_info()
-                logger.exception("%s timed out: %s" % (job, e))
-                job.fail(exceptionTraceback)
-                self.failed()
-                self.done_working()
+            except JobError:
+                self._handle_job_exception(job)
+            finally:
+                # If the child process' job called os._exit manually we need to
+                # finish the clean up here.
+                if self.job():
+                    self.done_working()
 
             logger.debug('done waiting')
         else:
@@ -236,20 +244,32 @@ class Worker(object):
     def process(self, job=None):
         if not job:
             job = self.reserve()
+
+        job_failed = False
         try:
-            self.working_on(job)
-            job = self.before_process(job)
-            return job.perform()
-        except Exception, e:
-            exceptionType, exceptionValue, exceptionTraceback = sys.exc_info()
-            logger.exception("%s failed: %s" % (job, e))
-            job.fail(exceptionTraceback)
-            self.failed()
-        else:
-            logger.info('completed job')
-            logger.debug('job details: %s' % job)
+            try:
+                self.working_on(job)
+                job = self.before_process(job)
+                return job.perform()
+            except Exception:
+                job_failed = True
+                self._handle_job_exception(job)
+            except SystemExit, e:
+                if e.code != 0:
+                    job_failed = True
+                    self._handle_job_exception(job)
+
+            if not job_failed:
+                logger.info('completed job')
+                logger.debug('job details: %s' % job)
         finally:
             self.done_working()
+
+    def _handle_job_exception(self, job):
+        exceptionType, exceptionValue, exceptionTraceback = sys.exc_info()
+        logger.exception("%s failed: %s" % (job, exceptionValue))
+        job.fail(exceptionTraceback)
+        self.failed()
 
     def reserve(self, timeout=10):
         logger.debug('checking queues %s' % self.queues)

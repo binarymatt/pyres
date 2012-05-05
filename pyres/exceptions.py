@@ -1,5 +1,11 @@
 class NoQueueError(Exception):
     pass
 
-class TimeoutError(RuntimeError):
+class JobError(RuntimeError):
+    pass
+
+class TimeoutError(JobError):
+    pass
+
+class CrashError(JobError):
     pass
