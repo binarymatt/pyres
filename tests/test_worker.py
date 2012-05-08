@@ -1,4 +1,4 @@
-from tests import PyResTests, Basic, TestProcess, ErrorObject, RetryOnExceptionJob, TimeoutJob
+from tests import PyResTests, Basic, TestProcess, ErrorObject, RetryOnExceptionJob, TimeoutJob, CrashJob, PrematureExitJob, PrematureHardExitJob
 from pyres import ResQ
 from pyres.job import Job
 from pyres.scheduler import Scheduler
@@ -203,21 +203,74 @@ class WorkerTests(PyResTests):
         assert worker.get_failed() == 0
 
     def test_kills_stale_workers_after_timeout(self):
-        import signal
         timeout = 1
 
         worker = Worker(['basic'], timeout=timeout)
         self.resq.enqueue(TimeoutJob, timeout + 1)
 
-        child = os.fork()
-        if child:
-            assert worker.get_failed() == 0
-            time.sleep(timeout + 2)
-            os.kill(child, signal.SIGKILL)
-            os.waitpid(-1, os.WNOHANG)
-            assert worker.get_failed() == 1
-        else:
-            worker.work()
+        assert worker.get_failed() == 0
+        worker.fork_worker(worker.reserve())
+        assert worker.get_failed() == 1
+
+    def test_detect_crashed_workers_as_failures(self):
+        worker = Worker(['basic'])
+        self.resq.enqueue(CrashJob)
+
+        assert worker.job() == {}
+        assert worker.get_failed() == 0
+
+        worker.fork_worker(worker.reserve())
+
+        assert worker.job() == {}
+        assert worker.get_failed() == 1
+
+    def test_detect_non_0_sys_exit_as_failure(self):
+        worker = Worker(['basic'])
+        self.resq.enqueue(PrematureExitJob, 9)
+
+        assert worker.job() == {}
+        assert worker.get_failed() == 0
+
+        worker.fork_worker(worker.reserve())
+
+        assert worker.job() == {}
+        assert worker.get_failed() == 1
+
+    def test_detect_code_0_sys_exit_as_success(self):
+        worker = Worker(['basic'])
+        self.resq.enqueue(PrematureExitJob, 0)
+
+        assert worker.job() == {}
+        assert worker.get_failed() == 0
+
+        worker.fork_worker(worker.reserve())
+
+        assert worker.job() == {}
+        assert worker.get_failed() == 0
+
+    def test_detect_non_0_os_exit_as_failure(self):
+        worker = Worker(['basic'])
+        self.resq.enqueue(PrematureHardExitJob, 9)
+
+        assert worker.job() == {}
+        assert worker.get_failed() == 0
+
+        worker.fork_worker(worker.reserve())
+
+        assert worker.job() == {}
+        assert worker.get_failed() == 1
+
+    def test_detect_code_0_os_exit_as_success(self):
+        worker = Worker(['basic'])
+        self.resq.enqueue(PrematureHardExitJob, 0)
+
+        assert worker.job() == {}
+        assert worker.get_failed() == 0
+
+        worker.fork_worker(worker.reserve())
+
+        assert worker.job() == {}
+        assert worker.get_failed() == 0
 
     def test_retries_give_up_eventually(self):
         now = datetime.datetime.now()
