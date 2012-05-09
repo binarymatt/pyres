@@ -1,4 +1,4 @@
-__version__ = '1.1'
+__version__ = '1.2'
 
 from redis import Redis
 import pyres.json_parser as json
