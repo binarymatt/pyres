@@ -8,6 +8,10 @@ Pyres - a Resque clone
 
 Because of some differences between ruby and python, there are a couple of places where I chose speed over correctness. The goal will be to eventually take the application and make it more pythonic without sacrificing the awesome functionality found in resque. At the same time, I hope to stay within the bounds of the original api and web interface.
 
+## Travis CI
+
+Currently, pyres is being tested via travis ci for python version 2.6 and 2.7: 
+[![Build Status](https://secure.travis-ci.org/binarydud/pyres.png)](http://travis-ci.org/binarydud/pyres)
 
 ## Running Tests
 
