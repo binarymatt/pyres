@@ -10,7 +10,7 @@ Because of some differences between ruby and python, there are a couple of place
 
 ## Travis CI
 
-Currently, pyres is being tested via travis ci for python version 2.6 and 2.7: 
+Currently, pyres is being tested via travis ci for python version 2.6, 2.7, and pypy: 
 [![Build Status](https://secure.travis-ci.org/binarydud/pyres.png)](http://travis-ci.org/binarydud/pyres)
 
 ## Running Tests
