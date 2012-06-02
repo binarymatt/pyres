@@ -1,3 +1,9 @@
+##1.3 (2012-06-01)
+* remove resweb from pyres
+
+##1.2
+* release with changes from pull requests
+
 ##1.1 (2011-06-16)
 * api change based on redis-py
 * setproctitle requirements fix

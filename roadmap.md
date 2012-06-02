@@ -1,21 +1,15 @@
 pyres todo and roadmap
 
-Version 0.6
-===========
-* better webtests
-* resweb pagination
+1.3
+===
+* resweb moved into own package
 
-Version 0.7
-===========
-* resweb controls for failed queues
-* scheduled tasks
+2.0
+===
+* move from duck typed class to a decorated function for jobs
+* add better hooks, like retools
 
-Version 0.8
-===========
-* horde package integration
-* web interface to horde
-
-Version 1.0
-===========
-* stabilize the api
-* semantic versioning
+2.1
+===
+* add namespace support
+* cleanup workers/extensions
