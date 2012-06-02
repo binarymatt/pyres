@@ -2,12 +2,9 @@ import logging
 
 from optparse import OptionParser
 
-from itty import run_itty
-
 from pyres.horde import Khan
 from pyres import setup_logging, setup_pidfile
 from pyres.scheduler import Scheduler
-from resweb import server as resweb_server
 from pyres.worker import Worker
 
 
@@ -58,42 +55,6 @@ def pyres_scheduler():
     setup_pidfile(options.pidfile)
     server = '%s:%s' % (options.host, options.port)
     Scheduler.run(server)
-
-
-def pyres_web():
-    usage = "usage: %prog [options]"
-    parser = OptionParser(usage)
-    parser.add_option("--host",
-                    dest="host",
-                    default="localhost",
-                    metavar="HOST")
-    parser.add_option("--port",
-                    dest="port",
-                    type="int",
-                    default=8080)
-    parser.add_option("--dsn",
-                      dest="dsn",
-                      help="Redis server to display")
-    parser.add_option("--auth",
-                      dest="auth",
-                      help="Redis user:pass")
-    parser.add_option("--server",
-                      dest="server",
-                      help="Server for itty to run under.",
-                      default='wsgiref')
-    (options,args) = parser.parse_args()
-
-    if options.dsn:
-        from pyres import ResQ
-        if options.auth is not None:
-            from redis import Redis
-            rhost, rport = options.dsn.split(':')
-            ruser, rpass = options.auth.split(':')
-            redis = Redis(host=rhost, port=int(rport), db=ruser, password=rpass)
-            resweb_server.HOST = ResQ(redis)
-        else:
-            resweb_server.HOST = ResQ(options.dsn)
-    run_itty(host=options.host, port=options.port, server=options.server)
 
 
 def pyres_worker():
