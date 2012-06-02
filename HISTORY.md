@@ -1,5 +1,6 @@
 ##1.3 (2012-06-01)
 * remove resweb from pyres
+* resweb is now available at http://github.com/Pyres/resweb or on pypi
 
 ##1.2
 * release with changes from pull requests

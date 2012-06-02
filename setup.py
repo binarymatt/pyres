@@ -1,7 +1,6 @@
 from setuptools import setup, find_packages
 
-version='1.3'
-
+version=__import__('pyres').__version__
 setup(
     name='pyres',
     version=version,
