@@ -73,14 +73,16 @@ class Job(object):
             metadata["enqueue_timestamp"] = self.enqueue_timestamp
 
         before_perform = getattr(payload_class, "before_perform", None)
-        if before_perform:
-            before_perform(metadata)
 
         metadata["failed"] = False
         metadata["perform_timestamp"] = time.time()
+        check_after = True
         try:
+            if before_perform:
+                before_perform(metadata)
             return payload_class.perform(*args)
         except:
+            check_after = False
             metadata["failed"] = True
             if not self.retry(payload_class, args):
                 metadata["retried"] = False
@@ -89,7 +91,7 @@ class Job(object):
                 metadata["retried"] = True
         finally:
             after_perform = getattr(payload_class, "after_perform", None)
-            if after_perform:
+            if after_perform and check_after:
                 after_perform(metadata)
 
     def fail(self, exception):
