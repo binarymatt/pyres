@@ -1,3 +1,4 @@
+import time
 from datetime import timedelta
 from pyres import ResQ, safe_str_to_class
 from pyres import failure
@@ -31,6 +32,8 @@ class Job(object):
         self.resq = resq
         self._worker = worker
 
+        self.enqueue_timestamp = self._payload.get("enqueue_timestamp")
+
         # Set the default back end, jobs can override when we import them
         # inside perform().
         failure.backend = RedisBackend
@@ -43,6 +46,20 @@ class Job(object):
         """This method converts payload into args and calls the ``perform``
         method on the payload class.
 
+        Before calling ``perform``, a ``before_perform`` class method
+        is called, if it exists.  It takes a dictionary as an argument;
+        currently the only things stored on the dictionary are the
+        args passed into ``perform`` and a timestamp of when the job
+        was enqueued.
+
+        Similarly, an ``after_perform`` class method is called after
+        ``perform`` is finished.  The metadata dictionary contains the
+        same data, plus a timestamp of when the job was performed, a
+        ``failed`` boolean value, and if it did fail, a ``retried``
+        boolean value.  This method is called after retry, and is
+        called regardless of whether an exception is ultimately thrown
+        by the perform method.
+
         #@ add entry_point loading
 
         """
@@ -51,11 +68,29 @@ class Job(object):
         payload_class.resq = self.resq
         args = self._payload.get("args")
 
+        metadata = dict(args=args)
+        if self.enqueue_timestamp:
+            metadata["enqueue_timestamp"] = self.enqueue_timestamp
+
+        before_perform = getattr(payload_class, "before_perform", None)
+        if before_perform:
+            before_perform(metadata)
+
+        metadata["failed"] = False
+        metadata["perform_timestamp"] = time.time()
         try:
             return payload_class.perform(*args)
         except:
+            metadata["failed"] = True
             if not self.retry(payload_class, args):
+                metadata["retried"] = False
                 raise
+            else:
+                metadata["retried"] = True
+        finally:
+            after_perform = getattr(payload_class, "after_perform", None)
+            if after_perform:
+                after_perform(metadata)
 
     def fail(self, exception):
         """This method provides a way to fail a job and will use whatever
