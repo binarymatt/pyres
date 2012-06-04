@@ -212,7 +212,8 @@ class ResQ(object):
         queue = getattr(klass,'queue', None)
         if queue:
             class_name = '%s.%s' % (klass.__module__, klass.__name__)
-            self.push(queue, {'class':class_name,'args':args})
+            self.push(queue, {'class':class_name,'args':args,
+                              'enqueue_timestamp':time.time()})
             logging.info("enqueued '%s' job on queue %s" % (class_name, queue))
             if args:
                 logging.debug("job arguments: %s" % str(args))
@@ -222,7 +223,8 @@ class ResQ(object):
             logging.warning("unable to enqueue job with class %s" % str(klass))
 
     def enqueue_from_string(self, klass_as_string, queue, *args, **kwargs):
-        payload = {'class':klass_as_string, 'queue': queue, 'args':args}
+        payload = {'class':klass_as_string, 'queue': queue, 'args':args,
+                   'enqueue_timestamp':time.time()}
         if 'first_attempt' in kwargs:
             payload['first_attempt'] = kwargs['first_attempt']
         self.push(queue, payload)
@@ -356,7 +358,8 @@ class ResQ(object):
         _self = cls()
         if queue:
             class_name = '%s.%s' % (klass.__module__, klass.__name__)
-            _self.push(queue, {'class':class_name,'args':args})
+            _self.push(queue, {'class':class_name,'args':args,
+                               'enqueue_timestamp': time.time()})
 
     @staticmethod
     def _current_time():
