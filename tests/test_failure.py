@@ -54,4 +54,4 @@ class FailureTests(PyResTests):
         mod_with_class = '{module}.{klass}'.format(
             module=self.job_class.__module__,
             klass=self.job_class.__name__)
-        assert job._payload == {'class':mod_with_class,'args':['test1']}
+        self.assertEqual(job._payload, {'class':mod_with_class,'args':['test1'],'enqueue_timestamp': job.enqueue_timestamp})
