@@ -60,7 +60,6 @@ class Job(object):
         called regardless of whether an exception is ultimately thrown
         by the perform method.
 
-        #@ add entry_point loading
 
         """
         payload_class_str = self._payload["class"]
@@ -106,6 +105,11 @@ class Job(object):
         return fail
 
     def retry(self, payload_class, args):
+        """This method provides a way to retry a job after a failure.
+        If the jobclass defined by the payload containes a ``retry_every`` attribute then pyres
+        will attempt to retry the job until successful or until timeout defined by ``retry_timeout`` on the payload class.
+        
+        """
         retry_every = getattr(payload_class, 'retry_every', None)
         retry_timeout = getattr(payload_class, 'retry_timeout', 0)
 

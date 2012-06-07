@@ -10,7 +10,7 @@ Job Classes
 =================
 
 .. autoclass:: pyres.job.Job
-	:members:
+    :members:
 
 Worker Classes
 =================
