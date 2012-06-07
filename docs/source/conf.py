@@ -39,7 +39,7 @@ master_doc = 'index'
 
 # General information about the project.
 project = u'pyres'
-copyright = u'2010, Matt George'
+copyright = u'2012, Matt George'
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
@@ -92,7 +92,9 @@ pygments_style = 'sphinx'
 
 # The theme to use for HTML and HTML Help pages.  Major themes that come with
 # Sphinx are currently 'default' and 'sphinxdoc'.
-html_theme = 'default'
+sys.path.append(os.path.abspath('_theme'))
+html_theme_path = ['_theme']
+html_theme = 'flask'
 
 # Theme options are theme-specific and customize the look and feel of a theme
 # further.  For a list of options available for each theme, see the
@@ -194,5 +196,3 @@ latex_documents = [
 # If false, no module index is generated.
 #latex_use_modindex = True
 
-html_theme = "nature"
-html_theme_path = ["_theme"]
