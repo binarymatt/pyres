@@ -79,7 +79,7 @@ class Job(object):
         check_after = True
         try:
             if before_perform:
-                before_perform(metadata)
+                before_perform(payload_class, metadata)
             return payload_class.perform(*args)
         except:
             check_after = False
@@ -92,7 +92,8 @@ class Job(object):
         finally:
             after_perform = getattr(payload_class, "after_perform", None)
             if after_perform and check_after:
-                after_perform(metadata)
+                after_perform(payload_class, metadata)
+            delattr(payload_class,'resq')
 
     def fail(self, exception):
         """This method provides a way to fail a job and will use whatever
