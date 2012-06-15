@@ -212,17 +212,12 @@ class ResQ(object):
         queue = getattr(klass,'queue', None)
         if queue:
             class_name = '%s.%s' % (klass.__module__, klass.__name__)
-            self.push(queue, {'class':class_name,'args':args})
-            logging.info("enqueued '%s' job on queue %s" % (class_name, queue))
-            if args:
-                logging.debug("job arguments: %s" % str(args))
-            else:
-                logging.debug("no arguments passed in.")
+            self.enqueue_from_string(class_name, queue, *args)
         else:
             logging.warning("unable to enqueue job with class %s" % str(klass))
 
     def enqueue_from_string(self, klass_as_string, queue, *args, **kwargs):
-        payload = {'class':klass_as_string, 'queue': queue, 'args':args}
+        payload = {'class':klass_as_string, 'args':args}
         if 'first_attempt' in kwargs:
             payload['first_attempt'] = kwargs['first_attempt']
         self.push(queue, payload)
