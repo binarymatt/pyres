@@ -212,19 +212,12 @@ class ResQ(object):
         queue = getattr(klass,'queue', None)
         if queue:
             class_name = '%s.%s' % (klass.__module__, klass.__name__)
-            self.push(queue, {'class':class_name,'args':args,
-                              'enqueue_timestamp':time.time()})
-            logging.info("enqueued '%s' job on queue %s" % (class_name, queue))
-            if args:
-                logging.debug("job arguments: %s" % str(args))
-            else:
-                logging.debug("no arguments passed in.")
+            self.enqueue_from_string(class_name, queue, *args)
         else:
             logging.warning("unable to enqueue job with class %s" % str(klass))
 
     def enqueue_from_string(self, klass_as_string, queue, *args, **kwargs):
-        payload = {'class':klass_as_string, 'queue': queue, 'args':args,
-                   'enqueue_timestamp':time.time()}
+        payload = {'class':klass_as_string, 'args':args, 'enqueue_timestamp': time.time()}
         if 'first_attempt' in kwargs:
             payload['first_attempt'] = kwargs['first_attempt']
         self.push(queue, payload)
@@ -288,11 +281,14 @@ class ResQ(object):
 
     def enqueue_at(self, datetime, klass, *args, **kwargs):
         class_name = '%s.%s' % (klass.__module__, klass.__name__)
+        self.enqueue_at_from_string(datetime, class_name, klass.queue, *args, **kwargs)
+
+    def enqueue_at_from_string(self, datetime, klass_as_string, queue, *args, **kwargs):
         logging.info("scheduled '%s' job on queue %s for execution at %s" %
-                     (class_name, klass.queue, datetime))
+                     (klass_as_string, queue, datetime))
         if args:
             logging.debug("job arguments are: %s" % str(args))
-        payload = {'class':class_name, 'queue': klass.queue, 'args':args}
+        payload = {'class': klass_as_string, 'queue': queue, 'args': args}
         if 'first_attempt' in kwargs:
             payload['first_attempt'] = kwargs['first_attempt']
         self.delayed_push(datetime, payload)
