@@ -135,3 +135,50 @@ class Job(object):
         queue, payload = res.pop(queues, timeout=timeout)
         if payload:
             return cls(queue, payload, res, worker)
+
+class TransitionJob(Job):
+    def perform(self):
+        func = None
+        #check for callable
+        if 'callable' in self._payload:
+            callable_string = self._payload['callable']
+            func = safe_str_to_class(callable_string)
+        #check for class.perform
+        else:
+            klass_string = self._payload['class']
+            klass = safe_str_to_class(klass_string)
+            klass.resq = self.resq
+            if callable(klass):
+                func = klass
+                before_perform = None
+            else:
+                before_perform = getattr(klass, "before_perform", None)
+                func = getattr(klass, 'perform')
+        args = self._payload.get('args')
+
+        metadata = dict(args=args)
+        if self.enqueue_timestamp:
+            metadata['enqueue_timestamp'] = self.enqueue_timestamp
+
+        metadata["failed"] = False
+        metadata['perform_timestamp'] = time.time()
+        check_after = True
+        try:
+            if before_perform:
+                before_perform(klass, metadata)
+            return func(*args)
+        except:
+            check_after = False
+            metadata["failed"] = True
+            if not self.retry(klass, args):
+                metadata["retried"] = False
+                raise
+            else:
+                metadata["retried"] = True
+
+        finally:
+            after_perform = getattr(klass, "after_perform", None)
+            if after_perform:
+                after_perform(klass, metadata)
+            delattr(klass, 'resq')
+
