@@ -205,7 +205,7 @@ class Worker(object):
                 # If the child process' job called os._exit manually we need to
                 # finish the clean up here.
                 if self.job():
-                    self.done_working()
+                    self.done_working(job)
 
             logger.debug('done waiting')
         else:

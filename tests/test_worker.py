@@ -122,7 +122,7 @@ class WorkerTests(PyResTests):
         name = "%s:%s:%s" % (os.uname()[1],os.getpid(),'basic')
         assert worker.job() == ResQ.decode(self.redis.get('resque:worker:%s' % name))
         assert worker.processing() == ResQ.decode(self.redis.get('resque:worker:%s' % name))
-        worker.done_working()
+        worker.done_working(job)
         w2 = Worker(['basic'])
         print w2.job()
         assert w2.job() == {}
@@ -158,7 +158,7 @@ class WorkerTests(PyResTests):
         job = Job.reserve('basic', self.resq)
         worker.working_on(job)
         assert worker.state() == 'working'
-        worker.done_working()
+        worker.done_working(job)
         assert worker.state() == 'idle'
     
     def test_prune_dead_workers(self):

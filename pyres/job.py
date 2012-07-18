@@ -89,7 +89,7 @@ class Job(object):
                 raise
             else:
                 metadata["retried"] = True
-                logging.exception("Retry scheduled after error in %s", job)
+                logging.exception("Retry scheduled after error in %s", self._payload)
         finally:
             after_perform = getattr(payload_class, "after_perform", None)
             if after_perform and check_after:
