@@ -20,7 +20,7 @@ def get_logging_handler(filename, procname, namespace=None):
         message_format = namespace + ': %(message)s'
     else:
         message_format = '%(message)s'
-    format = '%(asctime)s %(levelname)-8s ' + message_format
+    format = '%(asctime)s %(process)5d %(levelname)-8s ' + message_format
 
     if not filename:
         filename = "stderr"

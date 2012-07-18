@@ -1,3 +1,4 @@
+import logging
 import time
 from datetime import timedelta
 from pyres import ResQ, safe_str_to_class
@@ -88,6 +89,7 @@ class Job(object):
                 raise
             else:
                 metadata["retried"] = True
+                logging.exception("Retry scheduled after error in %s", job)
         finally:
             after_perform = getattr(payload_class, "after_perform", None)
             if after_perform and check_after:

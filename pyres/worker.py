@@ -22,9 +22,9 @@ class Worker(object):
        >>> Worker.run([queue1, queue2], server="localhost:6379")
 
     """
-    
+
     job_class = Job
-    
+
     def __init__(self, queues=(), server="localhost:6379", password=None, timeout=None):
         self.queues = queues
         self.validate_queues()
@@ -130,6 +130,7 @@ class Worker(object):
 
         """
         self._setproctitle("Starting")
+        logger.info("starting")
         self.startup()
 
         while True:
@@ -209,10 +210,10 @@ class Worker(object):
             logger.debug('done waiting')
         else:
             self._setproctitle("Processing %s since %s" %
-                               (job._queue,
+                               (job,
                                 datetime.datetime.now()))
             logger.info('Processing %s since %s' %
-                         (job._queue, datetime.datetime.now()))
+                         (job, datetime.datetime.now()))
             self.after_fork(job)
 
             # re-seed the Python PRNG after forking, otherwise
@@ -260,10 +261,10 @@ class Worker(object):
                     self._handle_job_exception(job)
 
             if not job_failed:
-                logger.info('completed job')
+                logger.debug('completed job')
                 logger.debug('job details: %s' % job)
         finally:
-            self.done_working()
+            self.done_working(job)
 
     def _handle_job_exception(self, job):
         exceptionType, exceptionValue, exceptionTraceback = sys.exc_info()
@@ -290,8 +291,8 @@ class Worker(object):
         logger.debug("worker:%s" % str(self))
         logger.debug(self.resq.redis["resque:worker:%s" % str(self)])
 
-    def done_working(self):
-        logger.info('done working')
+    def done_working(self, job):
+        logger.debug('done working on %s', job)
         self.processed()
         self.resq.redis.delete("resque:worker:%s" % str(self))
 
