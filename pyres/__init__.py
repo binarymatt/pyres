@@ -140,9 +140,8 @@ class ResQ(object):
 
     """
     def __init__(self, server="localhost:6379", password=None):
+        self.password = password
         self.redis = server
-        if password:
-            self.redis.auth(password)
         self._watched_queues = set()
 
     def push(self, queue, item):
@@ -187,7 +186,7 @@ class ResQ(object):
         if isinstance(server, basestring):
             self.dsn = server
             host, port = server.split(':')
-            self._redis = Redis(host=host, port=int(port))
+            self._redis = Redis(host=host, port=int(port), password=self.password)
             self.host = host
             self.port = int(port)
         elif isinstance(server, Redis):
