@@ -1,5 +1,8 @@
 ##1.4 (2012-06-?)
 * added hooks for before and after perform methods
+* fixed logging
+*fixed problems with password authentication
+
 ##1.3 (2012-06-01)
 * remove resweb from pyres
 * resweb is now available at http://github.com/Pyres/resweb or on pypi
