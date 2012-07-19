@@ -20,10 +20,9 @@ setup(
     pyres_worker=pyres.scripts:pyres_worker
     """,
     install_requires=[
-        'simplejson>=2.0.9',
-        'redis==2.4.12',
-        'setproctitle>=1.0'
-    ],
+            item for item in
+            open("requirements.txt").read().split("\n")
+            if item],
     classifiers = [
             'Development Status :: 4 - Beta',
             'Environment :: Console',
