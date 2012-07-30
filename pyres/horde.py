@@ -217,7 +217,8 @@ class Khan(object):
         signal.signal(signal.SIGQUIT, self.schedule_shutdown)
         signal.signal(signal.SIGUSR1, self.kill_child)
         signal.signal(signal.SIGUSR2, self.add_child)
-        signal.signal(signal.SIGINFO, self.current_state)
+        if hasattr(signal, 'SIGINFO'):
+            signal.signal(signal.SIGINFO, self.current_state)
 
     def current_state(self):
         tmap = {}
