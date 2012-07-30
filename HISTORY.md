@@ -1,3 +1,7 @@
+##1.4.1 (2012-07-30)
+* fix for non existent system signal for linux
+* cleanup of setup.py and requirements
+
 ##1.4 (2012-06-?)
 * added hooks for before and after perform methods
 * fixed logging
