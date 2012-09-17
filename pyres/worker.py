@@ -19,7 +19,7 @@ class Worker(object):
     class and passes a comma-separated list of queues to listen on.::
 
        >>> from pyres.worker import Worker
-       >>> Worker.run([queue1, queue2], server="localhost:6379")
+       >>> Worker.run([queue1, queue2], server="localhost:6379/0")
 
     """
 
