@@ -116,7 +116,7 @@ class ResQ(object):
 
     The ``__init__`` takes these keyword arguments:
 
-        ``server`` -- IP address and port of the Redis server to which you want to connect. Default is `localhost:6379`.
+        ``server`` -- IP address and port of the Redis server to which you want to connect, and optional Redis DB number. Default is `localhost:6379`.
 
         ``password`` -- The password, if required, of your Redis server. Default is "None".
 
@@ -188,8 +188,9 @@ class ResQ(object):
     def _set_redis(self, server):
         if isinstance(server, basestring):
             self.dsn = server
-            host, port = server.split(':')
-            self._redis = Redis(host=host, port=int(port), password=self.password)
+            address, _, db = server.partition('/')
+            host, port = address.split(':')
+            self._redis = Redis(host=host, port=int(port), db=int(db or 0), password=self.password)
             self.host = host
             self.port = int(port)
         elif isinstance(server, Redis):
