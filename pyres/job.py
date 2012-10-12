@@ -81,9 +81,10 @@ class Job(object):
             if before_perform:
                 payload_class.before_perform(metadata)
             return payload_class.perform(*args)
-        except:
+        except Exception as e:
             check_after = False
             metadata["failed"] = True
+            metadata["exception"] = e
             if not self.retry(payload_class, args):
                 metadata["retried"] = False
                 raise
