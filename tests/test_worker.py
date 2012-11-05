@@ -38,6 +38,11 @@ class WorkerTests(PyResTests):
         assert self.redis.sismember('resque:workers',name)
         worker.unregister_worker()
         assert name not in self.redis.smembers('resque:workers')
+
+    def test_worker_is_registered(self):
+        worker = Worker(['basic'])
+        worker.register_worker()
+        assert worker.is_registered()
     
     def test_working_on(self):
         name = "%s:%s:%s" % (os.uname()[1],os.getpid(),'basic')
