@@ -136,13 +136,18 @@ class Worker(object):
         logger.info("starting")
         self.startup()
 
+        check_worker_registration_wait = 3
+
         while True:
             if self._shutdown:
                 logger.info('shutdown scheduled')
                 break
 
-            if not self.is_registered():
-                self.register_worker()
+            check_worker_registration_wait -= 1
+            if not check_worker_registration_wait:
+                check_worker_registration_wait = 3
+                if not self.is_registered():
+                    self.register_worker()
 
             job = self.reserve(interval)
 
