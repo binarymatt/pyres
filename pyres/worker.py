@@ -51,9 +51,6 @@ class Worker(object):
         #self.resq._redis.add("worker:#{self}:started", Time.now.to_s)
         self.started = datetime.datetime.now()
 
-    def is_registered(self):
-        return self.resq.redis.sismember('resque:workers', str(self))
-
     def _set_started(self, dt):
         if dt:
             key = int(time.mktime(dt.timetuple()))
@@ -136,18 +133,12 @@ class Worker(object):
         logger.info("starting")
         self.startup()
 
-        check_worker_registration_wait = 3
-
         while True:
             if self._shutdown:
                 logger.info('shutdown scheduled')
                 break
 
-            check_worker_registration_wait -= 1
-            if not check_worker_registration_wait:
-                check_worker_registration_wait = 3
-                if not self.is_registered():
-                    self.register_worker()
+            self.register_worker()
 
             job = self.reserve(interval)
 
