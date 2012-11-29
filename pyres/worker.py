@@ -138,6 +138,8 @@ class Worker(object):
                 logger.info('shutdown scheduled')
                 break
 
+            self.register_worker()
+
             job = self.reserve(interval)
 
             if job:
