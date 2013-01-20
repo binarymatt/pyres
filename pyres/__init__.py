@@ -260,7 +260,7 @@ class ResQ(object):
         return Job.reserve(queues, self)
 
     def __str__(self):
-        return "PyRes Client connected to %s" % self.redis.server
+        return "PyRes Client connected to %s" % self.dsn
 
     def workers(self):
         from pyres.worker import Worker
