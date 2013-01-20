@@ -296,5 +296,36 @@ class WorkerTests(PyResTests):
         assert None == worker.process()
         assert worker.get_failed() == 1
 
+    def test_worker_pids(self):
+        # spawn worker processes and get pids
+        pids = []
+        pids.append(self.spawn_worker(['basic']))
+        pids.append(self.spawn_worker(['basic']))
+        time.sleep(1)
+        worker_pids = Worker.worker_pids()
+
+        # send kill signal to workers and wait for them to exit
+        import signal
+        for pid in pids:
+            os.kill(pid, signal.SIGQUIT)
+            os.waitpid(pid, 0)
+
+        # ensure worker_pids() returned the correct pids
+        assert len(worker_pids) == len(pids)
+        for pid in pids:
+            assert str(pid) in worker_pids
+
+        # ensure there are no longer any workers running
+        worker_pids = Worker.worker_pids()
+        assert len(worker_pids) == 0
+
+    def spawn_worker(self, queues):
+        pid = os.fork()
+        if not pid:
+            Worker.run(queues, interval=1)
+            os._exit(0)
+        else:
+            return pid
+
     def set_current_time(self, time):
         ResQ._current_time = staticmethod(lambda: time)
