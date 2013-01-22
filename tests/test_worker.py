@@ -311,13 +311,13 @@ class WorkerTests(PyResTests):
             os.waitpid(pid, 0)
 
         # ensure worker_pids() returned the correct pids
-        assert len(worker_pids) == len(pids)
         for pid in pids:
             assert str(pid) in worker_pids
 
-        # ensure there are no longer any workers running
+        # ensure the workers are no longer returned by worker_pids()
         worker_pids = Worker.worker_pids()
-        assert len(worker_pids) == 0
+        for pid in pids:
+            assert str(pid) not in worker_pids
 
     def spawn_worker(self, queues):
         pid = os.fork()
