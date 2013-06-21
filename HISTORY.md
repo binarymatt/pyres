@@ -1,3 +1,11 @@
+##1.4.2 (2013-06-21)
+* __str__ returns correctly with dsn
+* worker_pids returns correct set of workers
+* workers are re-registered on every job
+* add exception metadata for after_perform method
+* logger no longer overrides root logger
+* support for redis db in dsn
+
 ##1.4.1 (2012-07-30)
 * fix for non existent system signal for linux
 * cleanup of setup.py and requirements
