@@ -232,7 +232,10 @@ class ResQ(object):
             logger.debug("no arguments passed in.")
 
     def queues(self):
-        return self.redis.smembers("resque:queues") or []
+        return [sm.decode() for sm in self.redis.smembers("resque:queues")] or []
+
+    def workers(self):
+        return [w.decode() for w in self.redis.smembers("resque:workers")] or []
 
     def info(self):
         """Returns a dictionary of the current status of the pending jobs,
@@ -262,10 +265,6 @@ class ResQ(object):
 
     def __str__(self):
         return "PyRes Client connected to %s" % self.dsn
-
-    def workers(self):
-        from pyres.worker import Worker
-        return Worker.all(self)
 
     def working(self):
         from pyres.worker import Worker
