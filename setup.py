@@ -1,4 +1,13 @@
 from setuptools import setup, find_packages
+from pyres.compat import PY26
+
+install_requires=[
+        item for item in
+        open("requirements.txt").read().split("\n")
+        if item],
+
+if PY26:
+    install_requires.append('ordereddict')
 
 version='1.4.2'
 setup(
@@ -20,10 +29,7 @@ setup(
     pyres_scheduler=pyres.scripts:pyres_scheduler
     pyres_worker=pyres.scripts:pyres_worker
     """,
-    install_requires=[
-            item for item in
-            open("requirements.txt").read().split("\n")
-            if item],
+    install_requires=install_requires,
     classifiers = [
             'Development Status :: 4 - Beta',
             'Environment :: Console',
