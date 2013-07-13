@@ -257,7 +257,7 @@ class Worker(object):
             except Exception:
                 job_failed = True
                 self._handle_job_exception(job)
-            except SystemExit, e:
+            except SystemExit as e:
                 if e.code != 0:
                     job_failed = True
                     self._handle_job_exception(job)

@@ -1,6 +1,7 @@
 __version__ = '1.4.2'
 
 from redis import Redis
+from pyres.compat import string_types
 import pyres.json_parser as json
 
 import os
@@ -152,7 +153,7 @@ class ResQ(object):
         self.redis.rpush("resque:queue:%s" % queue, ResQ.encode(item))
 
     def pop(self, queues, timeout=10):
-        if isinstance(queues, basestring):
+        if isinstance(queues, string_types):
             queues = [queues]
         ret = self.redis.blpop(["resque:queue:%s" % q for q in queues],
                                timeout=timeout)
@@ -186,7 +187,7 @@ class ResQ(object):
         return self._redis
 
     def _set_redis(self, server):
-        if isinstance(server, basestring):
+        if isinstance(server, string_types):
             self.dsn = server
             address, _, db = server.partition('/')
             host, port = address.split(':')
@@ -346,7 +347,7 @@ class ResQ(object):
 
     @classmethod
     def decode(cls, item):
-        if isinstance(item, basestring):
+        if isinstance(item, string_types):
             ret = json.loads(item)
             return ret
         return None
