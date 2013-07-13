@@ -34,7 +34,8 @@ class RedisBackend(BaseBackend):
 
         ret_list = []
         for i in items:
-            failure = ResQ.decode(i)
+            converted = i.decode()
+            failure = ResQ.decode(converted)
             failure['redis_value'] = b64encode(i)
             ret_list.append(failure)
         return ret_list
