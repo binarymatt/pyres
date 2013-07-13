@@ -85,7 +85,7 @@ class Minion(multiprocessing.Process):
         try:
             self.working_on(job)
             job.perform()
-        except Exception, e:
+        except Exception as e:
             exceptionType, exceptionValue, exceptionTraceback = sys.exc_info()
             self.logger.error("%s failed: %s" % (job, e))
             job.fail(exceptionTraceback)

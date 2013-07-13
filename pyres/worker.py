@@ -2,8 +2,8 @@ import logging
 import signal
 import datetime, time
 import os, sys
-import json_parser as json
-import commands
+from pyres import json_parser as json
+import subprocess
 import random
 
 from pyres.exceptions import NoQueueError, JobError, TimeoutError, CrashError
@@ -334,7 +334,7 @@ class Worker(object):
         """Returns an array of all pids (as strings) of the workers on
         this machine.  Used when pruning dead workers."""
         cmd = "ps -A -o pid,command | grep pyres_worker | grep -v grep"
-        output = commands.getoutput(cmd)
+        output = subprocess.getoutput(cmd)
         if output:
             return map(lambda l: l.strip().split(' ')[0], output.split("\n"))
         else:

@@ -31,7 +31,7 @@ class CustomJSONDecoder(json.JSONDecoder):
             except ValueError:
                 return value
         elif isinstance(value, dict):
-            for k, v in value.iteritems():
+            for k, v in value.items():
                 new = self.convert(v)
                 if new != v:
                     value[k] = new
