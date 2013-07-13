@@ -17,6 +17,7 @@ if PY3: # pragma: no cover
     binary_type = bytes
     long = int
     import subprocess as commands
+
 else:
     string_types = basestring,
     integer_types = (int, long)

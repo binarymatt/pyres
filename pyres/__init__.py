@@ -159,7 +159,7 @@ class ResQ(object):
                                timeout=timeout)
         if ret:
             key, ret = ret
-            return key[13:], ResQ.decode(ret)  # trim "resque:queue:"
+            return key[13:].decode(), ResQ.decode(ret.decode())  # trim "resque:queue:"
         else:
             return None, None
 
