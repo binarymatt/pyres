@@ -14,7 +14,7 @@ class BasicMulti(object):
     queue = 'basic'
     @staticmethod
     def perform(name, age):
-        print 'name: %s, age: %s' % (name, age)
+        print('name: %s, age: %s' % (name, age))
 
 
 class ReturnAllArgsJob(object):
@@ -97,7 +97,7 @@ class LongObject(object):
     def perform(sleep_time):
         import time
         time.sleep(sleep_time)
-        print 'Done Sleeping'
+        print('Done Sleeping')
 
 def test_str_to_class():
     ret = str_to_class('tests.Basic')

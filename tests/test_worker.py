@@ -124,7 +124,7 @@ class WorkerTests(PyResTests):
         assert worker.processing() == ResQ.decode(self.redis.get('resque:worker:%s' % name))
         worker.done_working(job)
         w2 = Worker(['basic'])
-        print w2.job()
+        print(w2.job())
         assert w2.job() == {}
     
     def test_working(self):
