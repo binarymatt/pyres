@@ -8,7 +8,6 @@ except ImportError: # pragma: no cover
 
 # True if we are running on Python 3.
 PY3 = sys.version_info[0] == 3
-PY26 = sys.version_info[0:2] == (2,6)
 
 if PY3: # pragma: no cover
     string_types = str,

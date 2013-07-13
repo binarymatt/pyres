@@ -1,14 +1,13 @@
 import sys
 from setuptools import setup, find_packages
 from setuptools.command.test import test as TestCommand
-from pyres.compat import PY26
 
 requires=[
     item for item in
     open("requirements.txt").read().split("\n")
     if item]
 
-if PY26:
+if sys.version_info[0:2] == (2,6):
     requires.append('ordereddict')
 
 class PyTest(TestCommand):
