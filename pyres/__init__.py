@@ -312,7 +312,7 @@ class ResQ(object):
         size = 0
         length = self.redis.zcard('resque:delayed_queue_schedule')
         for i in self.redis.zrange('resque:delayed_queue_schedule',0,length):
-            size += self.delayed_timestamp_size(i)
+            size += self.delayed_timestamp_size(i.decode())
         return size
 
     def delayed_timestamp_size(self, timestamp):
@@ -326,7 +326,9 @@ class ResQ(object):
         timestamp = None
         if array:
             timestamp = array[0]
-        return timestamp
+
+        if timestamp:
+            return timestamp.decode()
 
     def next_item_for_timestamp(self, timestamp):
         #key = int(time.mktime(timestamp.timetuple()))
@@ -334,7 +336,7 @@ class ResQ(object):
         ret = self.redis.lpop(key)
         item = None
         if ret:
-            item = ResQ.decode(ret)
+            item = ResQ.decode(ret.decode())
         if self.redis.llen(key) == 0:
             self.redis.delete(key)
             self.redis.zrem('resque:delayed_queue_schedule', timestamp)
