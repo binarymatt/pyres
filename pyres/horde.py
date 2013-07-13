@@ -10,7 +10,7 @@ import logging
 import logging.handlers
 from pyres import ResQ, Stat, get_logging_handler, special_log_file
 from pyres.exceptions import NoQueueError
-from pyres.utils import OrderedDict
+from collections import OrderedDict
 from pyres.job import Job
 from pyres.compat import string_types
 import pyres.json_parser as json
