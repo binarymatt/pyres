@@ -1,5 +1,5 @@
-from base import BaseBackend
-from redis import RedisBackend
+from pyres.failure.base import BaseBackend
+from pyres.failure.redis import RedisBackend
 
 class MultipleBackend(BaseBackend):
     """Extends ``BaseBackend`` to provide support for delegating calls to multiple

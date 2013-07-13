@@ -4,7 +4,7 @@ from datetime import timedelta
 from pyres import ResQ, safe_str_to_class
 from pyres import failure
 from pyres.failure.redis import RedisBackend
-
+from pyres.compat import string_types
 
 class Job(object):
     """Every job on the ResQ is an instance of the *Job* class.
@@ -26,7 +26,7 @@ class Job(object):
     """
 
     safe_str_to_class = staticmethod(safe_str_to_class)
-    
+
     def __init__(self, queue, payload, resq, worker=None):
         self._queue = queue
         self._payload = payload
@@ -111,7 +111,7 @@ class Job(object):
         """This method provides a way to retry a job after a failure.
         If the jobclass defined by the payload containes a ``retry_every`` attribute then pyres
         will attempt to retry the job until successful or until timeout defined by ``retry_timeout`` on the payload class.
-        
+
         """
         retry_every = getattr(payload_class, 'retry_every', None)
         retry_timeout = getattr(payload_class, 'retry_timeout', 0)
@@ -133,7 +133,7 @@ class Job(object):
         that other workers will not pick it up.
 
         """
-        if isinstance(queues, basestring):
+        if isinstance(queues, string_types):
             queues = [queues]
         queue, payload = res.pop(queues, timeout=timeout)
         if payload:

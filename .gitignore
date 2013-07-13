@@ -4,3 +4,6 @@ build/
 *.egg-info
 logs/
 dist/
+*.swp
+*.swo
+.tox/

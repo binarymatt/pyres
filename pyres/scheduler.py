@@ -3,6 +3,7 @@ import time
 import logging
 
 from pyres import ResQ, __version__
+from pyres.compat import string_types
 
 logger = logging.getLogger(__name__)
 
@@ -14,7 +15,7 @@ class Scheduler(object):
         >>> scheduler = Scheduler('localhost:6379')
         """
         self._shutdown = False
-        if isinstance(server, basestring):
+        if isinstance(server, string_types):
             self.resq = ResQ(server=server, password=password)
         elif isinstance(server, ResQ):
             self.resq = server

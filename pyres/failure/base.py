@@ -17,10 +17,14 @@ class BaseBackend(object):
 
     """
     def __init__(self, exp, queue, payload, worker=None):
-        excc, _, tb = sys.exc_info()
+        excc = sys.exc_info()[0]
 
         self._exception = excc
-        self._traceback = traceback.format_exc()
+        try:
+            self._traceback = traceback.format_exc()
+        except AttributeError:
+            self._traceback = None
+
         self._worker = worker
         self._queue = queue
         self._payload = payload

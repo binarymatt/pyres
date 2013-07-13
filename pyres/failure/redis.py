@@ -1,7 +1,7 @@
 import datetime, time
 from base64 import b64encode
 
-from base import BaseBackend
+from .base import BaseBackend
 from pyres import ResQ
 
 class RedisBackend(BaseBackend):
