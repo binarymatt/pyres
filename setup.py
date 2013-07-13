@@ -1,13 +1,27 @@
+import sys
 from setuptools import setup, find_packages
+from setuptools.command.test import test as TestCommand
 from pyres.compat import PY26
 
-install_requires=[
-        item for item in
-        open("requirements.txt").read().split("\n")
-        if item],
+requires=[
+    item for item in
+    open("requirements.txt").read().split("\n")
+    if item]
 
 if PY26:
-    install_requires.append('ordereddict')
+    requires.append('ordereddict')
+
+class PyTest(TestCommand):
+    def finalize_options(self):
+        TestCommand.finalize_options(self)
+        self.test_args = []
+        self.test_suite = True
+
+    def run_tests(self):
+        #import here, cause outside the eggs aren't loaded
+        import pytest
+        result = pytest.main(self.test_args)
+        sys.exit(result)
 
 version='1.4.2'
 setup(
@@ -29,7 +43,9 @@ setup(
     pyres_scheduler=pyres.scripts:pyres_scheduler
     pyres_worker=pyres.scripts:pyres_worker
     """,
-    install_requires=install_requires,
+    tests_require=requires + ['pytest',],
+    cmdclass={'test': PyTest},
+    install_requires=requires,
     classifiers = [
             'Development Status :: 4 - Beta',
             'Environment :: Console',
