@@ -5,3 +5,5 @@ build/
 logs/
 dist/
 *.swp
+*.swo
+.tox/
