@@ -9,7 +9,7 @@ import random
 from pyres.exceptions import NoQueueError, JobError, TimeoutError, CrashError
 from pyres.job import Job
 from pyres import ResQ, Stat, __version__
-
+from pyres.compat import string_types
 
 
 logger = logging.getLogger(__name__)
@@ -34,7 +34,7 @@ class Worker(object):
         self.hostname = os.uname()[1]
         self.timeout = timeout
 
-        if isinstance(server, basestring):
+        if isinstance(server, string_types):
             self.resq = ResQ(server=server, password=password)
         elif isinstance(server, ResQ):
             self.resq = server
@@ -350,7 +350,7 @@ class Worker(object):
 
     @classmethod
     def all(cls, host="localhost:6379"):
-        if isinstance(host,basestring):
+        if isinstance(host,string_types):
             resq = ResQ(host)
         elif isinstance(host, ResQ):
             resq = host
@@ -359,7 +359,7 @@ class Worker(object):
 
     @classmethod
     def working(cls, host):
-        if isinstance(host, basestring):
+        if isinstance(host, string_types):
             resq = ResQ(host)
         elif isinstance(host, ResQ):
             resq = host
