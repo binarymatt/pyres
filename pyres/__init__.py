@@ -256,7 +256,7 @@ class ResQ(object):
         }
 
     def keys(self):
-        return [key.replace('resque:','')
+        return [key.decode().replace('resque:','')
                 for key in self.redis.keys('resque:*')]
 
     def reserve(self, queues):
