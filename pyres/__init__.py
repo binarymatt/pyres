@@ -159,7 +159,7 @@ class ResQ(object):
                                timeout=timeout)
         if ret:
             key, ret = ret
-            return key[13:].decode(), ResQ.decode(ret.decode())  # trim "resque:queue:"
+            return key[13:].decode(), ResQ.decode(ret)  # trim "resque:queue:"
         else:
             return None, None
 
@@ -336,7 +336,7 @@ class ResQ(object):
         ret = self.redis.lpop(key)
         item = None
         if ret:
-            item = ResQ.decode(ret.decode())
+            item = ResQ.decode(ret)
         if self.redis.llen(key) == 0:
             self.redis.delete(key)
             self.redis.zrem('resque:delayed_queue_schedule', timestamp)
@@ -348,10 +348,10 @@ class ResQ(object):
 
     @classmethod
     def decode(cls, item):
-        if isinstance(item, string_types):
-            ret = json.loads(item)
-            return ret
-        return None
+        if not isinstance(item, string_types):
+            item = item.decode()
+        ret = json.loads(item)
+        return ret
 
     @classmethod
     def _enqueue(cls, klass, *args):
