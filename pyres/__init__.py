@@ -1,6 +1,7 @@
 __version__ = '1.4.2'
 
 from redis import Redis
+from pyres.compat import string_types
 import pyres.json_parser as json
 
 import os
@@ -152,13 +153,13 @@ class ResQ(object):
         self.redis.rpush("resque:queue:%s" % queue, ResQ.encode(item))
 
     def pop(self, queues, timeout=10):
-        if isinstance(queues, basestring):
+        if isinstance(queues, string_types):
             queues = [queues]
         ret = self.redis.blpop(["resque:queue:%s" % q for q in queues],
                                timeout=timeout)
         if ret:
             key, ret = ret
-            return key[13:], ResQ.decode(ret)  # trim "resque:queue:"
+            return key[13:].decode(), ResQ.decode(ret)  # trim "resque:queue:"
         else:
             return None, None
 
@@ -186,7 +187,7 @@ class ResQ(object):
         return self._redis
 
     def _set_redis(self, server):
-        if isinstance(server, basestring):
+        if isinstance(server, string_types):
             self.dsn = server
             address, _, db = server.partition('/')
             host, port = address.split(':')
@@ -231,7 +232,10 @@ class ResQ(object):
             logger.debug("no arguments passed in.")
 
     def queues(self):
-        return self.redis.smembers("resque:queues") or []
+        return [sm.decode() for sm in self.redis.smembers("resque:queues")] or []
+
+    def workers(self):
+        return [w.decode() for w in self.redis.smembers("resque:workers")] or []
 
     def info(self):
         """Returns a dictionary of the current status of the pending jobs,
@@ -252,7 +256,7 @@ class ResQ(object):
         }
 
     def keys(self):
-        return [key.replace('resque:','')
+        return [key.decode().replace('resque:','')
                 for key in self.redis.keys('resque:*')]
 
     def reserve(self, queues):
@@ -261,10 +265,6 @@ class ResQ(object):
 
     def __str__(self):
         return "PyRes Client connected to %s" % self.dsn
-
-    def workers(self):
-        from pyres.worker import Worker
-        return Worker.all(self)
 
     def working(self):
         from pyres.worker import Worker
@@ -312,7 +312,7 @@ class ResQ(object):
         size = 0
         length = self.redis.zcard('resque:delayed_queue_schedule')
         for i in self.redis.zrange('resque:delayed_queue_schedule',0,length):
-            size += self.delayed_timestamp_size(i)
+            size += self.delayed_timestamp_size(i.decode())
         return size
 
     def delayed_timestamp_size(self, timestamp):
@@ -326,7 +326,9 @@ class ResQ(object):
         timestamp = None
         if array:
             timestamp = array[0]
-        return timestamp
+
+        if timestamp:
+            return timestamp.decode()
 
     def next_item_for_timestamp(self, timestamp):
         #key = int(time.mktime(timestamp.timetuple()))
@@ -346,10 +348,10 @@ class ResQ(object):
 
     @classmethod
     def decode(cls, item):
-        if isinstance(item, basestring):
-            ret = json.loads(item)
-            return ret
-        return None
+        if not isinstance(item, string_types):
+            item = item.decode()
+        ret = json.loads(item)
+        return ret
 
     @classmethod
     def _enqueue(cls, klass, *args):

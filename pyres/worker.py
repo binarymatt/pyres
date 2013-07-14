@@ -2,14 +2,14 @@ import logging
 import signal
 import datetime, time
 import os, sys
-import json_parser as json
-import commands
+from pyres import json_parser as json
+from pyres.compat import commands
 import random
 
 from pyres.exceptions import NoQueueError, JobError, TimeoutError, CrashError
 from pyres.job import Job
 from pyres import ResQ, Stat, __version__
-
+from pyres.compat import string_types
 
 
 logger = logging.getLogger(__name__)
@@ -34,7 +34,7 @@ class Worker(object):
         self.hostname = os.uname()[1]
         self.timeout = timeout
 
-        if isinstance(server, basestring):
+        if isinstance(server, string_types):
             self.resq = ResQ(server=server, password=password)
         elif isinstance(server, ResQ):
             self.resq = server
@@ -257,7 +257,7 @@ class Worker(object):
             except Exception:
                 job_failed = True
                 self._handle_job_exception(job)
-            except SystemExit, e:
+            except SystemExit as e:
                 if e.code != 0:
                     job_failed = True
                     self._handle_job_exception(job)
@@ -350,16 +350,16 @@ class Worker(object):
 
     @classmethod
     def all(cls, host="localhost:6379"):
-        if isinstance(host,basestring):
+        if isinstance(host,string_types):
             resq = ResQ(host)
         elif isinstance(host, ResQ):
             resq = host
 
-        return [Worker.find(w,resq) for w in resq.redis.smembers('resque:workers') or []]
+        return [Worker.find(w,resq) for w in resq.workers() or []]
 
     @classmethod
     def working(cls, host):
-        if isinstance(host, basestring):
+        if isinstance(host, string_types):
             resq = ResQ(host)
         elif isinstance(host, ResQ):
             resq = host

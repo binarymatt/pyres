@@ -1,4 +1,5 @@
 from datetime import datetime
+from pyres.compat import string_types
 
 try:
     #import simplejson as json
@@ -24,13 +25,13 @@ class CustomJSONDecoder(json.JSONDecoder):
         return self.convert(decoded)
 
     def convert(self, value):
-        if isinstance(value, basestring) and value.startswith(DATE_PREFIX):
+        if isinstance(value, string_types) and value.startswith(DATE_PREFIX):
             try:
                 return datetime.strptime(value[len(DATE_PREFIX):], DATE_FORMAT)
             except ValueError:
                 return value
         elif isinstance(value, dict):
-            for k, v in value.iteritems():
+            for k, v in value.items():
                 new = self.convert(v)
                 if new != v:
                     value[k] = new
