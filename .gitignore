@@ -1,6 +1,7 @@
 *.pyc
 build/
 .coverage
+*.report
 *.egg-info
 logs/
 dist/
