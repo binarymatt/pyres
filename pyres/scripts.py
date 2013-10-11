@@ -13,7 +13,8 @@ def pyres_manager():
     parser = OptionParser(usage=usage)
     #parser.add_option("-q", dest="queue_list")
     parser.add_option("--host", dest="host", default="localhost")
-    parser.add_option("--port",dest="port",type="int", default=6379)
+    parser.add_option("--port", dest="port",type="int", default=6379)
+    parser.add_option("--password", dest="password", default=None)
     parser.add_option("-i", '--interval', dest='interval', default=None, help='the default time interval to sleep between runs')
     parser.add_option('-l', '--log-level', dest='log_level', default='info', help='log level.  Valid values are "debug", "info", "warning", "error", "critical", in decreasing order of verbosity. Defaults to "info" if parameter not specified.')
     parser.add_option("--pool", type="int", dest="pool_size", default=1, help="Number of minions to spawn under the manager.")
@@ -36,7 +37,7 @@ def pyres_manager():
 
     queues = args[0].split(',')
     server = '%s:%s' % (options.host,options.port)
-    Khan.run(pool_size=options.pool_size, queues=queues, server=server, logging_level=log_level, log_file=options.logfile)
+    Khan.run(pool_size=options.pool_size, queues=queues, server=server, password=password, logging_level=log_level, log_file=options.logfile)
 
 
 def pyres_scheduler():
@@ -44,7 +45,8 @@ def pyres_scheduler():
     parser = OptionParser(usage=usage)
     #parser.add_option("-q", dest="queue_list")
     parser.add_option("--host", dest="host", default="localhost")
-    parser.add_option("--port",dest="port",type="int", default=6379)
+    parser.add_option("--port", dest="port",type="int", default=6379)
+    parser.add_option("--password", dest="password", default=None)
     parser.add_option('-l', '--log-level', dest='log_level', default='info', help='log level.  Valid values are "debug", "info", "warning", "error", "critical", in decreasing order of verbosity. Defaults to "info" if parameter not specified.')
     parser.add_option('-f', dest='logfile', help='If present, a logfile will be used.  "stderr", "stdout", and "syslog" are all special values.')
     parser.add_option('-p', dest='pidfile', help='If present, a pidfile will be used.')
@@ -54,7 +56,7 @@ def pyres_scheduler():
     setup_logging(procname="pyres_scheduler", log_level=log_level, filename=options.logfile)
     setup_pidfile(options.pidfile)
     server = '%s:%s' % (options.host, options.port)
-    Scheduler.run(server)
+    Scheduler.run(server, password)
 
 
 def pyres_worker():
@@ -62,7 +64,8 @@ def pyres_worker():
     parser = OptionParser(usage=usage)
 
     parser.add_option("--host", dest="host", default="localhost")
-    parser.add_option("--port",dest="port",type="int", default=6379)
+    parser.add_option("--port", dest="port",type="int", default=6379)
+    parser.add_option("--password", dest="password", default=None)
     parser.add_option("-i", '--interval', dest='interval', default=None, help='the default time interval to sleep between runs')
     parser.add_option('-l', '--log-level', dest='log_level', default='info', help='log level.  Valid values are "debug", "info", "warning", "error", "critical", in decreasing order of verbosity. Defaults to "info" if parameter not specified.')
     parser.add_option('-f', dest='logfile', help='If present, a logfile will be used.  "stderr", "stdout", and "syslog" are all special values.')
@@ -86,4 +89,4 @@ def pyres_worker():
 
     queues = args[0].split(',')
     server = '%s:%s' % (options.host,options.port)
-    Worker.run(queues, server, interval, timeout=timeout)
+    Worker.run(queues, server, password, interval, timeout=timeout)
