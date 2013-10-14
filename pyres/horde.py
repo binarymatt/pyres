@@ -373,8 +373,8 @@ class Khan(object):
         return '%s:%s:%s' % (hostname, self.pid, self.pool_size)
 
     @classmethod
-    def run(cls, pool_size=5, queues=[], server='localhost:6379', password=None, logging_level=logging.INFO, log_file=None):
-        worker = cls(pool_size=pool_size, queues=queues, server=server, password=password, logging_level=logging_level, log_file=log_file)
+    def run(cls, pool_size=5, queues=[], server='localhost:6379', password=None, interval=2, logging_level=logging.INFO, log_file=None):
+        worker = cls(pool_size=pool_size, queues=queues, server=server, password=password, interval=interval, logging_level=logging_level, log_file=log_file)
         worker.work()
 
 #if __name__ == "__main__":

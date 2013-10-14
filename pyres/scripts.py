@@ -38,7 +38,7 @@ def pyres_manager():
     queues = args[0].split(',')
     server = '%s:%s' % (options.host,options.port)
     password = options.password
-    Khan.run(pool_size=options.pool_size, queues=queues, server=server, password=password, logging_level=log_level, log_file=options.logfile)
+    Khan.run(pool_size=options.pool_size, queues=queues, server=server, password=password, interval=interval, logging_level=log_level, log_file=options.logfile)
 
 
 def pyres_scheduler():
