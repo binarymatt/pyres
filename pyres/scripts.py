@@ -19,10 +19,10 @@ def pyres_manager():
     parser.add_option("--minions_interval", dest='minions_interval', default=None, help='the default time interval to sleep between runs - minions')
     parser.add_option('-l', '--log-level', dest='log_level', default='info', help='log level.  Valid values are "debug", "info", "warning", "error", "critical", in decreasing order of verbosity. Defaults to "info" if parameter not specified.')
     parser.add_option("--pool", type="int", dest="pool_size", default=1, help="Number of minions to spawn under the manager.")
-    parser.add_option("-j", "--process_max_jobs", dest="max_jobs", default=None, help='how many jobs should be processed on worker run.')
+    parser.add_option("-j", "--process_max_jobs", dest="max_jobs", type=int, default=0, help='how many jobs should be processed on worker run.')
     parser.add_option('-f', dest='logfile', help='If present, a logfile will be used.  "stderr", "stdout", and "syslog" are all special values.')
     parser.add_option('-p', dest='pidfile', help='If present, a pidfile will be used.')
-    parser.add_option("--concat_minions_log", action="store_true", dest="concat_minions_log", help='Concat all minions logs on same file.')
+    parser.add_option("--concat_minions_logs", action="store_true", dest="concat_minions_logs", help='Concat all minions logs on same file.')
     (options,args) = parser.parse_args()
 
     if len(args) != 1:
@@ -31,7 +31,7 @@ def pyres_manager():
 
     log_level = getattr(logging, options.log_level.upper(), 'INFO')
     #logging.basicConfig(level=log_level, format="%(asctime)s: %(levelname)s: %(message)s")
-    concat_minions_log = options.concat_minions_log
+    concat_minions_logs = options.concat_minions_logs
     setup_pidfile(options.pidfile)
 
     manager_interval = options.manager_interval
@@ -47,7 +47,7 @@ def pyres_manager():
     password = options.password
     Khan.run(pool_size=options.pool_size, queues=queues, server=server, password=password, interval=manager_interval,
             logging_level=log_level, log_file=options.logfile, minions_interval=minions_interval,
-            concat_minions_log=concat_minions_log, max_jobs=options.max_jobs)
+            concat_minions_logs=concat_minions_logs, max_jobs=options.max_jobs)
 
 
 def pyres_scheduler():
