@@ -15,7 +15,8 @@ def pyres_manager():
     parser.add_option("--host", dest="host", default="localhost")
     parser.add_option("--port", dest="port",type="int", default=6379)
     parser.add_option("--password", dest="password", default=None)
-    parser.add_option("-i", '--interval', dest='interval', default=None, help='the default time interval to sleep between runs')
+    parser.add_option("-i", '--interval', dest='manager_interval', default=None, help='the default time interval to sleep between runs - manager')
+    parser.add_option("--minions_interval", dest='minions_interval', default=None, help='the default time interval to sleep between runs - minions')
     parser.add_option('-l', '--log-level', dest='log_level', default='info', help='log level.  Valid values are "debug", "info", "warning", "error", "critical", in decreasing order of verbosity. Defaults to "info" if parameter not specified.')
     parser.add_option("--pool", type="int", dest="pool_size", default=1, help="Number of minions to spawn under the manager.")
     parser.add_option('-f', dest='logfile', help='If present, a logfile will be used.  "stderr", "stdout", and "syslog" are all special values.')
@@ -31,14 +32,19 @@ def pyres_manager():
 
     setup_pidfile(options.pidfile)
 
-    interval = options.interval
-    if interval is not None:
-        interval = float(interval)
+    manager_interval = options.manager_interval
+    if manager_interval is not None:
+        manager_interval = float(manager_interval)
+
+    minions_interval = options.minions_interval
+    if minions_interval is not None:
+        minions_interval = float(minions_interval) 
 
     queues = args[0].split(',')
     server = '%s:%s' % (options.host,options.port)
     password = options.password
-    Khan.run(pool_size=options.pool_size, queues=queues, server=server, password=password, interval=interval, logging_level=log_level, log_file=options.logfile)
+    Khan.run(pool_size=options.pool_size, queues=queues, server=server, password=password, interval=interval,
+            logging_level=log_level, log_file=options.logfile, minions_interval=minions_interval)
 
 
 def pyres_scheduler():

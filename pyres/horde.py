@@ -33,7 +33,7 @@ def setup_logging(procname, namespace='', log_level=logging.INFO, log_file=None)
     return logger
 
 class Minion(multiprocessing.Process):
-    def __init__(self, queues, server, password, log_level=logging.INFO, log_path=None):
+    def __init__(self, queues, server, password, log_level=logging.INFO, log_path=None, interval=5):
         multiprocessing.Process.__init__(self, name='Minion')
 
         #format = '%(asctime)s %(levelname)s %(filename)s-%(lineno)d: %(message)s'
@@ -48,6 +48,7 @@ class Minion(multiprocessing.Process):
         self.hostname = os.uname()[1]
         self.server = server
         self.password = password
+        self.interval = interval
 
         self.log_level = log_level
         self.log_path = log_path
@@ -142,6 +143,7 @@ class Minion(multiprocessing.Process):
             if job:
                 self.process(job)
             else:
+                self.logger.debug('minion sleeping for: %i secs' % interval)
                 time.sleep(interval)
         self.unregister_minion()
 
@@ -167,7 +169,7 @@ class Minion(multiprocessing.Process):
             raise Exception("Bad server argument")
 
 
-        self.work()
+        self.work(self.interval)
         #while True:
         #    job = self.q.get()
         #    print 'pid: %s is running %s ' % (self.pid,job)
@@ -179,7 +181,8 @@ class Khan(object):
         'REMOVE': '_remove_minion',
         'SHUTDOWN': '_schedule_shutdown'
     }
-    def __init__(self, pool_size=5, queues=[], server='localhost:6379', password=None, logging_level=logging.INFO, log_file=None):
+    def __init__(self, pool_size=5, queues=[], server='localhost:6379', password=None, logging_level=logging.INFO,
+            log_file=None, minions_interval=5):
         #super(Khan,self).__init__(queues=queues,server=server,password=password)
         self._shutdown = False
         self.pool_size = int(pool_size)
@@ -193,6 +196,7 @@ class Khan(object):
         self.password = password
         self.logging_level = logging_level
         self.log_file = log_file
+        self.minions_interval = minions_interval
 
         #self._workers = list()
 
@@ -307,7 +311,8 @@ class Khan(object):
                 log_path = os.path.dirname(self.log_file)
         else:
             log_path = None
-        m = Minion(self.queues, self.server, self.password, log_level=self.logging_level, log_path=log_path)
+        m = Minion(self.queues, self.server, self.password, interval=self.minions_interval,
+                log_level=self.logging_level, log_path=log_path)
         m.start()
         self._workers[m.pid] = m
         if hasattr(self,'logger'):
@@ -365,6 +370,7 @@ class Khan(object):
                 break
             #get job
             else:
+                self.logger.debug('manager sleeping for: %i secs' % interval)
                 time.sleep(interval)
         self.unregister_khan()
 
@@ -373,8 +379,10 @@ class Khan(object):
         return '%s:%s:%s' % (hostname, self.pid, self.pool_size)
 
     @classmethod
-    def run(cls, pool_size=5, queues=[], server='localhost:6379', password=None, interval=2, logging_level=logging.INFO, log_file=None):
-        worker = cls(pool_size=pool_size, queues=queues, server=server, password=password, logging_level=logging_level, log_file=log_file)
+    def run(cls, pool_size=5, queues=[], server='localhost:6379', password=None, interval=2,
+            logging_level=logging.INFO, log_file=None, minions_interval=5):
+        worker = cls(pool_size=pool_size, queues=queues, server=server, password=password, logging_level=logging_level,
+                log_file=log_file, minions_interval=minions_interval)
         worker.work(interval=interval)
 
 #if __name__ == "__main__":
