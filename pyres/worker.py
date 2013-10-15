@@ -341,8 +341,8 @@ class Worker(object):
             return []
 
     @classmethod
-    def run(cls, queues, server="localhost:6379", interval=None, timeout=None):
-        worker = cls(queues=queues, server=server, timeout=timeout)
+    def run(cls, queues, server="localhost:6379", password=None, interval=None, timeout=None):
+        worker = cls(queues=queues, server=server, password=password, timeout=timeout)
         if interval is not None:
             worker.work(interval)
         else:
