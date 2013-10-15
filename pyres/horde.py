@@ -33,7 +33,8 @@ def setup_logging(procname, namespace='', log_level=logging.INFO, log_file=None)
     return logger
 
 class Minion(multiprocessing.Process):
-    def __init__(self, queues, server, password, log_level=logging.INFO, log_path=None, interval=5):
+    def __init__(self, queues, server, password, log_level=logging.INFO, log_path=None, interval=5, concact_logs=False, 
+                 max_jobs=None):
         multiprocessing.Process.__init__(self, name='Minion')
 
         #format = '%(asctime)s %(levelname)s %(filename)s-%(lineno)d: %(message)s'
@@ -53,6 +54,7 @@ class Minion(multiprocessing.Process):
         self.log_level = log_level
         self.log_path = log_path
         self.log_file = None
+        self.concact_logs = concact_logs
 
     def prune_dead_workers(self):
         pass
@@ -133,16 +135,24 @@ class Minion(multiprocessing.Process):
     def work(self, interval=5):
 
         self.startup()
+        cur_job = 0
         while True:
             setproctitle('pyres_minion:%s: waiting for job on: %s' % (os.getppid(),self.queues))
             self.logger.info('waiting on job')
             if self._shutdown:
                 self.logger.info('shutdown scheduled')
                 break
+            if self.max_jobs and self.max_jobs > cur_job:
+                self.logger.debug('max_jobs reached on %s: %s' % (os.getppid(), cur_job))
+                self.logger.debug('minion sleeping for: %i secs' % interval)
+                time.sleep(interval)
+                cur_job = 0
             job = self.reserve()
             if job:
                 self.process(job)
+                cur_job = cur_job + 1
             else:
+                cur_job = 0
                 self.logger.debug('minion sleeping for: %i secs' % interval)
                 time.sleep(interval)
         self.unregister_minion()
@@ -156,6 +166,8 @@ class Minion(multiprocessing.Process):
         if self.log_path:
             if special_log_file(self.log_path):
                 self.log_file = self.log_path
+            elif self.concat_logs:
+                self.log_file = os.path.join(self.log_path, 'minion.log')
             else:
                 self.log_file = os.path.join(self.log_path, 'minion-%s.log' % self.pid)
         namespace = 'minion:%s' % self.pid
@@ -182,7 +194,7 @@ class Khan(object):
         'SHUTDOWN': '_schedule_shutdown'
     }
     def __init__(self, pool_size=5, queues=[], server='localhost:6379', password=None, logging_level=logging.INFO,
-            log_file=None, minions_interval=5):
+            log_file=None, minions_interval=5, minions_concact_logs=False, max_jobs=None):
         #super(Khan,self).__init__(queues=queues,server=server,password=password)
         self._shutdown = False
         self.pool_size = int(pool_size)
@@ -197,6 +209,8 @@ class Khan(object):
         self.logging_level = logging_level
         self.log_file = log_file
         self.minions_interval = minions_interval
+        self.minions_concact_logs = minions_concact_logs
+        self.max_jobs = max_jobs
 
         #self._workers = list()
 
@@ -312,7 +326,8 @@ class Khan(object):
         else:
             log_path = None
         m = Minion(self.queues, self.server, self.password, interval=self.minions_interval,
-                log_level=self.logging_level, log_path=log_path)
+                   log_level=self.logging_level, log_path=log_path, concact_logs=self.minions_concact_logs, 
+                   max_jobs=self.max_jobs)
         m.start()
         self._workers[m.pid] = m
         if hasattr(self,'logger'):
@@ -380,9 +395,10 @@ class Khan(object):
 
     @classmethod
     def run(cls, pool_size=5, queues=[], server='localhost:6379', password=None, interval=2,
-            logging_level=logging.INFO, log_file=None, minions_interval=5):
+            logging_level=logging.INFO, log_file=None, minions_interval=5, minions_concact_logs=False, max_jobs=None):
         worker = cls(pool_size=pool_size, queues=queues, server=server, password=password, logging_level=logging_level,
-                log_file=log_file, minions_interval=minions_interval)
+                     log_file=log_file, minions_interval=minions_interval, minions_concact_logs=minions_concact_logs,
+                     max_jobs=max_jobs)
         worker.work(interval=interval)
 
 #if __name__ == "__main__":
