@@ -121,14 +121,6 @@ class ResQ(object):
 
         ``password`` -- The password, if required, of your Redis server. Default is "None".
 
-        ``timeout`` -- The timeout keyword is in the signature, but is unused. Default is "None".
-
-        ``retry_connection`` -- This keyword is in the signature but is deprecated. Default is "True".
-
-
-    Both ``timeout`` and ``retry_connection`` will be removed as the python-redis client
-    no longer uses them.
-
     Example usage::
 
         >>> from pyres import *
