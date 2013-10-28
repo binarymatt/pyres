@@ -314,7 +314,7 @@ class ResQ(object):
     def next_delayed_timestamp(self):
         key = int(time.mktime(ResQ._current_time().timetuple()))
         array = self.redis.zrangebyscore('resque:delayed_queue_schedule',
-                                         '-inf', key)
+                                         '-inf', key, start=0, num=1)
         timestamp = None
         if array:
             timestamp = array[0]
