@@ -1,4 +1,4 @@
-__version__ = '1.4.2'
+__version__ = '1.5'
 
 from redis import Redis
 from pyres.compat import string_types
