@@ -9,3 +9,5 @@ install:
   - python setup.py install
 # command to run tests
 script: python setup.py test
+services:
+  - redis-server
