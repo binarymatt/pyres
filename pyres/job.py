@@ -82,7 +82,6 @@ class Job(object):
                 payload_class.before_perform(metadata)
             return payload_class.perform(*args)
         except Exception as e:
-            check_after = False
             metadata["failed"] = True
             metadata["exception"] = e
             if not self.retry(payload_class, args):
@@ -93,8 +92,10 @@ class Job(object):
                 logging.exception("Retry scheduled after error in %s", self._payload)
         finally:
             after_perform = getattr(payload_class, "after_perform", None)
-            if after_perform and check_after:
+
+            if after_perform:
                 payload_class.after_perform(metadata)
+
             delattr(payload_class,'resq')
 
     def fail(self, exception):
