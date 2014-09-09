@@ -96,6 +96,19 @@ def safe_str_to_class(s):
     else:
         raise ImportError('')
 
+def safe_str_to_class_v2(s):
+    """Helper function to map string class names to module classes."""
+    lst = s.split(".")
+    klass = lst[-1]
+    mod_list = lst[:-1]
+    module = ".".join(mod_list)
+    import sys
+    mod = sys.modules.get(module)
+    if hasattr(mod, klass):
+        return getattr(mod, klass)
+    else:
+        raise ImportError('')
+
 def str_to_class(s):
     """Alternate helper function to map string class names to module classes."""
     lst = s.split(".")

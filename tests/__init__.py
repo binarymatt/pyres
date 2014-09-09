@@ -108,9 +108,13 @@ def test_str_to_class():
 class ImportTest(unittest.TestCase):
     def test_safe_str_to_class(self):
         from pyres import safe_str_to_class
+        from pyres import safe_str_to_class_v2
+        from tests.a import b
         assert safe_str_to_class('tests.Basic') == Basic
         self.assertRaises(ImportError, safe_str_to_class, 'test.Mine')
         self.assertRaises(ImportError, safe_str_to_class, 'tests.World')
+        self.assertRaises(ImportError, safe_str_to_class, '{}.{}'.format(b.__module__, b.__name__))
+        self.assertEqual(safe_str_to_class_v2('{}.{}'.format(b.__module__, b.__name__)), b)
 
 
 class PyResTests(unittest.TestCase):
