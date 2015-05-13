@@ -2,6 +2,14 @@ import unittest
 import os
 from pyres import ResQ, str_to_class
 
+class tests(object):
+    queue = 'basic'
+
+    @staticmethod
+    def perform(name):
+        s = "name:%s" % name
+        return s
+
 class Basic(object):
     queue = 'basic'
 
@@ -111,7 +119,9 @@ class ImportTest(unittest.TestCase):
         assert safe_str_to_class('tests.Basic') == Basic
         self.assertRaises(ImportError, safe_str_to_class, 'test.Mine')
         self.assertRaises(ImportError, safe_str_to_class, 'tests.World')
-
+        # test that we'll use the class name as a module name if no
+        # module name is provided (for Ruby compatibility)
+        assert safe_str_to_class('tests') == tests
 
 class PyResTests(unittest.TestCase):
     def setUp(self):

@@ -90,6 +90,15 @@ def safe_str_to_class(s):
     klass = lst[-1]
     mod_list = lst[:-1]
     module = ".".join(mod_list)
+
+    # ruby compatibility kludge: resque sends just a class name and
+    # not a module name so if I use resque to queue a ruby class
+    # called "Worker" then pyres will throw a "ValueError: Empty
+    # module name" exception.  To avoid that, if there's no module in
+    # the json then we'll use the classname as a module name.
+    if not module:
+        module = klass
+
     mod = my_import(module)
     if hasattr(mod, klass):
         return getattr(mod, klass)
