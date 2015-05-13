@@ -1,7 +1,7 @@
 Example
 =========
 
-Let's take a real wold example of a blog where comments need to be checked for
+Let's take a real world example of a blog where comments need to be checked for
 spam. When the comment is saved in the database, we create a job in the
 queue with that comment data. Let's take a django model in this case.
 
@@ -33,7 +33,9 @@ You can convert your existing class to be compatible with pyres. All you need
 to do is add a :attr:`queue` attribute and define a :meth:`perform` method
 on the class.
 
-To insert a job into the queue you need to do something like this::
+To insert a job into the queue you need to do something like this:
+
+.. code-block:: python
 
     >>> from pyres import ResQ
     >>> r = ResQ()
@@ -46,5 +48,4 @@ In the **scripts** folder there is an executable::
 
 
 Just pass a comma separated list of queues the worker should poll.
-
 
