@@ -2,28 +2,34 @@ from pyres.failure.base import BaseBackend
 from pyres.failure.redis import RedisBackend
 
 class MultipleBackend(BaseBackend):
-    """Extends ``BaseBackend`` to provide support for delegating calls to multiple
-    backends. Queries are delegated to the first backend in the list. Defaults to
-    only the RedisBackend.
+    """Extends :class:`BaseBackend` to provide support for delegating calls
+    to multiple backends.
 
-    To use:
+    .. note:: Queries are delegated to the first backend in the list
 
-    from pyres import failure
+    .. note:: Defaults to only the RedisBackend
 
-    from pyres.failure.base import BaseBackend
-    from pyres.failure.multiple import MultipleBackend
-    from pyres.failure.redis import RedisBackend
+    To use::
 
-    class CustomBackend(BaseBackend):
-        def save(self, resq):
-            print('Custom backend')
+        from pyres import failure
 
-    failure.backend = MultipleBackend
-    failure.backend.classes = [RedisBackend, CustomBackend]
+        from pyres.failure.base import BaseBackend
+        from pyres.failure.multiple import MultipleBackend
+        from pyres.failure.redis import RedisBackend
+
+        class CustomBackend(BaseBackend):
+            def save(self, resq):
+                print('Custom backend')
+
+        failure.backend = MultipleBackend
+        failure.backend.classes = [RedisBackend, CustomBackend]
     """
     classes = []
 
     def __init__(self, *args):
+        """Sets up the class to use a :class:`RedisBackend` by default
+        """
+
         if not self.classes:
             self.classes = [RedisBackend]
 
@@ -32,18 +38,52 @@ class MultipleBackend(BaseBackend):
 
     @classmethod
     def count(cls, resq):
+        """ Returns the result of a `count` call to the first backend
+
+        :param resq: The redis queue to count on
+        :type resq: :class:`ResQ`
+
+        :returns: The number of items in the backend
+        :rtype: int
+        """
         first = MultipleBackend.classes[0]
         return first.count(resq)
 
     @classmethod
     def all(cls, resq, start=0, count=1):
+        """ Returns the result of an `all` call to the first backend
+
+        :param resq: The redis queue to count on
+        :type resq: :class:`ResQ`
+        :param start: The location to start fetching items
+        :type start: int
+        :param count: The number of items to fetch
+        :type count:
+
+        :returns: A list of items from the backend
+        :rtype: `list` of `dict`
+        """
         first = MultipleBackend.classes[0]
         return first.all(resq, start, count)
 
     @classmethod
     def clear(cls, resq):
+        """ Returns the result of a `clear` call to the first backend
+
+        :param resq: The redis queue to clear on
+        :type resq: :class:`ResQ`
+
+        :returns: The number of items cleared from the backend
+        :rtype: int
+        """
         first = MultipleBackend.classes[0]
         return first.clear(resq)
 
     def save(self, resq=None):
+        """ Calls save on all of the backends
+
+        :param resq: The redis queue to save to
+        :type resq: :class:`ResQ`
+
+        """
         map(lambda x: x.save(resq), self.backends)

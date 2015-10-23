@@ -7,27 +7,25 @@ from pyres.failure.redis import RedisBackend
 from pyres.compat import string_types
 
 class Job(object):
-    """Every job on the ResQ is an instance of the *Job* class.
-
-    The ``__init__`` takes these keyword arguments:
-
-        ``queue`` -- A string defining the queue to which this Job will be
-                     added.
-
-        ``payload`` -- A dictionary which contains the string name of a class
-                       which extends this Job and a list of args which will be
-                       passed to that class.
-
-        ``resq`` -- An instance of the ResQ class.
-
-        ``worker`` -- The name of a specific worker if you'd like this Job to be
-                      done by that worker. Default is "None".
-
-    """
+    """Every job on the ResQ is an instance of the :class:`Job` class."""
 
     safe_str_to_class = staticmethod(safe_str_to_class)
 
     def __init__(self, queue, payload, resq, worker=None):
+        """
+            :param queue: A string defining the queue to which this `Job` will
+                          be added
+            :type queue: str
+            :param payload: A dictionary containing the name of a class that
+                            extends this `Job` and a list of args which will
+                            be passed to it's `perform` method.
+            :type payload: dict
+            :param resq: the :class:`ResQ` that this will be run on
+            :type resq: :class:`ResQ`
+            :param worker: The name of a specific worker for this Job to be
+                           run with.
+            :type worker: str
+        """
         self._queue = queue
         self._payload = payload
         self.resq = resq
@@ -100,8 +98,15 @@ class Job(object):
 
     def fail(self, exception):
         """This method provides a way to fail a job and will use whatever
-        failure backend you've provided. The default is the ``RedisBackend``.
+        failure backend you've provided. The default is the
+        :class:`RedisBackend`.
 
+        :param exception: The exception that caused the :class:`Job` to fail.
+        :type exception: Exception
+
+        :returns: The failure backend instance
+        :rtype: An instance of a Failure Backend.
+                Defaults to :class:`RedisBackend`
         """
         fail = failure.create(exception, self._queue, self._payload,
                               self._worker)
@@ -110,9 +115,17 @@ class Job(object):
 
     def retry(self, payload_class, args):
         """This method provides a way to retry a job after a failure.
-        If the jobclass defined by the payload containes a ``retry_every`` attribute then pyres
-        will attempt to retry the job until successful or until timeout defined by ``retry_timeout`` on the payload class.
+        If the jobclass defined by the payload containes a ``retry_every``
+        attribute then pyres will attempt to retry the job until successful
+        or until timeout defined by ``retry_timeout`` on the payload class.
 
+        :param payload_class: the :class:`Job`-like class that needs
+                              to be retried
+        :type payload_class: :class:`Job`-like
+
+        :param args: The args to be passed to the `payload_class.perform`
+                     method when it is retried.
+        :type args: list
         """
         retry_every = getattr(payload_class, 'retry_every', None)
         retry_timeout = getattr(payload_class, 'retry_timeout', 0)
@@ -133,6 +146,14 @@ class Job(object):
         """Reserve a job on one of the queues. This marks this job so
         that other workers will not pick it up.
 
+        :param queues: The names of the queues to try and reserve from
+        :type queues: str
+        :param res: the redis instance to reserve from
+        :type res: :class:`ResQ`
+        :param worker: The name of worker to perform the job with
+        :type worker: str
+        :param timeout: How long to block while fetching a job before giving up
+        :type timeout: int
         """
         if isinstance(queues, string_types):
             queues = [queues]

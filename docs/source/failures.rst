@@ -1,18 +1,16 @@
-Failures
-===============
+.. module:: pyres
 
-Pyres provides a ``BaseBackend`` for handling failed jobs. You can subclass
-this backend to store failed jobs in any system you like.
+Failure Classes
+=================
 
-Currently, the only provided backend is a ``RedisBackend`` which will store
-your failed jobs into a special *failed* queue for later processing or
-reenqueueing.
+.. autoclass:: pyres.failure.base.BaseBackend
+    :members:
+	
+.. autoclass:: pyres.failure.redis.RedisBackend
+	:members:
 
-Here's a simple example::
+.. autoclass:: pyres.failure.multiple.MultipleBackend
+    :members:
 
-	>>> from pyres import failure
-	>>> from pyres.job import Job
-	>>> from pyres import ResQ
-	>>> r = ResQ()
-	>>> job = Job.reserve('basic', r)
-	>>> job.fail('problem')
+.. autoclass:: pyres.failure.mail.MailBackend
+    :members:

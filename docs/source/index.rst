@@ -9,15 +9,18 @@ Welcome to pyres's documentation!
 Contents:
 
 .. toctree::
-	:maxdepth: 2
+    :maxdepth: 2
 
-	intro
-	install
-	example
-	class
-	tests
-	failures
-	horde
+    intro
+    install
+    example
+    resq
+    job
+    workers
+    failures
+    failure_example
+    tests
+    horde
 
 
 Indices and tables
