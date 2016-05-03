@@ -188,7 +188,7 @@ class Worker(object):
                                 raise CrashError("Unexpected exit by signal %d" % os.WTERMSIG(status))
                             raise CrashError("Unexpected exit status %d" % os.WEXITSTATUS(status))
 
-                    time.sleep(0.5)
+                    time.sleep(0.005)
 
                     now = datetime.datetime.now()
                     if self.timeout and ((now - start).seconds > self.timeout):
