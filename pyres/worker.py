@@ -14,6 +14,10 @@ from pyres.compat import string_types
 
 logger = logging.getLogger(__name__)
 
+
+# TODO: Spawn children on start, Use children for bidding
+# TODO: Respawn children when they die
+
 class Worker(object):
     """Defines a worker. The ``pyres_worker`` script instantiates this Worker
     class and passes a comma-separated list of queues to listen on.::
@@ -164,68 +168,20 @@ class Worker(object):
         logger.debug('picked up job')
         logger.debug('job details: %s' % job)
         self.before_fork(job)
-        self.child = os.fork()
-        if self.child:
-            self._setproctitle("Forked %s at %s" %
-                               (self.child,
-                                datetime.datetime.now()))
-            logger.info('Forked %s at %s' % (self.child,
-                                              datetime.datetime.now()))
 
-            try:
-                start = datetime.datetime.now()
-
-                # waits for the result or times out
-                while True:
-                    pid, status = os.waitpid(self.child, os.WNOHANG)
-                    if pid != 0:
-                        if os.WIFEXITED(status) and os.WEXITSTATUS(status) == 0:
-                            break
-                        if os.WIFSTOPPED(status):
-                            logger.warning("Process stopped by signal %d" % os.WSTOPSIG(status))
-                        else:
-                            if os.WIFSIGNALED(status):
-                                raise CrashError("Unexpected exit by signal %d" % os.WTERMSIG(status))
-                            raise CrashError("Unexpected exit status %d" % os.WEXITSTATUS(status))
-
-                    time.sleep(0.005)
-
-                    now = datetime.datetime.now()
-                    if self.timeout and ((now - start).seconds > self.timeout):
-                        os.kill(self.child, signal.SIGKILL)
-                        os.waitpid(-1, os.WNOHANG)
-                        raise TimeoutError("Timed out after %d seconds" % self.timeout)
-
-            except OSError as ose:
-                import errno
-
-                if ose.errno != errno.EINTR:
-                    raise ose
-            except JobError:
-                self._handle_job_exception(job)
-            finally:
-                # If the child process' job called os._exit manually we need to
-                # finish the clean up here.
-                if self.job():
-                    self.done_working(job)
-
-            logger.debug('done waiting')
-        else:
-            self._setproctitle("Processing %s since %s" %
+        self._setproctitle("Processing %s since %s" %
                                (job,
                                 datetime.datetime.now()))
-            logger.info('Processing %s since %s' %
+        logger.info('Processing %s since %s' %
                          (job, datetime.datetime.now()))
-            self.after_fork(job)
+        # re-seed the Python PRNG after forking, otherwise
+        # all job process will share the same sequence of
+        # random numbers
+        random.seed()
 
-            # re-seed the Python PRNG after forking, otherwise
-            # all job process will share the same sequence of
-            # random numbers
-            random.seed()
-
-            self.process(job)
-            os._exit(0)
-        self.child = None
+        self.after_fork(job)
+        self.process(job)
+        self.done_working(job)
 
     def before_fork(self, job):
         """
