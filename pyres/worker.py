@@ -1,6 +1,7 @@
 import logging
 import signal
 import datetime, time
+import dateutil.parser
 import os, sys
 from pyres import json_parser as json
 from pyres.compat import commands
@@ -57,17 +58,14 @@ class Worker(object):
 
     def _set_started(self, dt):
         if dt:
-            key = int(time.mktime(dt.timetuple()))
-            self.resq.redis.set("resque:worker:%s:started" % self, key)
+            self.resq.redis.set("resque:worker:%s:started" % self, dt.isoformat())
         else:
             self.resq.redis.delete("resque:worker:%s:started" % self)
 
     def _get_started(self):
         datestring = self.resq.redis.get("resque:worker:%s:started" % self)
-        #ds = None
-        #if datestring:
-        #    ds = datetime.datetime.strptime(datestring, '%Y-%m-%d %H:%M:%S')
-        return datestring
+        dt = dateutil.parser.parse(datestring)
+        return int(time.mktime(dt.timetuple()))
 
     started = property(_get_started, _set_started)
 
