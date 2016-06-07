@@ -149,9 +149,7 @@ class Worker(object):
             else:
                 if interval == 0:
                     break
-                #procline @paused ? "Paused" : "Waiting for #{@queues.join(',')}"
                 self._setproctitle("Waiting")
-                #time.sleep(interval)
         self.unregister_worker()
 
     def fork_worker(self, job):
@@ -239,7 +237,7 @@ class Worker(object):
         logger.debug('marking as working on')
         data = {
             'queue': job._queue,
-            'run_at': str(int(time.mktime(datetime.datetime.now().timetuple()))),
+            'run_at': datetime.datetime.utcnow().isoformat(),
             'payload': job._payload
         }
         data = json.dumps(data)
