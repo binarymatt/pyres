@@ -109,7 +109,7 @@ class Minion(multiprocessing.Process):
         self.logger.debug('marking as working on')
         data = {
             'queue': job._queue,
-            'run_at': int(time.mktime(datetime.datetime.now().timetuple())),
+            'run_at': datetime.datetime.utcnow().isoformat() + "Z",
             'payload': job._payload
         }
         data = json.dumps(data)

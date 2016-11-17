@@ -285,7 +285,7 @@ class Worker(object):
         logger.debug('marking as working on')
         data = {
             'queue': job._queue,
-            'run_at': str(int(time.mktime(datetime.datetime.now().timetuple()))),
+            'run_at': datetime.datetime.utcnow().isoformat() + "Z",
             'payload': job._payload
         }
         data = json.dumps(data)
