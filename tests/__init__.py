@@ -119,6 +119,8 @@ class ImportTest(unittest.TestCase):
         assert safe_str_to_class('tests.Basic') == Basic
         self.assertRaises(ImportError, safe_str_to_class, 'test.Mine')
         self.assertRaises(ImportError, safe_str_to_class, 'tests.World')
+        # test that we can handle Ruby-compatible Module::Class names
+        assert safe_str_to_class('tests::Basic') == Basic
         # test that we'll use the class name as a module name if no
         # module name is provided (for Ruby compatibility)
         assert safe_str_to_class('tests') == tests

@@ -86,7 +86,14 @@ def my_import(name):
 
 def safe_str_to_class(s):
     """Helper function to map string class names to module classes."""
-    lst = s.split(".")
+    # ruby compatibility kludge: ruby uses "::" to separate modules
+    # from classes, while python uses "." so we'll sniff the string
+    # for "::" and if it's there then we're probably handling a job
+    # that was queued by ruby
+    if "::" in s:
+        lst = s.split("::")
+    else:
+        lst = s.split(".")
     klass = lst[-1]
     mod_list = lst[:-1]
     module = ".".join(mod_list)
