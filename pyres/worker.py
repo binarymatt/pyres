@@ -107,6 +107,8 @@ class Worker(object):
         if self.child:
             logger.info("Killing child at %s" % self.child)
             os.kill(self.child, signal.SIGKILL)
+        else:
+            raise SystemExit()
 
     def __str__(self):
         if getattr(self,'id', None):
