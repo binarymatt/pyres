@@ -1,7 +1,7 @@
 Pyres - a Resque clone
 ======================
 
-[Resque](http://github.com/defunkt/resque) is a great implementation of a job queue by the people at github. It's written in ruby, which is great, but I primarily work in python. So I took on the task of porting over the code to python and PyRes was the result
+[Resque](https://github.com/resque/resque) is a great implementation of a job queue by the people at github. It's written in ruby, which is great, but I primarily work in python. So I took on the task of porting over the code to python and PyRes was the result
 
 
 ## Project Goals
@@ -10,7 +10,7 @@ Because of some differences between ruby and python, there are a couple of place
 
 ## Travis CI
 
-Currently, pyres is being tested via travis ci for python version 2.6, 2.7, and 3.3: 
+Currently, pyres is being tested via travis ci for python version 2.6, 2.7, and 3.3:
 [![Build Status](https://secure.travis-ci.org/binarydud/pyres.png)](http://travis-ci.org/binarydud/pyres)
 
 ## Running Tests
