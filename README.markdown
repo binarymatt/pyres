@@ -10,7 +10,7 @@ Because of some differences between ruby and python, there are a couple of place
 
 ## Travis CI
 
-Currently, pyres is being tested via travis ci for python version 2.6, 2.7, and 3.3: 
+Currently, pyres is being tested via travis ci for python version 2.6, 2.7, and 3.3:
 [![Build Status](https://secure.travis-ci.org/binarydud/pyres.png)](http://travis-ci.org/binarydud/pyres)
 
 ## Running Tests
@@ -20,7 +20,7 @@ Currently, pyres is being tested via travis ci for python version 2.6, 2.7, and 
  3. Run nose: `$ nosetests` Or more verbosely: `$ nosetests -v`
 
 
-##Mailing List
+## Mailing List
 
 To join the list simply send an email to <pyres@librelist.com>. This
 will subscribe you and send you information about your subscription,
