@@ -146,9 +146,7 @@ class Worker(object):
 
             if job:
                 self.fork_worker(job)
-            else:
-                if interval == 0:
-                    break
+            elif interval == 0:
                 self._setproctitle("Waiting")
         self.unregister_worker()
 
