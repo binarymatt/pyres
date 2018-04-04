@@ -93,14 +93,26 @@ class Worker(object):
         self.register_worker()
 
     def register_signal_handlers(self):
-        signal.signal(signal.SIGTERM, self.shutdown_all)
-        signal.signal(signal.SIGINT, self.shutdown_all)
-        signal.signal(signal.SIGQUIT, self.schedule_shutdown)
-        signal.signal(signal.SIGUSR1, self.kill_child)
+        signal.signal(signal.SIGTERM, self.handle_signal)
+        signal.signal(signal.SIGINT, self.handle_signal)
+        signal.signal(signal.SIGQUIT, self.handle_signal)
+        signal.signal(signal.SIGUSR1, self.handle_signal)
+
+    def handle_signal(self, signum, frame):
+        logger.info("Interrupted by signal %s at %s:%s in %s()" % (signum, frame.f_code.co_filename, frame.f_lineno, frame.f_code.co_name))
+        if signum == signal.SIGTERM:
+            self.shutdown_all(signum, frame)
+        elif signum == signal.SIGINT:
+            self.shutdown_all(signum, frame)
+        elif signum == signal.SIGQUIT:
+            self.schedule_shutdown(signum, frame)
+        elif signum == signal.SIGUSR1:
+            self.kill_child(signum, frame)
 
     def shutdown_all(self, signum, frame):
         self.schedule_shutdown(signum, frame)
         self.kill_child(signum, frame)
+        self.resq.close()
 
     def schedule_shutdown(self, signum, frame):
         self._shutdown = True
