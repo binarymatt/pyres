@@ -160,6 +160,7 @@ class Worker(object):
             elif interval == 0:
                 self._setproctitle("Waiting")
         self.unregister_worker()
+        # this may break other workers using the same connection. Added so that the remote redis will clean up.
         self.resq.close()
 
     def fork_worker(self, job):
