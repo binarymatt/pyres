@@ -96,10 +96,21 @@ class Worker(object):
         self.register_worker()
 
     def register_signal_handlers(self):
-        signal.signal(signal.SIGTERM, self.shutdown_all)
-        signal.signal(signal.SIGINT, self.shutdown_all)
-        signal.signal(signal.SIGQUIT, self.schedule_shutdown)
-        signal.signal(signal.SIGUSR1, self.kill_child)
+        signal.signal(signal.SIGTERM, self.handle_signal)
+        signal.signal(signal.SIGINT, self.handle_signal)
+        signal.signal(signal.SIGQUIT, self.handle_signal)
+        signal.signal(signal.SIGUSR1, self.handle_signal)
+
+    def handle_signal(self, signum, frame):
+        logger.info("Interrupted by signal %s at %s:%s in %s()" % (signum, frame.f_code.co_filename, frame.f_lineno, frame.f_code.co_name))
+        if signum == signal.SIGTERM:
+            self.schedule_shutdown(signum, frame)
+        elif signum == signal.SIGINT:
+            self.schedule_shutdown(signum, frame)
+        elif signum == signal.SIGQUIT:
+            self.schedule_shutdown(signum, frame)
+        elif signum == signal.SIGUSR1:
+            self.kill_child(signum, frame)
 
     def shutdown_all(self, signum, frame):
         self.schedule_shutdown(signum, frame)
@@ -152,6 +163,8 @@ class Worker(object):
             elif interval == 0:
                 self._setproctitle("Waiting")
         self.unregister_worker()
+        # this may break other workers using the same connection. Added so that the remote redis will clean up.
+        self.resq.close()
 
     def fork_worker(self, job):
         """Invoked by ``work`` method. ``fork_worker`` does the actual forking to create the child
