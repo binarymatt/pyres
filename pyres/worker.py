@@ -181,7 +181,7 @@ class Worker(object):
 
         self._setproctitle("Processing %s since %s" %
                                (job,
-                               now_iso())))
+                               now_iso()))
         logger.info('Processing %s since %s' %
                          (job, now_iso()))
         # re-seed the Python PRNG after forking, otherwise
