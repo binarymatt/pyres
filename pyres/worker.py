@@ -61,7 +61,7 @@ class Worker(object):
 
     def _set_started(self, dt):
         if dt:
-            self.resq.redis.set("resque:worker:%s:started" % self, dt.isoformat())
+            self.resq.redis.set("resque:worker:%s:started" % self, now_iso())
         else:
             self.resq.redis.delete("resque:worker:%s:started" % self)
 
