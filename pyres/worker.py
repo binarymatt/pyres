@@ -15,6 +15,9 @@ from pyres.compat import string_types
 
 logger = logging.getLogger(__name__)
 
+def now_iso():
+    return datetime.datetime.utcnow().isoformat() + "Z"
+
 
 # TODO: Spawn children on start, Use children for bidding
 # TODO: Respawn children when they die
@@ -53,8 +56,8 @@ class Worker(object):
 
     def register_worker(self):
         self.resq.redis.sadd('resque:workers', str(self))
-        #self.resq._redis.add("worker:#{self}:started", Time.now.to_s)
-        self.started = datetime.datetime.now()
+        self._set_started(now_iso())
+        # self.started = datetime.datetime.now()
 
     def _set_started(self, dt):
         if dt:
@@ -165,9 +168,9 @@ class Worker(object):
 
         self._setproctitle("Processing %s since %s" %
                                (job,
-                                datetime.datetime.now()))
+                               now_iso())))
         logger.info('Processing %s since %s' %
-                         (job, datetime.datetime.now()))
+                         (job, now_iso()))
         # re-seed the Python PRNG after forking, otherwise
         # all job process will share the same sequence of
         # random numbers
@@ -235,7 +238,7 @@ class Worker(object):
         logger.debug('marking as working on')
         data = {
             'queue': job._queue,
-            'run_at': datetime.datetime.utcnow().isoformat(),
+            'run_at': now_iso(),
             'payload': job._payload
         }
         data = json.dumps(data)
