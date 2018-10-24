@@ -82,6 +82,8 @@ class Worker(object):
         all_workers = Worker.all(self.resq)
         known_workers = Worker.worker_pids()
         for worker in all_workers:
+            if not worker:
+                continue
             host, pid, queues = worker.id.split(':')
             if host != self.hostname:
                 continue
