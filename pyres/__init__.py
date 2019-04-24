@@ -300,7 +300,7 @@ class ResQ(object):
     def delayed_push(self, datetime, item):
         key = int(time.mktime(datetime.timetuple()))
         self.redis.rpush('resque:delayed:%s' % key, ResQ.encode(item))
-        self.redis.zadd('resque:delayed_queue_schedule', key, key)
+        self.redis.zadd('resque:delayed_queue_schedule', {key: key})
 
     def delayed_queue_peek(self, start, count):
         return [int(item) for item in self.redis.zrange(
@@ -391,4 +391,3 @@ class Stat(object):
 
     def clear(self):
         self.resq.redis.delete(self.key)
-
